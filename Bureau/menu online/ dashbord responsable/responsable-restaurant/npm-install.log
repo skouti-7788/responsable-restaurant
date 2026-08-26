@@ -1,0 +1,7 @@
+npm verbose cli /home/redwan/.nvm/versions/node/v22.19.0/bin/node /home/redwan/.nvm/versions/node/v22.19.0/bin/npm
+npm info using npm@10.9.3
+npm info using node@v22.19.0
+npm verbose title npm install @reduxjs/toolkit react-redux react-router-dom axios qrcode.react
+npm verbose argv "install" "@reduxjs/toolkit" "react-redux" "react-router-dom" "axios" "qrcode.react" "--legacy-peer-deps" "--no-audit" "--no-fund" "--registry" "https://registry.npmjs.org" "--fetch-retries" "5" "--fetch-retry-maxtimeout" "60000" "--loglevel" "verbose"
+npm verbose logfile logs-max:10 dir:/home/redwan/.npm/_logs/2026-08-03T18_16_20_757Z-
+npm verbose logfile /home/redwan/.npm/_logs/2026-08-03T18_16_20_757Z-debug-0.log
