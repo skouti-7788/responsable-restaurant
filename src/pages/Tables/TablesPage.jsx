@@ -281,7 +281,7 @@ const TablesPage = () => {
   const getMenuUrl = (table) => {
     if (!restaurantSlug || !table?.qr_token) return ''
 
-    return `${window.location.origin}/menu/${restaurantSlug}?table=${table.qr_token}`
+    return `https://menu-online.vercel.app/menu/${restaurantSlug}?table=${table.qr_token}`
   }
 
   const getQrImageUrl = (table) => {
