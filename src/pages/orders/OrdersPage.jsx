@@ -11,6 +11,8 @@ import {
   updateOrder,
 } from '../../store/orderSlice'
 
+import { RefreshCw } from 'lucide-react'
+
 import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
 
@@ -403,8 +405,6 @@ const OrdersPage = () => {
               )
             }
 
-            // إذا كانت البيانات كاملة في cache
-            // ما نحتاجوش نعاودو API
             if (
               cachedRestaurants.length > 0 &&
               cachedMeals.length > 0 &&
@@ -650,7 +650,6 @@ const OrdersPage = () => {
             )
           )
 
-          // إذا API فشل ولكن cache موجود
           if (
             cachedOrders.length > 0
           ) {
@@ -723,6 +722,8 @@ const OrdersPage = () => {
 
   const handleRefresh =
     async () => {
+      if (refreshing) return
+
       setRefreshing(true)
       setError('')
 
@@ -785,10 +786,6 @@ const OrdersPage = () => {
           )
         )
 
-        // =================================================
-        // UPDATE CACHE
-        // =================================================
-
         const cachedOrders =
           readCache(
             ORDERS_CACHE_KEY,
@@ -837,10 +834,6 @@ const OrdersPage = () => {
               order.id
             )
           )
-
-          // =================================================
-          // UPDATE CACHE
-          // =================================================
 
           const cachedOrders =
             readCache(
@@ -1508,24 +1501,14 @@ const OrdersPage = () => {
           }
           className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          <RefreshCw
+            size={17}
             className={
               refreshing
                 ? 'animate-spin'
                 : ''
             }
-          >
-            <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4" />
-            <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4" />
-          </svg>
+          />
 
           <span className="hidden sm:inline">
             {t.refresh || 'Refresh'}
@@ -1816,5 +1799,4 @@ const OrdersPage = () => {
   )
 }
 
-export default OrdersPage
- 
+export default OrdersPage 
