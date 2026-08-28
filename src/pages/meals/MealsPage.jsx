@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import axiosClient from '../../api/axiosClient'
+
 import {
   addMeal,
   fetchMealsFailure,
@@ -9,10 +10,12 @@ import {
   removeMeal,
   updateMeal,
 } from '../../store/mealSlice'
+
 import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
+
 import {
   fetchCategoriesStart,
   fetchCategoriesSuccess,
@@ -23,8 +26,14 @@ const MealsPage = () => {
   const dispatch = useDispatch()
 
   const { language } = useSelector((state) => state.ui)
-  const categories = useSelector((state) => state.categories.items)
-  const meals = useSelector((state) => state.meals.items)
+
+  const categories = useSelector(
+    (state) => state.categories.items || []
+  )
+
+  const meals = useSelector(
+    (state) => state.meals.items || []
+  )
 
   const t = translations[language]
 
@@ -44,7 +53,15 @@ const MealsPage = () => {
     imageFile: null,
   })
 
+  /*
+   * LOAD DATA
+   *
+   * Meals and categories come ONLY from the API.
+   * No default/mock data is created here.
+   */
   useEffect(() => {
+    let cancelled = false
+
     const loadData = async () => {
       dispatch(fetchMealsStart())
       dispatch(fetchCategoriesStart())
@@ -54,15 +71,22 @@ const MealsPage = () => {
           await axiosClient.get('/restaurants')
 
         const restaurant =
-          restaurantsResponse.data.data?.[0] ||
+          restaurantsResponse.data?.data?.[0] ||
           restaurantsResponse.data?.[0] ||
           null
 
         if (!restaurant) {
+          if (cancelled) return
+
+          setRestaurantId(null)
+
           dispatch(fetchMealsSuccess([]))
           dispatch(fetchCategoriesSuccess([]))
+
           return
         }
+
+        if (cancelled) return
 
         setRestaurantId(restaurant.id)
 
@@ -72,9 +96,11 @@ const MealsPage = () => {
             `/restaurants/${restaurant.id}/categories`
           )
 
+        if (cancelled) return
+
         dispatch(
           fetchCategoriesSuccess(
-            categoriesResponse.data.data ||
+            categoriesResponse.data?.data ||
               categoriesResponse.data ||
               []
           )
@@ -86,38 +112,45 @@ const MealsPage = () => {
             `/restaurants/${restaurant.id}/meals`
           )
 
+        if (cancelled) return
+
         dispatch(
           fetchMealsSuccess(
-            mealsResponse.data.data ||
+            mealsResponse.data?.data ||
               mealsResponse.data ||
               []
           )
         )
       } catch (err) {
+        if (cancelled) return
+
         console.error(
           'Load meals/categories error:',
           err
         )
 
-        dispatch(
-          fetchMealsFailure(
-            err?.response?.data?.message ||
-              err?.message ||
-              'Unable to load meals'
-          )
-        )
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          'Unable to load meals'
 
-        dispatch(
-          fetchCategoriesFailure(
-            err?.response?.data?.message ||
-              err?.message ||
-              'Unable to load categories'
-          )
-        )
+        dispatch(fetchMealsFailure(message))
+        dispatch(fetchCategoriesFailure(message))
+
+        /*
+         * Important:
+         * If API fails, don't keep/show fake/default meals.
+         */
+        dispatch(fetchMealsSuccess([]))
+        dispatch(fetchCategoriesSuccess([]))
       }
     }
 
     loadData()
+
+    return () => {
+      cancelled = true
+    }
   }, [dispatch])
 
   const handleOpen = (meal) => {
@@ -168,6 +201,7 @@ const MealsPage = () => {
           'Please select a category.'
         )
       )
+
       return
     }
 
@@ -179,18 +213,22 @@ const MealsPage = () => {
     )
 
     data.append('name', form.name)
+
     data.append(
       'description',
       form.description || ''
     )
+
     data.append(
       'price',
       String(form.price)
     )
+
     data.append(
       'status',
       form.status || 'active'
     )
+
     data.append(
       'featured',
       form.featured ? '1' : '0'
@@ -222,7 +260,7 @@ const MealsPage = () => {
 
         dispatch(
           updateMeal(
-            response.data.data ||
+            response.data?.data ||
               response.data
           )
         )
@@ -240,7 +278,7 @@ const MealsPage = () => {
 
         dispatch(
           addMeal(
-            response.data.data ||
+            response.data?.data ||
               response.data
           )
         )
@@ -264,7 +302,7 @@ const MealsPage = () => {
     } catch (err) {
       console.error(
         'Meal save error:',
-        err.response?.data || err
+        err?.response?.data || err
       )
 
       dispatch(
@@ -301,7 +339,7 @@ const MealsPage = () => {
     } catch (err) {
       console.error(
         'Meal delete error:',
-        err.response?.data || err
+        err?.response?.data || err
       )
 
       dispatch(
@@ -396,6 +434,7 @@ const MealsPage = () => {
                 </span>
 
                 <div className="flex gap-2">
+
                   <Button
                     variant="secondary"
                     onClick={() =>
@@ -413,6 +452,7 @@ const MealsPage = () => {
                   >
                     {t.deleteCategory}
                   </Button>
+
                 </div>
 
               </div>
@@ -536,50 +576,48 @@ const MealsPage = () => {
 
           {/* Image */}
           <div>
-            < label className="mb-2 block text-sm text-slate-600 dark:text-slate-300">
-              {t.image}</label>
-            {/* <Input
-              label={t.image}
-              value={form.image}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  image: e.target.value,
-                })
-              }
-              // placeholder="Image URL"
-            /> */}
+            <label className="mb-2 block text-sm text-slate-600 dark:text-slate-300">
+              {t.image}
+            </label>
 
             <div className="mt-3">
-            <input
-              id="meal-image"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
 
-                if (!file) return
+              <input
+                id="meal-image"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file =
+                    e.target.files?.[0]
 
-                setForm({
-                  ...form,
-                  imageFile: file,
-                  image: file.name,
-                })
+                  if (!file) return
 
-                const previewUrl = URL.createObjectURL(file)
+                  setForm({
+                    ...form,
+                    imageFile: file,
+                    image: file.name,
+                  })
 
-                setImagePreview(previewUrl)
-              }}
-            />
+                  const previewUrl =
+                    URL.createObjectURL(file)
 
-            <label
-              htmlFor="meal-image"
-              className="inline-flex cursor-pointer items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-            >
-              {form.imageFile ? form.imageFile.name : t.chooseImage} 
-            </label>
-          </div>
+                  setImagePreview(
+                    previewUrl
+                  )
+                }}
+              />
+
+              <label
+                htmlFor="meal-image"
+                className="inline-flex cursor-pointer items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                {form.imageFile
+                  ? form.imageFile.name
+                  : t.chooseImage}
+              </label>
+
+            </div>
 
             {imagePreview ? (
               <img
@@ -649,13 +687,11 @@ const MealsPage = () => {
               }
             >
               <option value="active">
-                  {t.active}
-
+                {t.active}
               </option>
 
               <option value="inactive">
-                  {t.inactive}
-
+                {t.inactive}
               </option>
             </select>
 
@@ -688,4 +724,5 @@ const MealsPage = () => {
   )
 }
 
-export default MealsPage 
+export default MealsPage
+ 
