@@ -21,6 +21,25 @@ import arabicReshaper from 'arabic-persian-reshaper'
 import bidiFactory from 'bidi-js'
 
 // =====================================================
+// LOCAL STORAGE KEYS
+// =====================================================
+
+const ORDERS_STORAGE_KEY =
+  'restaurant_orders'
+
+const RESTAURANTS_STORAGE_KEY =
+  'restaurant_restaurants'
+
+const MEALS_STORAGE_KEY =
+  'restaurant_meals'
+
+const TABLES_STORAGE_KEY =
+  'restaurant_tables'
+
+const RESTAURANT_ID_STORAGE_KEY =
+  'restaurant_id'
+
+// =====================================================
 // STATUS CLASSES
 // =====================================================
 
@@ -81,7 +100,11 @@ const statusTranslations = {
 // GET STATUS TRANSLATION
 // =====================================================
 
-const getStatusTranslation = (status, language, t) => {
+const getStatusTranslation = (
+  status,
+  language,
+  t
+) => {
   if (
     t &&
     typeof t[status] === 'string' &&
@@ -94,18 +117,24 @@ const getStatusTranslation = (status, language, t) => {
     statusTranslations[language] &&
     statusTranslations[language][status]
   ) {
-    return statusTranslations[language][status]
+    return statusTranslations[
+      language
+    ][status]
   }
 
-  if (statusTranslations.ar[status]) {
-    return statusTranslations.ar[status]
+  if (
+    statusTranslations.ar[status]
+  ) {
+    return statusTranslations.ar[
+      status
+    ]
   }
 
   return status
 }
 
 // =====================================================
-// DRAW ARABIC TEXT
+// DRAW ARABIC
 // =====================================================
 
 const drawArabic = (
@@ -115,16 +144,21 @@ const drawArabic = (
   y,
   options = {}
 ) => {
-  const value = String(text ?? '')
+  const value =
+    String(text ?? '')
 
   if (!value) return
 
   try {
     const reshaped =
-      arabicReshaper.reshape(value)
+      arabicReshaper.reshape(
+        value
+      )
 
     const embedding =
-      bidi.getEmbeddingLevels(reshaped)
+      bidi.getEmbeddingLevels(
+        reshaped
+      )
 
     const reordered =
       bidi.getReorderedString(
@@ -212,38 +246,93 @@ const OrdersPage = () => {
   // LANGUAGE
   // ===================================================
 
-  const { language } = useSelector(
-    (state) => state.ui
-  )
+  const { language } =
+    useSelector(
+      (state) => state.ui
+    )
 
   // ===================================================
-  // ORDERS
+  // ORDERS FROM REDUX
   // ===================================================
 
-  const orders = useSelector(
-    (state) => state.orders.items
-  )
+  const orders =
+    useSelector(
+      (state) =>
+        state.orders.items
+    ) || []
 
   // ===================================================
-  // RESTAURANTS
+  // LOCAL STATE
   // ===================================================
 
-  const [restaurants, setRestaurants] =
-    useState([])
+  const [
+    restaurants,
+    setRestaurants,
+  ] = useState(() => {
+    try {
+      const saved =
+        localStorage.getItem(
+          RESTAURANTS_STORAGE_KEY
+        )
 
-  // ===================================================
-  // MEALS
-  // ===================================================
+      if (!saved) return []
 
-  const [meals, setMeals] =
-    useState([])
+      const parsed =
+        JSON.parse(saved)
 
-  // ===================================================
-  // TABLES
-  // ===================================================
+      return Array.isArray(parsed)
+        ? parsed
+        : []
+    } catch {
+      return []
+    }
+  })
 
-  const [tables, setTables] =
-    useState([])
+  const [
+    meals,
+    setMeals,
+  ] = useState(() => {
+    try {
+      const saved =
+        localStorage.getItem(
+          MEALS_STORAGE_KEY
+        )
+
+      if (!saved) return []
+
+      const parsed =
+        JSON.parse(saved)
+
+      return Array.isArray(parsed)
+        ? parsed
+        : []
+    } catch {
+      return []
+    }
+  })
+
+  const [
+    tables,
+    setTables,
+  ] = useState(() => {
+    try {
+      const saved =
+        localStorage.getItem(
+          TABLES_STORAGE_KEY
+        )
+
+      if (!saved) return []
+
+      const parsed =
+        JSON.parse(saved)
+
+      return Array.isArray(parsed)
+        ? parsed
+        : []
+    } catch {
+      return []
+    }
+  })
 
   // ===================================================
   // TRANSLATIONS
@@ -255,85 +344,293 @@ const OrdersPage = () => {
     {}
 
   // =====================================================
+  // INITIALIZE ORDERS FROM CACHE
+  // =====================================================
+
+  useEffect(() => {
+    const cachedOrders =
+      localStorage.getItem(
+        ORDERS_STORAGE_KEY
+      )
+
+    if (!cachedOrders) {
+      return
+    }
+
+    try {
+      const parsed =
+        JSON.parse(
+          cachedOrders
+        )
+
+      if (
+        Array.isArray(parsed)
+      ) {
+        dispatch(
+          fetchOrdersSuccess(
+            parsed
+          )
+        )
+      }
+    } catch (error) {
+      console.error(
+        'Invalid cached orders:',
+        error
+      )
+
+      localStorage.removeItem(
+        ORDERS_STORAGE_KEY
+      )
+    }
+  }, [dispatch])
+
+  // =====================================================
   // LOAD RESTAURANT + MEALS + TABLES
+  //
+  // API ONLY IF CACHE DOES NOT EXIST
   // =====================================================
 
   useEffect(() => {
     const loadRestaurantData =
       async () => {
+
+        // =================================================
+        // RESTAURANT CACHE
+        // =================================================
+
+        let restaurantsData = []
+
+        const cachedRestaurants =
+          localStorage.getItem(
+            RESTAURANTS_STORAGE_KEY
+          )
+
+        if (cachedRestaurants) {
+          try {
+            const parsed =
+              JSON.parse(
+                cachedRestaurants
+              )
+
+            if (
+              Array.isArray(parsed)
+            ) {
+              restaurantsData =
+                parsed
+
+              setRestaurants(
+                parsed
+              )
+            }
+          } catch {
+            localStorage.removeItem(
+              RESTAURANTS_STORAGE_KEY
+            )
+          }
+        }
+
+        // =================================================
+        // MEALS CACHE
+        // =================================================
+
+        const cachedMeals =
+          localStorage.getItem(
+            MEALS_STORAGE_KEY
+          )
+
+        if (cachedMeals) {
+          try {
+            const parsed =
+              JSON.parse(
+                cachedMeals
+              )
+
+            if (
+              Array.isArray(parsed)
+            ) {
+              setMeals(parsed)
+            }
+          } catch {
+            localStorage.removeItem(
+              MEALS_STORAGE_KEY
+            )
+          }
+        }
+
+        // =================================================
+        // TABLES CACHE
+        // =================================================
+
+        const cachedTables =
+          localStorage.getItem(
+            TABLES_STORAGE_KEY
+          )
+
+        if (cachedTables) {
+          try {
+            const parsed =
+              JSON.parse(
+                cachedTables
+              )
+
+            if (
+              Array.isArray(parsed)
+            ) {
+              setTables(parsed)
+            }
+          } catch {
+            localStorage.removeItem(
+              TABLES_STORAGE_KEY
+            )
+          }
+        }
+
+        // =================================================
+        // IF EVERYTHING EXISTS → STOP
+        // =================================================
+
+        const hasRestaurantCache =
+          restaurantsData.length > 0
+
+        const hasMealsCache =
+          Boolean(cachedMeals)
+
+        const hasTablesCache =
+          Boolean(cachedTables)
+
+        if (
+          hasRestaurantCache &&
+          hasMealsCache &&
+          hasTablesCache
+        ) {
+          return
+        }
+
+        // =================================================
+        // API
+        // =================================================
+
         try {
           const response =
             await axiosClient.get(
               '/restaurants'
             )
 
-          const restaurantsData =
+          restaurantsData =
             response.data?.data ||
             response.data ||
             []
+
+          if (
+            !Array.isArray(
+              restaurantsData
+            )
+          ) {
+            restaurantsData = []
+          }
 
           setRestaurants(
             restaurantsData
           )
 
+          localStorage.setItem(
+            RESTAURANTS_STORAGE_KEY,
+            JSON.stringify(
+              restaurantsData
+            )
+          )
+
           const restaurant =
             restaurantsData[0]
 
-          if (!restaurant?.id) {
+          if (
+            !restaurant?.id
+          ) {
             setMeals([])
             setTables([])
+
             return
           }
 
-          // =================================================
-          // LOAD MEALS
-          // =================================================
+          const restaurantId =
+            restaurant.id
 
-          const mealsResponse =
-            await axiosClient.get(
-              `/restaurants/${restaurant.id}/meals`
-            )
-
-          const mealsData =
-            mealsResponse.data?.data ||
-            mealsResponse.data ||
-            []
-
-          setMeals(
-            Array.isArray(mealsData)
-              ? mealsData
-              : []
+          localStorage.setItem(
+            RESTAURANT_ID_STORAGE_KEY,
+            String(restaurantId)
           )
 
           // =================================================
-          // LOAD TABLES
+          // MEALS API
           // =================================================
 
-          const tablesResponse =
-            await axiosClient.get(
-              `/restaurants/${restaurant.id}/tables`
+          if (!hasMealsCache) {
+            const mealsResponse =
+              await axiosClient.get(
+                `/restaurants/${restaurantId}/meals`
+              )
+
+            const mealsData =
+              mealsResponse.data?.data ||
+              mealsResponse.data ||
+              []
+
+            const finalMeals =
+              Array.isArray(
+                mealsData
+              )
+                ? mealsData
+                : []
+
+            setMeals(finalMeals)
+
+            localStorage.setItem(
+              MEALS_STORAGE_KEY,
+              JSON.stringify(
+                finalMeals
+              )
+            )
+          }
+
+          // =================================================
+          // TABLES API
+          // =================================================
+
+          if (!hasTablesCache) {
+            const tablesResponse =
+              await axiosClient.get(
+                `/restaurants/${restaurantId}/tables`
+              )
+
+            const tablesData =
+              tablesResponse.data?.data ||
+              tablesResponse.data ||
+              []
+
+            const finalTables =
+              Array.isArray(
+                tablesData
+              )
+                ? tablesData
+                : []
+
+            setTables(
+              finalTables
             )
 
-          const tablesData =
-            tablesResponse.data?.data ||
-            tablesResponse.data ||
-            []
-
-          setTables(
-            Array.isArray(tablesData)
-              ? tablesData
-              : []
-          )
+            localStorage.setItem(
+              TABLES_STORAGE_KEY,
+              JSON.stringify(
+                finalTables
+              )
+            )
+          }
 
         } catch (err) {
           console.error(
             'Failed to load restaurant data:',
             err
           )
-
-          setRestaurants([])
-          setMeals([])
-          setTables([])
         }
       }
 
@@ -342,11 +639,57 @@ const OrdersPage = () => {
 
   // =====================================================
   // LOAD ORDERS
+  //
+  // API ONLY IF NO CACHE
   // =====================================================
 
   useEffect(() => {
     const loadOrders =
       async () => {
+
+        const cachedOrders =
+          localStorage.getItem(
+            ORDERS_STORAGE_KEY
+          )
+
+        // ================================================
+        // CACHE EXISTS
+        // ================================================
+
+        if (cachedOrders) {
+          try {
+            const parsed =
+              JSON.parse(
+                cachedOrders
+              )
+
+            if (
+              Array.isArray(parsed)
+            ) {
+              dispatch(
+                fetchOrdersSuccess(
+                  parsed
+                )
+              )
+
+              return
+            }
+          } catch (error) {
+            console.error(
+              'Invalid cached orders:',
+              error
+            )
+
+            localStorage.removeItem(
+              ORDERS_STORAGE_KEY
+            )
+          }
+        }
+
+        // ================================================
+        // NO CACHE → API
+        // ================================================
+
         dispatch(
           fetchOrdersStart()
         )
@@ -365,9 +708,18 @@ const OrdersPage = () => {
           const restaurant =
             restaurantsData[0]
 
-          if (!restaurant?.id) {
+          if (
+            !restaurant?.id
+          ) {
             dispatch(
-              fetchOrdersSuccess([])
+              fetchOrdersSuccess(
+                []
+              )
+            )
+
+            localStorage.setItem(
+              ORDERS_STORAGE_KEY,
+              JSON.stringify([])
             )
 
             return
@@ -383,11 +735,23 @@ const OrdersPage = () => {
             ordersResponse.data ||
             []
 
+          const finalOrders =
+            Array.isArray(
+              ordersData
+            )
+              ? ordersData
+              : []
+
+          localStorage.setItem(
+            ORDERS_STORAGE_KEY,
+            JSON.stringify(
+              finalOrders
+            )
+          )
+
           dispatch(
             fetchOrdersSuccess(
-              Array.isArray(ordersData)
-                ? ordersData
-                : []
+              finalOrders
             )
           )
 
@@ -405,10 +769,12 @@ const OrdersPage = () => {
   }, [dispatch])
 
   // =====================================================
-  // GET TABLE NUMBER FROM TABLE ID
+  // GET TABLE NUMBER
   // =====================================================
 
-  const getTableNumber = (tableId) => {
+  const getTableNumber = (
+    tableId
+  ) => {
     if (!tableId) {
       return null
     }
@@ -420,11 +786,13 @@ const OrdersPage = () => {
           Number(tableId)
       )
 
-    return table?.number ?? null
+    return (
+      table?.number ?? null
+    )
   }
 
   // =====================================================
-  // CHANGE ORDER STATUS
+  // CHANGE STATUS
   // =====================================================
 
   const changeStatus =
@@ -441,12 +809,53 @@ const OrdersPage = () => {
             }
           )
 
+        const updatedOrder =
+          response.data?.data ||
+          response.data
+
+        // ===============================================
+        // REDUX
+        // ===============================================
+
         dispatch(
           updateOrder(
-            response.data.data
+            updatedOrder
           )
         )
+
+        // ===============================================
+        // LOCAL STORAGE
+        // ===============================================
+
+        const cachedOrders =
+          JSON.parse(
+            localStorage.getItem(
+              ORDERS_STORAGE_KEY
+            ) || '[]'
+          )
+
+        const updatedOrders =
+          cachedOrders.map(
+            (item) =>
+              item.id ===
+              updatedOrder.id
+                ? updatedOrder
+                : item
+          )
+
+        localStorage.setItem(
+          ORDERS_STORAGE_KEY,
+          JSON.stringify(
+            updatedOrders
+          )
+        )
+
       } catch (err) {
+        console.error(
+          'Change order status error:',
+          err
+        )
+
         dispatch(
           fetchOrdersFailure(
             err?.message ||
@@ -469,15 +878,51 @@ const OrdersPage = () => {
           )
 
         if (
-          response.data.message
+          response.data?.message
         ) {
+
+          // =============================================
+          // REDUX
+          // =============================================
+
           dispatch(
             removeOrder(
               order.id
             )
           )
+
+          // =============================================
+          // LOCAL STORAGE
+          // =============================================
+
+          const cachedOrders =
+            JSON.parse(
+              localStorage.getItem(
+                ORDERS_STORAGE_KEY
+              ) || '[]'
+            )
+
+          const updatedOrders =
+            cachedOrders.filter(
+              (item) =>
+                item.id !==
+                order.id
+            )
+
+          localStorage.setItem(
+            ORDERS_STORAGE_KEY,
+            JSON.stringify(
+              updatedOrders
+            )
+          )
         }
+
       } catch (err) {
+        console.error(
+          'Delete order error:',
+          err
+        )
+
         dispatch(
           fetchOrdersFailure(
             err?.message ||
@@ -494,11 +939,13 @@ const OrdersPage = () => {
   const handleDownloadInvoice =
     (order) => {
 
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      })
+      const doc =
+        new jsPDF({
+          orientation:
+            'portrait',
+          unit: 'mm',
+          format: 'a4',
+        })
 
       // =================================================
       // AMIRI FONT
@@ -554,8 +1001,12 @@ const OrdersPage = () => {
         order.created_at
           ? new Date(
               order.created_at
-            ).toLocaleString(locale)
-          : new Date().toLocaleString(locale)
+            ).toLocaleString(
+              locale
+            )
+          : new Date().toLocaleString(
+              locale
+            )
 
       const orderItems =
         order.items || []
@@ -680,7 +1131,9 @@ const OrdersPage = () => {
 
       doc.setFontSize(22)
 
-      if (isArabicLanguage) {
+      if (
+        isArabicLanguage
+      ) {
         drawArabic(
           doc,
           invoiceLabel,
@@ -725,7 +1178,9 @@ const OrdersPage = () => {
 
       doc.setFontSize(11)
 
-      if (isArabicLanguage) {
+      if (
+        isArabicLanguage
+      ) {
 
         drawArabic(
           doc,
@@ -847,7 +1302,9 @@ const OrdersPage = () => {
 
       doc.setFontSize(10)
 
-      if (isArabicLanguage) {
+      if (
+        isArabicLanguage
+      ) {
 
         drawArabic(
           doc,
@@ -950,10 +1407,13 @@ const OrdersPage = () => {
           const totalPrice =
             Number(
               orderItem.total_price ??
-              unitPrice * quantity
+              unitPrice *
+                quantity
             )
 
-          if (isArabicLanguage) {
+          if (
+            isArabicLanguage
+          ) {
 
             drawArabic(
               doc,
@@ -974,14 +1434,18 @@ const OrdersPage = () => {
 
             drawText(
               doc,
-              `$${unitPrice.toFixed(2)}`,
+              `$${unitPrice.toFixed(
+                2
+              )}`,
               100,
               y
             )
 
             drawText(
               doc,
-              `$${totalPrice.toFixed(2)}`,
+              `$${totalPrice.toFixed(
+                2
+              )}`,
               60,
               y
             )
@@ -1007,14 +1471,18 @@ const OrdersPage = () => {
 
             drawText(
               doc,
-              `$${unitPrice.toFixed(2)}`,
+              `$${unitPrice.toFixed(
+                2
+              )}`,
               125,
               y
             )
 
             drawText(
               doc,
-              `$${totalPrice.toFixed(2)}`,
+              `$${totalPrice.toFixed(
+                2
+              )}`,
               165,
               y
             )
@@ -1053,7 +1521,9 @@ const OrdersPage = () => {
 
       doc.setFontSize(14)
 
-      if (isArabicLanguage) {
+      if (
+        isArabicLanguage
+      ) {
 
         drawArabic(
           doc,
@@ -1064,7 +1534,9 @@ const OrdersPage = () => {
 
         drawText(
           doc,
-          `$${orderTotal.toFixed(2)}`,
+          `$${orderTotal.toFixed(
+            2
+          )}`,
           190,
           y,
           {
@@ -1083,7 +1555,9 @@ const OrdersPage = () => {
 
         drawText(
           doc,
-          `$${orderTotal.toFixed(2)}`,
+          `$${orderTotal.toFixed(
+            2
+          )}`,
           190,
           y,
           {
@@ -1108,9 +1582,7 @@ const OrdersPage = () => {
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* =================================================
-          HEADER
-      ================================================= */}
+      {/* HEADER */}
 
       <div className="mb-6">
 
@@ -1124,9 +1596,7 @@ const OrdersPage = () => {
 
       </div>
 
-      {/* =================================================
-          ORDERS GRID
-      ================================================= */}
+      {/* ORDERS GRID */}
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
@@ -1152,10 +1622,6 @@ const OrdersPage = () => {
                   t
                 )
 
-              // =================================================
-              // TABLE NUMBER
-              // =================================================
-
               const tableNumber =
                 getTableNumber(
                   order.table_id
@@ -1167,21 +1633,22 @@ const OrdersPage = () => {
                   : '---'
 
               return (
+
                 <div
                   key={order.id}
                   className="flex flex-col rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
                 >
 
-                  {/* =====================================
-                      ORDER HEADER
-                  ===================================== */}
+                  {/* ORDER HEADER */}
 
                   <div className="flex items-start justify-between gap-4">
 
                     <div className="min-w-0">
 
                       <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        {t.orderNumber || 'Order'} #{order.id}
+                        {t.orderNumber ||
+                          'Order'}{' '}
+                        #{order.id}
                       </p>
 
                       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -1203,19 +1670,20 @@ const OrdersPage = () => {
                         ] || ''
                       }`}
                     >
-                      {translatedStatus}
+                      {
+                        translatedStatus
+                      }
                     </span>
 
                   </div>
 
-                  {/* =====================================
-                      TABLE
-                  ===================================== */}
+                  {/* TABLE */}
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/60">
 
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {t.table || 'Table'}
+                      {t.table ||
+                        'Table'}
                     </p>
 
                     <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -1224,62 +1692,97 @@ const OrdersPage = () => {
 
                   </div>
 
-                   {/* =====================================
-                          ITEMS + TOTAL
-                      ===================================== */}
+                  {/* ITEMS + TOTAL */}
 
-                      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
 
-                        {/* ITEMS */}
-                        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t.items}
-                          </p>
+                    {/* ITEMS */}
 
-                          <ul className="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
-                            {(order.items || []).map((orderItem, index) => {
-                              const meal = meals.find(
+                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {t.items}
+                      </p>
+
+                      <ul className="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
+
+                        {(order.items ||
+                          []).map(
+                          (
+                            orderItem,
+                            index
+                          ) => {
+
+                            const meal =
+                              meals.find(
                                 (item) =>
-                                  Number(item.id) === Number(orderItem.meal_id)
+                                  Number(
+                                    item.id
+                                  ) ===
+                                  Number(
+                                    orderItem.meal_id
+                                  )
                               )
 
-                              const name =
-                                orderItem.name ||
-                                orderItem.meal?.name ||
-                                meal?.name ||
-                                `Meal ${orderItem.meal_id || ''}`
+                            const name =
+                              orderItem.name ||
+                              orderItem.meal?.name ||
+                              meal?.name ||
+                              `Meal ${
+                                orderItem.meal_id ||
+                                ''
+                              }`
 
-                              const quantity = Number(orderItem.quantity || 1)
-
-                              return (
-                                <li
-                                  key={`${orderItem.meal_id || name || index}`}
-                                  className="rounded-2xl bg-white px-3 py-2 shadow-sm dark:bg-slate-950/70"
-                                >
-                                  {name}
-                                  {quantity ? ` × ${quantity}` : ''}
-                                </li>
+                            const quantity =
+                              Number(
+                                orderItem.quantity ||
+                                1
                               )
-                            })}
-                          </ul>
-                        </div>
 
-                        {/* TOTAL */}
-                        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950/60">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t.totalPrice}
-                          </p>
+                            return (
 
-                          <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-                            ${Number(order.total || 0).toFixed(2)}
-                          </p>
-                        </div>
+                              <li
+                                key={`${orderItem.meal_id || name || index}`}
+                                className="rounded-2xl bg-white px-3 py-2 shadow-sm dark:bg-slate-950/70"
+                              >
+                                {name}
 
-                      </div>
+                                {quantity
+                                  ? ` × ${quantity}`
+                                  : ''}
+                              </li>
 
-                  {/* =====================================
-                      ACTIONS
-                  ===================================== */}
+                            )
+                          }
+                        )}
+
+                      </ul>
+
+                    </div>
+
+                    {/* TOTAL */}
+
+                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950/60">
+
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {t.totalPrice}
+                      </p>
+
+                      <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                        $
+                        {Number(
+                          order.total ||
+                          0
+                        ).toFixed(
+                          2
+                        )}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {/* ACTIONS */}
 
                   <div className="mt-6 flex flex-wrap gap-3">
 
@@ -1323,7 +1826,9 @@ const OrdersPage = () => {
                           )
                         }
                       >
-                        {t.downloadInvoice}
+                        {
+                          t.downloadInvoice
+                        }
                       </Button>
 
                     )}
@@ -1338,12 +1843,15 @@ const OrdersPage = () => {
                         )
                       }
                     >
-                      {t.deleteCategory}
+                      {
+                        t.deleteCategory
+                      }
                     </Button>
 
                   </div>
 
                 </div>
+
               )
             }
           )
@@ -1356,4 +1864,4 @@ const OrdersPage = () => {
   )
 }
 
-export default OrdersPage 
+export default OrdersPage

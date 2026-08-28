@@ -234,7 +234,7 @@ const ProfilePage = () => {
 
           <Input
             label="Facebook"
-            value={form?.socials.facebook|| ''}
+            value={form?.socials.facebook ?? ''}
             onChange={(e) =>
               setForm({
                 ...form,
@@ -248,7 +248,7 @@ const ProfilePage = () => {
 
           <Input
             label="Instagram"
-            value={form?.socials.instagram || ''}
+            value={form?.socials.instagram ?? ''}
             onChange={(e) =>
               setForm({
                 ...form,
