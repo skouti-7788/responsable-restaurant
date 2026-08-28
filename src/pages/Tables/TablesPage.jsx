@@ -1300,7 +1300,4 @@ const TablesPage = () => {
 }
 
 export default TablesPage
-<<<<<<< HEAD
-=======
 
->>>>>>> 3a20721 (update file tables et orders)
