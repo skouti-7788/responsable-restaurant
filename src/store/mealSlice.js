@@ -1,11 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-  items: [
-    // { id: 1, name: 'Grilled Salmon', description: 'Fresh salmon with garden herbs', price: 22.5, category: 'Main courses', status: 'available', featured: true, image: '' },
-    // { id: 2, name: 'Beef Burger', description: 'Juicy burger with caramelized onions', price: 15.0, category: 'Main courses', status: 'available', featured: true, image: '' },
-    // { id: 3, name: 'Falafel Bowl', description: 'Crispy falafel with tahini and greens', price: 11.5, category: 'Starters', status: 'available', featured: false, image: '' },
-  ],
+  items: [],
   loading: false,
   error: null,
 }

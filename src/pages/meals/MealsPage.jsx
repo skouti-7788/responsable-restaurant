@@ -1,48 +1,133 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  RefreshCw,
+  Utensils,
+} from 'lucide-react'
+
 import axiosClient from '../../api/axiosClient'
-
-import {
-  addMeal,
-  fetchMealsFailure,
-  fetchMealsStart,
-  fetchMealsSuccess,
-  removeMeal,
-  updateMeal,
-} from '../../store/mealSlice'
-
 import translations from '../../i18n/translations'
-import Button from '../../components/ui/Button'
-import Input from '../../components/ui/Input'
-import Modal from '../../components/ui/Modal'
-
-import {
-  fetchCategoriesStart,
-  fetchCategoriesSuccess,
-  fetchCategoriesFailure,
-} from '../../store/categorySlice'
 
 const MealsPage = () => {
-  const dispatch = useDispatch()
-
   const { language } = useSelector((state) => state.ui)
 
-  const categories = useSelector(
-    (state) => state.categories.items || []
-  )
+  const t =
+    translations[language] ||
+    translations.en ||
+    {}
 
-  const meals = useSelector(
-    (state) => state.meals.items || []
-  )
+  // =====================================================
+  // CACHE KEYS
+  // =====================================================
 
-  const t = translations[language]
+  const MEALS_CACHE_KEY =
+    'restaurant_meals_cache'
 
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [restaurantId, setRestaurantId] = useState(null)
-  const [imagePreview, setImagePreview] = useState('')
+  const CATEGORIES_CACHE_KEY =
+    'restaurant_categories_cache'
 
-  const [form, setForm] = useState({
+  const RESTAURANT_CACHE_KEY =
+    'restaurant_current_cache'
+
+  // =====================================================
+  // HELPERS - READ CACHE
+  // =====================================================
+
+  const getCachedRestaurant = () => {
+    try {
+      const cached =
+        localStorage.getItem(
+          RESTAURANT_CACHE_KEY
+        )
+
+      return cached
+        ? JSON.parse(cached)
+        : null
+    } catch {
+      return null
+    }
+  }
+
+  const getCachedArray = (key) => {
+    try {
+      const cached =
+        localStorage.getItem(key)
+
+      const parsed = cached
+        ? JSON.parse(cached)
+        : []
+
+      return Array.isArray(parsed)
+        ? parsed
+        : []
+    } catch {
+      return []
+    }
+  }
+
+  // =====================================================
+  // STATE
+  // =====================================================
+
+  const cachedRestaurant =
+    getCachedRestaurant()
+
+  const cachedMeals =
+    getCachedArray(
+      MEALS_CACHE_KEY
+    )
+
+  const cachedCategories =
+    getCachedArray(
+      CATEGORIES_CACHE_KEY
+    )
+
+  const [meals, setMeals] =
+    useState(cachedMeals)
+
+  const [categories, setCategories] =
+    useState(cachedCategories)
+
+  const [restaurantId, setRestaurantId] =
+    useState(
+      cachedRestaurant?.id || null
+    )
+
+  const [loading, setLoading] =
+    useState(
+      cachedMeals.length === 0
+    )
+
+  const [error, setError] =
+    useState('')
+
+  const [saving, setSaving] =
+    useState(false)
+
+  const [deletingId, setDeletingId] =
+    useState(null)
+
+  // =====================================================
+  // MODAL
+  // =====================================================
+
+  const [open, setOpen] =
+    useState(false)
+
+  const [editing, setEditing] =
+    useState(null)
+
+  const [imagePreview, setImagePreview] =
+    useState('')
+
+  // =====================================================
+  // FORM
+  // =====================================================
+
+  const emptyForm = {
     name: '',
     description: '',
     price: '',
@@ -51,168 +136,398 @@ const MealsPage = () => {
     featured: false,
     image: '',
     imageFile: null,
-  })
+  }
 
-  /*
-   * LOAD DATA
-   *
-   * Meals and categories come ONLY from the API.
-   * No default/mock data is created here.
-   */
-  useEffect(() => {
-    let cancelled = false
+  const [form, setForm] =
+    useState(emptyForm)
 
-    const loadData = async () => {
-      dispatch(fetchMealsStart())
-      dispatch(fetchCategoriesStart())
+  // =====================================================
+  // CACHE - MEALS
+  // =====================================================
+
+  const saveMealsToCache = useCallback(
+    (data) => {
+      try {
+        localStorage.setItem(
+          MEALS_CACHE_KEY,
+          JSON.stringify(data)
+        )
+      } catch (err) {
+        console.error(
+          'Save meals cache error:',
+          err
+        )
+      }
+    },
+    []
+  )
+
+  // =====================================================
+  // CACHE - CATEGORIES
+  // =====================================================
+
+  const saveCategoriesToCache =
+    useCallback((data) => {
+      try {
+        localStorage.setItem(
+          CATEGORIES_CACHE_KEY,
+          JSON.stringify(data)
+        )
+      } catch (err) {
+        console.error(
+          'Save categories cache error:',
+          err
+        )
+      }
+    }, [])
+
+  // =====================================================
+  // CACHE - RESTAURANT
+  // =====================================================
+
+  const saveRestaurantToCache =
+    useCallback((restaurant) => {
+      try {
+        localStorage.setItem(
+          RESTAURANT_CACHE_KEY,
+          JSON.stringify({
+            id:
+              restaurant?.id ||
+              null,
+            slug:
+              restaurant?.slug ||
+              null,
+          })
+        )
+      } catch (err) {
+        console.error(
+          'Save restaurant cache error:',
+          err
+        )
+      }
+    }, [])
+
+  // =====================================================
+  // LOAD DATA FROM API
+  // =====================================================
+
+  const loadMeals = useCallback(
+    async () => {
+      setError('')
 
       try {
+        // -------------------------------------------------
+        // GET RESTAURANT
+        // -------------------------------------------------
+
         const restaurantsResponse =
-          await axiosClient.get('/restaurants')
+          await axiosClient.get(
+            '/restaurants'
+          )
+
+        const restaurantsData =
+          restaurantsResponse.data?.data ||
+          restaurantsResponse.data ||
+          []
 
         const restaurant =
-          restaurantsResponse.data?.data?.[0] ||
-          restaurantsResponse.data?.[0] ||
-          null
+          restaurantsData[0] || null
 
-        if (!restaurant) {
-          if (cancelled) return
-
-          setRestaurantId(null)
-
-          dispatch(fetchMealsSuccess([]))
-          dispatch(fetchCategoriesSuccess([]))
+        if (!restaurant?.id) {
+          /*
+           * مهم:
+           * إلا API رجع restaurant فارغ،
+           * ما نمسحوش cache القديمة.
+           */
+          setError(
+            t.restaurantNotFound ||
+              'Restaurant not found.'
+          )
 
           return
         }
 
-        if (cancelled) return
+        const id = restaurant.id
 
-        setRestaurantId(restaurant.id)
+        setRestaurantId(id)
 
-        // Load categories
+        saveRestaurantToCache(
+          restaurant
+        )
+
+        // -------------------------------------------------
+        // GET CATEGORIES
+        // -------------------------------------------------
+
         const categoriesResponse =
           await axiosClient.get(
-            `/restaurants/${restaurant.id}/categories`
+            `/restaurants/${id}/categories`
           )
 
-        if (cancelled) return
+        const categoriesData =
+          categoriesResponse.data?.data ||
+          categoriesResponse.data ||
+          []
 
-        dispatch(
-          fetchCategoriesSuccess(
-            categoriesResponse.data?.data ||
-              categoriesResponse.data ||
-              []
+        const normalizedCategories =
+          Array.isArray(
+            categoriesData
           )
+            ? categoriesData
+            : []
+
+        setCategories(
+          normalizedCategories
         )
 
-        // Load meals
+        saveCategoriesToCache(
+          normalizedCategories
+        )
+
+        // -------------------------------------------------
+        // GET MEALS
+        // -------------------------------------------------
+
         const mealsResponse =
           await axiosClient.get(
-            `/restaurants/${restaurant.id}/meals`
+            `/restaurants/${id}/meals`
           )
 
-        if (cancelled) return
+        const mealsData =
+          mealsResponse.data?.data ||
+          mealsResponse.data ||
+          []
 
-        dispatch(
-          fetchMealsSuccess(
-            mealsResponse.data?.data ||
-              mealsResponse.data ||
-              []
-          )
+        const normalizedMeals =
+          Array.isArray(mealsData)
+            ? mealsData
+            : []
+
+        setMeals(
+          normalizedMeals
+        )
+
+        saveMealsToCache(
+          normalizedMeals
         )
       } catch (err) {
-        if (cancelled) return
-
         console.error(
           'Load meals/categories error:',
           err
         )
 
-        const message =
-          err?.response?.data?.message ||
-          err?.message ||
-          'Unable to load meals'
-
-        dispatch(fetchMealsFailure(message))
-        dispatch(fetchCategoriesFailure(message))
-
         /*
-         * Important:
-         * If API fails, don't keep/show fake/default meals.
+         * مهم بزاف:
+         *
+         * ما نديروش:
+         *
+         * setMeals([])
+         *
+         * حيث إلا API فشل،
+         * خاصنا نخليو cache القديمة.
          */
-        dispatch(fetchMealsSuccess([]))
-        dispatch(fetchCategoriesSuccess([]))
+
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t.loadMealsError ||
+            'Failed to load meals.'
+        )
+      } finally {
+        setLoading(false)
       }
+    },
+    [
+      saveMealsToCache,
+      saveCategoriesToCache,
+      saveRestaurantToCache,
+      t.restaurantNotFound,
+      t.loadMealsError,
+    ]
+  )
+
+  // =====================================================
+  // INITIAL LOAD
+  // =====================================================
+
+  useEffect(() => {
+    let cancelled = false
+
+    const run = async () => {
+      if (cancelled) return
+
+      await loadMeals()
     }
 
-    loadData()
+    run()
 
     return () => {
       cancelled = true
     }
-  }, [dispatch])
+  }, [loadMeals])
 
-  const handleOpen = (meal) => {
-    setEditing(meal || null)
+  // =====================================================
+  // REFRESH
+  // =====================================================
 
-    setForm(
-      meal
-        ? {
-            name: meal.name || '',
-            description: meal.description || '',
-            price: meal.price || '',
-            category_id: meal.category_id || '',
-            status: meal.status || 'active',
-            featured: !!meal.featured,
-            image:
-              meal.image_url ||
-              meal.image ||
-              '',
-            imageFile: null,
-          }
-        : {
-            name: '',
-            description: '',
-            price: '',
-            category_id: '',
-            status: 'active',
-            featured: false,
-            image: '',
-            imageFile: null,
-          }
-    )
+  const handleRefresh = async () => {
+    setLoading(true)
 
-    setImagePreview(
-      meal?.image_url ||
-        meal?.image ||
-        ''
-    )
+    await loadMeals()
+  }
 
+  // =====================================================
+  // OPEN ADD / EDIT
+  // =====================================================
+
+  const handleOpen = (meal = null) => {
+    setEditing(meal)
+
+    if (meal) {
+      setForm({
+        name:
+          meal.name || '',
+
+        description:
+          meal.description || '',
+
+        price:
+          meal.price ?? '',
+
+        category_id:
+          meal.category_id ??
+          '',
+
+        status:
+          meal.status || 'active',
+
+        featured:
+          !!meal.featured,
+
+        image:
+          meal.image_url ||
+          meal.image ||
+          '',
+
+        imageFile:
+          null,
+      })
+
+      setImagePreview(
+        meal.image_url ||
+          meal.image ||
+          ''
+      )
+    } else {
+      setForm({
+        ...emptyForm,
+      })
+
+      setImagePreview('')
+    }
+
+    setError('')
     setOpen(true)
   }
 
-  const handleSave = async () => {
-    if (!form.name || !restaurantId) return
+  // =====================================================
+  // CLOSE MODAL
+  // =====================================================
 
-    if (!form.category_id) {
-      dispatch(
-        fetchMealsFailure(
-          'Please select a category.'
-        )
+  const handleClose = () => {
+    if (saving) return
+
+    setOpen(false)
+    setEditing(null)
+
+    setForm({
+      ...emptyForm,
+    })
+
+    setImagePreview('')
+  }
+
+  // =====================================================
+  // IMAGE CHANGE
+  // =====================================================
+
+  const handleImageChange = (e) => {
+    const file =
+      e.target.files?.[0]
+
+    if (!file) return
+
+    setForm((current) => ({
+      ...current,
+      imageFile: file,
+      image: file.name,
+    }))
+
+    const previewUrl =
+      URL.createObjectURL(file)
+
+    setImagePreview(previewUrl)
+  }
+
+  // =====================================================
+  // SAVE MEAL
+  // =====================================================
+
+  const handleSave = async () => {
+    if (!restaurantId) {
+      setError(
+        t.restaurantNotFound ||
+          'Restaurant not found.'
       )
 
       return
     }
 
-    const data = new FormData()
+    if (!form.name.trim()) {
+      setError(
+        t.mealNameRequired ||
+          'Meal name is required.'
+      )
+
+      return
+    }
+
+    if (!form.category_id) {
+      setError(
+        t.categoryRequired ||
+          'Please select a category.'
+      )
+
+      return
+    }
+
+    if (
+      form.price === '' ||
+      Number(form.price) < 0
+    ) {
+      setError(
+        t.priceRequired ||
+          'Price is required.'
+      )
+
+      return
+    }
+
+    setSaving(true)
+    setError('')
+
+    const data =
+      new FormData()
 
     data.append(
       'category_id',
       String(form.category_id)
     )
 
-    data.append('name', form.name)
+    data.append(
+      'name',
+      form.name.trim()
+    )
 
     data.append(
       'description',
@@ -231,7 +546,9 @@ const MealsPage = () => {
 
     data.append(
       'featured',
-      form.featured ? '1' : '0'
+      form.featured
+        ? '1'
+        : '0'
     )
 
     if (form.imageFile) {
@@ -244,482 +561,971 @@ const MealsPage = () => {
     try {
       let response
 
-      if (editing) {
-        data.append('_method', 'PUT')
+      // -------------------------------------------------
+      // UPDATE
+      // -------------------------------------------------
 
-        response = await axiosClient.post(
-          `/restaurants/${restaurantId}/meals/${editing.id}`,
-          data,
-          {
-            headers: {
-              'Content-Type':
-                'multipart/form-data',
-            },
-          }
+      if (editing?.id) {
+        data.append(
+          '_method',
+          'PUT'
         )
 
-        dispatch(
-          updateMeal(
-            response.data?.data ||
-              response.data
+        response =
+          await axiosClient.post(
+            `/restaurants/${restaurantId}/meals/${editing.id}`,
+            data,
+            {
+              headers: {
+                'Content-Type':
+                  'multipart/form-data',
+              },
+            }
           )
-        )
-      } else {
-        response = await axiosClient.post(
-          `/restaurants/${restaurantId}/meals`,
-          data,
-          {
-            headers: {
-              'Content-Type':
-                'multipart/form-data',
-            },
-          }
-        )
 
-        dispatch(
-          addMeal(
-            response.data?.data ||
-              response.data
+        const updatedMeal =
+          response.data?.data ||
+          response.data?.meal ||
+          response.data
+
+        setMeals((current) => {
+          const updated =
+            current.map(
+              (meal) =>
+                meal.id ===
+                editing.id
+                  ? updatedMeal
+                  : meal
+            )
+
+          saveMealsToCache(
+            updated
           )
-        )
+
+          return updated
+        })
       }
 
-      setOpen(false)
-      setEditing(null)
+      // -------------------------------------------------
+      // CREATE
+      // -------------------------------------------------
 
-      setForm({
-        name: '',
-        description: '',
-        price: '',
-        category_id: '',
-        status: 'active',
-        featured: false,
-        image: '',
-        imageFile: null,
-      })
+      else {
+        response =
+          await axiosClient.post(
+            `/restaurants/${restaurantId}/meals`,
+            data,
+            {
+              headers: {
+                'Content-Type':
+                  'multipart/form-data',
+              },
+            }
+          )
 
-      setImagePreview('')
+        const newMeal =
+          response.data?.data ||
+          response.data?.meal ||
+          response.data
+
+        setMeals((current) => {
+          const updated = [
+            ...current,
+            newMeal,
+          ]
+
+          saveMealsToCache(
+            updated
+          )
+
+          return updated
+        })
+      }
+
+      handleClose()
     } catch (err) {
       console.error(
         'Meal save error:',
-        err?.response?.data || err
+        err?.response?.data ||
+          err
       )
 
-      dispatch(
-        fetchMealsFailure(
-          err?.response?.data?.message ||
-            err?.message ||
-            'Unable to save meal'
-        )
+      setError(
+        err?.response?.data
+          ?.message ||
+          err?.message ||
+          t.saveMealError ||
+          'Failed to save meal.'
       )
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleDelete = async (meal) => {
-    if (!restaurantId || !meal?.id) {
-      console.error(
-        'Missing restaurantId or meal.id',
-        {
-          restaurantId,
-          meal,
-        }
-      )
+  // =====================================================
+  // DELETE MEAL
+  // =====================================================
 
+  const handleDelete = async (
+    meal
+  ) => {
+    if (
+      !restaurantId ||
+      !meal?.id
+    ) {
       return
     }
+
+    const mealName =
+      meal.name ||
+      t.meal ||
+      'Meal'
+
+    const confirmed =
+      window.confirm(
+        `${t.deleteMealConfirm || 'Delete meal'} "${mealName}"?`
+      )
+
+    if (!confirmed) return
+
+    setDeletingId(
+      meal.id
+    )
+
+    setError('')
 
     try {
       await axiosClient.delete(
         `/restaurants/${restaurantId}/meals/${meal.id}`
       )
 
-      dispatch(
-        removeMeal(meal.id)
-      )
+      setMeals((current) => {
+        const updated =
+          current.filter(
+            (item) =>
+              item.id !==
+              meal.id
+          )
+
+        saveMealsToCache(
+          updated
+        )
+
+        return updated
+      })
     } catch (err) {
       console.error(
         'Meal delete error:',
-        err?.response?.data || err
+        err?.response?.data ||
+          err
       )
 
-      dispatch(
-        fetchMealsFailure(
-          err?.response?.data?.message ||
-            err?.message ||
-            'Unable to delete meal'
-        )
+      setError(
+        err?.response?.data
+          ?.message ||
+          err?.message ||
+          t.deleteMealError ||
+          'Failed to delete meal.'
       )
+    } finally {
+      setDeletingId(null)
     }
   }
 
-  const mealCards = useMemo(
-    () =>
-      meals.map((meal) => {
-        const category =
-          categories.find(
-            (category) =>
-              Number(category.id) ===
-              Number(meal.category_id)
-          )
+  // =====================================================
+  // STATUS LABEL
+  // =====================================================
 
-        return (
-          <div
-            key={meal.id}
-            className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
-          >
-            {/* Image */}
-            <div className="h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
-              {meal.image_url ||
-              meal.image ? (
-                <img
-                  src={
-                    meal.image_url ||
-                    meal.image
-                  }
-                  alt={meal.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                  No image
-                </div>
-              )}
-            </div>
+  const getStatusLabel = (
+    status
+  ) => {
+    const labels = {
+      active:
+        t.active ||
+        'Active',
 
-            {/* Content */}
-            <div className="p-6">
+      inactive:
+        t.inactive ||
+        'Inactive',
 
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  {meal.name}
-                </h2>
+      available:
+        t.available ||
+        'Available',
 
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    meal.status === 'available'
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
-                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-                  }`}
-                >
-                  {t[meal.status] ||
-                    meal.status}
-                </span>
+      unavailable:
+        t.unavailable ||
+        'Unavailable',
+    }
+
+    return (
+      labels[status] ||
+      status
+    )
+  }
+
+  // =====================================================
+  // STATUS CLASS
+  // =====================================================
+
+  const getStatusClass = (
+    status
+  ) => {
+    if (
+      status ===
+        'active' ||
+      status ===
+        'available'
+    ) {
+      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+    }
+
+    if (
+      status ===
+        'inactive' ||
+      status ===
+        'unavailable'
+    ) {
+      return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+    }
+
+    return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+  }
+
+  // =====================================================
+  // MEAL CARDS
+  // =====================================================
+
+  const mealCards =
+    useMemo(() => {
+      return meals.map(
+        (meal) => {
+          const category =
+            categories.find(
+              (item) =>
+                Number(
+                  item.id
+                ) ===
+                Number(
+                  meal.category_id
+                )
+            )
+
+          const image =
+            meal.image_url ||
+            meal.image ||
+            ''
+
+          return (
+            <div
+              key={
+                meal.id
+              }
+              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+            >
+              {/* IMAGE */}
+              <div className="h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
+                {image ? (
+                  <img
+                    src={
+                      image
+                    }
+                    alt={
+                      meal.name ||
+                      'Meal'
+                    }
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    {t.noImage ||
+                      'No image'}
+                  </div>
+                )}
               </div>
 
-              <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                {meal.description}
-              </p>
+              {/* CONTENT */}
+              <div className="p-6">
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {/* TITLE + STATUS */}
+                <div className="flex items-start justify-between gap-3">
 
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  {category?.name ||
-                    t.selectCategory}
-                </span>
+                  <h2 className="min-w-0 flex-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    {meal.name}
+                  </h2>
 
-                {meal.featured && (
-                  <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
-                    {t.featured}
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                      meal.status
+                    )}`}
+                  >
+                    {getStatusLabel(
+                      meal.status
+                    )}
                   </span>
+
+                </div>
+
+                {/* DESCRIPTION */}
+                {meal.description && (
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    {
+                      meal.description
+                    }
+                  </p>
                 )}
 
-              </div>
+                {/* CATEGORY + FEATURED */}
+                <div className="mt-4 flex flex-wrap items-center gap-2">
 
-              <div className="mt-5 flex items-center justify-between">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {category?.name ||
+                      t.selectCategory ||
+                      'Category'}
+                  </span>
 
-                <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                  ${Number(
-                    meal.price || 0
-                  ).toFixed(2)}
-                </span>
+                  {meal.featured && (
+                    <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
+                      {t.featured ||
+                        'Featured'}
+                    </span>
+                  )}
 
-                <div className="flex gap-2">
+                </div>
 
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      handleOpen(meal)
-                    }
-                  >
-                    {t.editMeal}
-                  </Button>
+                {/* PRICE + ACTIONS */}
+                <div className="mt-5 flex items-center justify-between gap-3">
 
-                  <Button
-                    variant="danger"
-                    onClick={() =>
-                      handleDelete(meal)
-                    }
-                  >
-                    {t.deleteCategory}
-                  </Button>
+                  <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    $
+                    {Number(
+                      meal.price ||
+                        0
+                    ).toFixed(
+                      2
+                    )}
+                  </span>
+
+                  <div className="flex gap-2">
+
+                    {/* EDIT */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpen(
+                          meal
+                        )
+                      }
+                      className="flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Pencil
+                        size={
+                          16
+                        }
+                      />
+
+                      <span className="hidden sm:inline">
+                        {t.editMeal ||
+                          'Edit'}
+                      </span>
+                    </button>
+
+                    {/* DELETE */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDelete(
+                          meal
+                        )
+                      }
+                      disabled={
+                        deletingId ===
+                        meal.id
+                      }
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                      aria-label={
+                        t.deleteMeal ||
+                        'Delete'
+                      }
+                    >
+                      <Trash2
+                        size={
+                          16
+                        }
+                        className={
+                          deletingId ===
+                          meal.id
+                            ? 'animate-pulse'
+                            : ''
+                        }
+                      />
+                    </button>
+
+                  </div>
 
                 </div>
 
               </div>
             </div>
-          </div>
-        )
-      }),
-    [meals, categories, t]
-  )
+          )
+        }
+      )
+    }, [
+      meals,
+      categories,
+      t,
+      deletingId,
+    ])
+
+  // =====================================================
+  // UI
+  // =====================================================
 
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* Header */}
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            {t.meals}
+          <h1 className="text-2xl font-semibold">
+            {t.meals ||
+              'Meals'}
           </h1>
 
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t.mealsDescription}
+            {t.mealsDescription ||
+              'Manage your restaurant meals.'}
           </p>
         </div>
 
-        <Button
-          onClick={() =>
-            handleOpen(null)
-          }
-        >
-          {t.addMeal}
-        </Button>
+        <div className="flex gap-2">
 
-      </div>
-
-      {/* Meals */}
-      <div className="grid gap-5 lg:grid-cols-2">
-
-        {mealCards.length ? (
-          mealCards
-        ) : (
-          <p className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center text-slate-500 shadow-card dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 lg:col-span-2">
-            {t.noMealsFound}
-          </p>
-        )}
-
-      </div>
-
-      {/* Modal */}
-      <Modal
-        title={
-          editing
-            ? t.editMeal
-            : t.addMeal
-        }
-        open={open}
-        onClose={() =>
-          setOpen(false)
-        }
-        footer={
-          <div className="flex justify-end gap-3">
-
-            <Button
-              variant="secondary"
-              onClick={() =>
-                setOpen(false)
+          {/* REFRESH */}
+          <button
+            type="button"
+            onClick={
+              handleRefresh
+            }
+            disabled={
+              loading
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            <RefreshCw
+              size={
+                17
               }
-            >
-              {t.cancel}
-            </Button>
+              className={
+                loading
+                  ? 'animate-spin'
+                  : ''
+              }
+            />
 
-            <Button
-              onClick={handleSave}
-            >
-              {editing
-                ? t.editMeal
-                : t.addMeal}
-            </Button>
+            <span className="hidden sm:inline">
+              {t.refresh ||
+                'Refresh'}
+            </span>
+          </button>
 
+          {/* ADD */}
+          <button
+            type="button"
+            onClick={() =>
+              handleOpen()
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
+          >
+            <Plus
+              size={
+                18
+              }
+            />
+
+            {t.addMeal ||
+              'Add meal'}
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* =================================================
+          ERROR
+      ================================================= */}
+
+      {error && (
+        <div className="mb-5 flex items-start justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+
+          <span>
+            {error}
+          </span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setError('')
+            }
+            className="shrink-0 text-lg leading-none opacity-70 hover:opacity-100"
+            aria-label={
+              t.close ||
+              'Close'
+            }
+          >
+            ✕
+          </button>
+
+        </div>
+      )}
+
+      {/* =================================================
+          LOADING
+      ================================================= */}
+
+      {loading ? (
+
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+            {t.loading ||
+              'Loading...'}
+          </p>
+
+        </div>
+
+      ) : meals.length ===
+        0 ? (
+
+        /* =================================================
+            EMPTY
+        ================================================= */
+
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
+            <Utensils
+              size={
+                30
+              }
+            />
           </div>
-        }
-      >
 
-        <div className="grid gap-5">
+          <h2 className="mt-5 text-xl font-semibold">
+            {t.noMealsFound ||
+              'No meals found'}
+          </h2>
 
-          <Input
-            label={t.mealName}
-            value={form.name}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                name: e.target.value,
-              })
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            {t.noMealsDescription ||
+              'Add your first meal to your menu.'}
+          </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              handleOpen()
             }
-          />
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+          >
+            <Plus
+              size={
+                18
+              }
+            />
 
-          <Input
-            label={t.description}
-            value={form.description}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                description:
-                  e.target.value,
-              })
-            }
-          />
+            {t.addMeal ||
+              'Add meal'}
+          </button>
 
-          <Input
-            label={t.price}
-            type="number"
-            value={form.price}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                price: e.target.value,
-              })
-            }
-          />
+        </div>
 
-          {/* Image */}
-          <div>
-            <label className="mb-2 block text-sm text-slate-600 dark:text-slate-300">
-              {t.image}
-            </label>
+      ) : (
 
-            <div className="mt-3">
+        /* =================================================
+            MEALS
+        ================================================= */
 
-              <input
-                id="meal-image"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file =
-                    e.target.files?.[0]
+        <div className="grid gap-5 lg:grid-cols-2">
 
-                  if (!file) return
+          {mealCards}
 
-                  setForm({
-                    ...form,
-                    imageFile: file,
-                    image: file.name,
-                  })
+        </div>
 
-                  const previewUrl =
-                    URL.createObjectURL(file)
+      )}
 
-                  setImagePreview(
-                    previewUrl
-                  )
-                }}
-              />
+      {/* =================================================
+          ADD / EDIT MODAL
+      ================================================= */}
 
-              <label
-                htmlFor="meal-image"
-                className="inline-flex cursor-pointer items-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
+
+          <div className="my-8 w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between gap-4">
+
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {editing
+                    ? t.editMeal ||
+                      'Edit meal'
+                    : t.addMeal ||
+                      'Add meal'}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {editing
+                    ? t.editMealDescription ||
+                      'Update meal information.'
+                    : t.addMealDescription ||
+                      'Add a new meal to your menu.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  handleClose
+                }
+                disabled={
+                  saving
+                }
+                className="text-xl text-slate-400 hover:text-slate-700 disabled:opacity-50 dark:hover:text-slate-200"
+                aria-label={
+                  t.close ||
+                  'Close'
+                }
               >
-                {form.imageFile
-                  ? form.imageFile.name
-                  : t.chooseImage}
+                ✕
+              </button>
+
+            </div>
+
+            {/* MODAL ERROR */}
+            {error && (
+              <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+                {error}
+              </div>
+            )}
+
+            {/* FORM */}
+            <div className="mt-6 grid gap-5">
+
+              {/* NAME */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.mealName ||
+                    'Meal name'}
+                </label>
+
+                <input
+                  type="text"
+                  value={
+                    form.name
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        name:
+                          e.target
+                            .value,
+                      })
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  placeholder={
+                    t.mealName ||
+                    'Meal name'
+                  }
+                />
+              </div>
+
+              {/* DESCRIPTION */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.description ||
+                    'Description'}
+                </label>
+
+                <textarea
+                  rows="3"
+                  value={
+                    form.description
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        description:
+                          e.target
+                            .value,
+                      })
+                    )
+                  }
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  placeholder={
+                    t.description ||
+                    'Description'
+                  }
+                />
+              </div>
+
+              {/* PRICE */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.price ||
+                    'Price'}
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={
+                    form.price
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        price:
+                          e.target
+                            .value,
+                      })
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* CATEGORY */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.selectCategory ||
+                    'Select category'}
+                </label>
+
+                <select
+                  value={
+                    form.category_id
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        category_id:
+                          e.target
+                            .value,
+                      })
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                >
+                  <option value="">
+                    {t.selectCategory ||
+                      'Select category'}
+                  </option>
+
+                  {categories.map(
+                    (
+                      category
+                    ) => (
+                      <option
+                        key={
+                          category.id
+                        }
+                        value={
+                          category.id
+                        }
+                      >
+                        {
+                          category.name
+                        }
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              {/* IMAGE */}
+              <div>
+
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.image ||
+                    'Image'}
+                </label>
+
+                <input
+                  id="meal-image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={
+                    handleImageChange
+                  }
+                />
+
+                <label
+                  htmlFor="meal-image"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  {t.chooseImage ||
+                    'Choose image'}
+                </label>
+
+                {form.imageFile && (
+                  <p className="mt-2 truncate text-xs text-slate-500 dark:text-slate-400">
+                    {
+                      form
+                        .imageFile
+                        .name
+                    }
+                  </p>
+                )}
+
+                {imagePreview ? (
+                  <img
+                    src={
+                      imagePreview
+                    }
+                    alt="Preview"
+                    className="mt-3 h-32 w-full rounded-3xl object-cover"
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                    {t.noFile ||
+                      'No image selected'}
+                  </p>
+                )}
+
+              </div>
+
+              {/* STATUS */}
+              <div>
+
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t.status ||
+                    'Status'}
+                </label>
+
+                <select
+                  value={
+                    form.status
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        status:
+                          e.target
+                            .value,
+                      })
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                >
+                  <option value="active">
+                    {t.active ||
+                      'Active'}
+                  </option>
+
+                  <option value="inactive">
+                    {t.inactive ||
+                      'Inactive'}
+                  </option>
+                </select>
+
+              </div>
+
+              {/* FEATURED */}
+              <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+
+                <input
+                  type="checkbox"
+                  checked={
+                    form.featured
+                  }
+                  onChange={(e) =>
+                    setForm(
+                      (current) => ({
+                        ...current,
+                        featured:
+                          e.target
+                            .checked,
+                      })
+                    )
+                  }
+                  className="h-5 w-5 rounded border-slate-300 bg-white text-sky-500 dark:border-slate-700 dark:bg-slate-950"
+                />
+
+                {t.featured ||
+                  'Featured'}
+
               </label>
 
             </div>
 
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="mt-3 h-24 w-full rounded-3xl object-cover"
-              />
-            ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {t.noFile}
-              </p>
-            )}
+            {/* MODAL FOOTER */}
+            <div className="mt-7 flex justify-end gap-3">
+
+              <button
+                type="button"
+                onClick={
+                  handleClose
+                }
+                disabled={
+                  saving
+                }
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                {t.cancel ||
+                  'Cancel'}
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  handleSave
+                }
+                disabled={
+                  saving
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving && (
+                  <RefreshCw
+                    size={
+                      16
+                    }
+                    className="animate-spin"
+                  />
+                )}
+
+                {saving
+                  ? t.saving ||
+                    'Saving...'
+                  : editing
+                    ? t.saveChanges ||
+                      'Save changes'
+                    : t.addMeal ||
+                      'Add meal'}
+              </button>
+
+            </div>
+
           </div>
 
-          {/* Category */}
-          <label className="text-sm text-slate-700 dark:text-slate-200">
-
-            <span className="mb-2 block text-slate-600 dark:text-slate-300">
-              {t.selectCategory}
-            </span>
-
-            <select
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-800 dark:bg-slate-950/90 dark:text-slate-100"
-              value={form.category_id}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  category_id:
-                    e.target.value,
-                })
-              }
-            >
-              <option value="">
-                {t.selectCategory}
-              </option>
-
-              {categories.map(
-                (category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
-                    {category.name}
-                  </option>
-                )
-              )}
-            </select>
-
-          </label>
-
-          {/* Status */}
-          <label className="text-sm text-slate-700 dark:text-slate-200">
-
-            <span className="mb-2 block text-slate-600 dark:text-slate-300">
-              {t.status}
-            </span>
-
-            <select
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-800 dark:bg-slate-950/90 dark:text-slate-100"
-              value={form.status}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  status:
-                    e.target.value,
-                })
-              }
-            >
-              <option value="active">
-                {t.active}
-              </option>
-
-              <option value="inactive">
-                {t.inactive}
-              </option>
-            </select>
-
-          </label>
-
-          {/* Featured */}
-          <label className="inline-flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
-
-            <input
-              type="checkbox"
-              checked={form.featured}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  featured:
-                    e.target.checked,
-                })
-              }
-              className="h-5 w-5 rounded border-slate-300 bg-white text-sky-400 dark:border-slate-700 dark:bg-slate-950"
-            />
-
-            {t.featured}
-
-          </label>
-
         </div>
+      )}
 
-      </Modal>
     </div>
   )
 }
