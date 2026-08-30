@@ -8,27 +8,88 @@ const initialState = {
 
 const orderSlice = createSlice({
   name: 'orders',
+
   initialState,
+
   reducers: {
+    // =================================================
+    // START
+    // =================================================
+
     fetchOrdersStart(state) {
       state.loading = true
       state.error = null
     },
+
+    // =================================================
+    // SUCCESS
+    // =================================================
+
     fetchOrdersSuccess(state, action) {
       state.loading = false
-      state.items = action.payload
+      state.error = null
+      state.items = Array.isArray(
+        action.payload
+      )
+        ? action.payload
+        : []
     },
+
+    // =================================================
+    // FAILURE
+    // =================================================
+
     fetchOrdersFailure(state, action) {
       state.loading = false
-      state.error = action.payload
+      state.error =
+        action.payload ||
+        'Unable to load orders'
     },
+
+    // =================================================
+    // UPDATE ORDER
+    // =================================================
+
     updateOrder(state, action) {
-      const index = state.items.findIndex((order) => order.id === action.payload.id)
-      if (index !== -1) state.items[index] = action.payload
-      
+      const updatedOrder =
+        action.payload
+
+      if (!updatedOrder?.id) {
+        return
+      }
+
+      const index =
+        state.items.findIndex(
+          (order) =>
+            Number(order.id) ===
+            Number(updatedOrder.id)
+        )
+
+      if (index !== -1) {
+        state.items[index] =
+          updatedOrder
+      }
     },
+
+    // =================================================
+    // REMOVE ORDER
+    // =================================================
+
     removeOrder(state, action) {
-      state.items = state.items.filter((order) => order.id !== action.payload)
+      state.items =
+        state.items.filter(
+          (order) =>
+            Number(order.id) !==
+            Number(action.payload)
+        )
+    },
+
+    // =================================================
+    // CLEAR ERROR
+    // =================================================
+
+    clearOrdersError(state) {
+      state.error = null
     },
   },
 })
@@ -39,5 +100,8 @@ export const {
   fetchOrdersFailure,
   updateOrder,
   removeOrder,
+  clearOrdersError,
 } = orderSlice.actions
+
 export default orderSlice.reducer
+ 

@@ -5,7 +5,7 @@ import categoriesReducer from './categorySlice'
 import mealsReducer from './mealSlice'
 import ordersReducer from './orderSlice'
 import restaurantReducer from './restaurantSlice'
-
+import dashboardReducer from './dashboardSlice'
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -14,6 +14,8 @@ const store = configureStore({
     meals: mealsReducer,
     orders: ordersReducer,
     restaurant: restaurantReducer,
+    dashboard: dashboardReducer,
+
   },
 })
 

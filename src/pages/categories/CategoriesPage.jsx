@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import {
+  useEffect,
+  useState,
+} from 'react'
+
+import {
+  useDispatch,
+  useSelector,
+} from 'react-redux'
+
 import {
   Plus,
   Pencil,
@@ -7,318 +15,277 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
-import axiosClient from '../../api/axiosClient'
+import {
+  fetchCategoriesStart,
+  fetchCategoriesSuccess,
+  fetchCategoriesFailure,
+
+  addCategory,
+  updateCategory,
+  removeCategory,
+
+  setCategorySaving,
+  setCategoryDeleting,
+
+  setCategoryError,
+  clearCategoryError,
+} from '../../store/categorySlice'
+
+import {
+  getCachedCategories,
+  getCachedRestaurant,
+  loadCategoriesData,
+  createCategory,
+  updateCategoryApi,
+  deleteCategoryApi,
+  saveCategoriesToCache,
+} from '../../data/dataCategories'
+
 import translations from '../../i18n/translations'
+
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
 
+
 const CategoriesPage = () => {
-  const { language } = useSelector((state) => state.ui)
+
+  // =====================================================
+  // REDUX
+  // =====================================================
+
+  const dispatch =
+    useDispatch()
+
+  const language =
+    useSelector(
+      (state) =>
+        state.ui?.language ||
+        'en'
+    )
+
+  const categories =
+    useSelector(
+      (state) =>
+        state.categories?.items ||
+        []
+    )
+
+  const loading =
+    useSelector(
+      (state) =>
+        state.categories?.loading ||
+        false
+    )
+
+  const saving =
+    useSelector(
+      (state) =>
+        state.categories?.saving ||
+        false
+    )
+
+  const deletingId =
+    useSelector(
+      (state) =>
+        state.categories?.deletingId ||
+        null
+    )
+
+  const reduxError =
+    useSelector(
+      (state) =>
+        state.categories?.error ||
+        null
+    )
+
+  // =====================================================
+  // TRANSLATIONS
+  // =====================================================
 
   const t =
-    translations[language] ||
-    translations.en ||
+    translations?.[language] ||
+    translations?.en ||
     {}
 
   // =====================================================
-  // CACHE KEY
+  // LOCAL STATE
   // =====================================================
 
-  const CATEGORIES_CACHE_KEY =
-    'restaurant_categories_cache'
+  const [
+    restaurantId,
+    setRestaurantId,
+  ] = useState(() => {
 
-  const RESTAURANT_CACHE_KEY =
-    'restaurant_current_cache'
+    const restaurant =
+      getCachedRestaurant()
 
-  // =====================================================
-  // LOAD CACHE HELPERS
-  // =====================================================
-
-  const getCachedCategories = () => {
-    try {
-      const cached =
-        localStorage.getItem(
-          CATEGORIES_CACHE_KEY
-        )
-
-      return cached
-        ? JSON.parse(cached)
-        : []
-    } catch (err) {
-      console.error(
-        'Read categories cache error:',
-        err
-      )
-
-      return []
-    }
-  }
-
-  const getCachedRestaurant = () => {
-    try {
-      const cached =
-        localStorage.getItem(
-          RESTAURANT_CACHE_KEY
-        )
-
-      return cached
-        ? JSON.parse(cached)
-        : null
-    } catch (err) {
-      console.error(
-        'Read restaurant cache error:',
-        err
-      )
-
-      return null
-    }
-  }
-
-  // =====================================================
-  // STATE
-  // =====================================================
-
-  const [categories, setCategories] =
-    useState(() =>
-      getCachedCategories()
+    return (
+      restaurant?.id ||
+      null
     )
+  })
 
-  const [restaurantId, setRestaurantId] =
-    useState(() => {
-      const restaurant =
-        getCachedRestaurant()
+  const [
+    isOpen,
+    setIsOpen,
+  ] = useState(false)
 
-      return restaurant?.id || null
-    })
+  const [
+    editing,
+    setEditing,
+  ] = useState(null)
 
-  const [loading, setLoading] =
-    useState(() => {
-      try {
-        return !localStorage.getItem(
-          CATEGORIES_CACHE_KEY
-        )
-      } catch {
-        return true
-      }
-    })
-
-  const [saving, setSaving] =
-    useState(false)
-
-  const [deletingId, setDeletingId] =
-    useState(null)
-
-  const [error, setError] =
-    useState('')
-
-  // =====================================================
-  // MODAL
-  // =====================================================
-
-  const [isOpen, setIsOpen] =
-    useState(false)
-
-  const [editing, setEditing] =
-    useState(null)
-
-  // =====================================================
-  // FORM
-  // =====================================================
-
-  const [form, setForm] = useState({
+  const [
+    form,
+    setForm,
+  ] = useState({
     name: '',
     description: '',
   })
 
   // =====================================================
-  // SAVE CATEGORIES TO CACHE
-  // =====================================================
-
-  const saveCategoriesToCache = (
-    data
-  ) => {
-    try {
-      localStorage.setItem(
-        CATEGORIES_CACHE_KEY,
-        JSON.stringify(data)
-      )
-    } catch (err) {
-      console.error(
-        'Save categories cache error:',
-        err
-      )
-    }
-  }
-
-  // =====================================================
-  // SAVE RESTAURANT TO CACHE
-  // =====================================================
-
-  const saveRestaurantToCache = (
-    restaurant
-  ) => {
-    try {
-      localStorage.setItem(
-        RESTAURANT_CACHE_KEY,
-        JSON.stringify({
-          id:
-            restaurant?.id ||
-            null,
-
-          slug:
-            restaurant?.slug ||
-            null,
-        })
-      )
-    } catch (err) {
-      console.error(
-        'Save restaurant cache error:',
-        err
-      )
-    }
-  }
-
-  // =====================================================
-  // LOAD CATEGORIES FROM API
-  // =====================================================
-
-  const loadCategories =
-    useCallback(async () => {
-      setError('')
-
-      try {
-        // -------------------------------------------------
-        // GET RESTAURANT
-        // -------------------------------------------------
-
-        const restaurantsResponse =
-          await axiosClient.get(
-            '/restaurants'
-          )
-
-        const restaurantsData =
-          restaurantsResponse.data
-            ?.data ||
-          restaurantsResponse.data ||
-          []
-
-        const restaurant =
-          restaurantsData[0] ||
-          null
-
-        if (!restaurant?.id) {
-          setCategories([])
-          setRestaurantId(null)
-
-          localStorage.removeItem(
-            CATEGORIES_CACHE_KEY
-          )
-
-          localStorage.removeItem(
-            RESTAURANT_CACHE_KEY
-          )
-
-          return
-        }
-
-        const id =
-          restaurant.id
-
-        setRestaurantId(id)
-
-        saveRestaurantToCache(
-          restaurant
-        )
-
-        // -------------------------------------------------
-        // GET CATEGORIES
-        // -------------------------------------------------
-
-        const categoriesResponse =
-          await axiosClient.get(
-            `/restaurants/${id}/categories`
-          )
-
-        const data =
-          categoriesResponse.data
-            ?.data ||
-          categoriesResponse.data ||
-          []
-
-        const normalizedCategories =
-          Array.isArray(data)
-            ? data
-            : []
-
-        // -------------------------------------------------
-        // UPDATE STATE
-        // -------------------------------------------------
-
-        setCategories(
-          normalizedCategories
-        )
-
-        // -------------------------------------------------
-        // UPDATE CACHE
-        // -------------------------------------------------
-
-        saveCategoriesToCache(
-          normalizedCategories
-        )
-      } catch (err) {
-        console.error(
-          'Load categories error:',
-          err
-        )
-
-        /*
-         * مهم:
-         * إلا API فشل، ما نمسحوش
-         * categories الموجودة فـ cache.
-         */
-
-        setError(
-          err?.response?.data
-            ?.message ||
-          err?.message ||
-          t.loadCategoriesError ||
-          'Failed to load categories.'
-        )
-      } finally {
-        setLoading(false)
-      }
-    }, [t.loadCategoriesError])
-
-  // =====================================================
-  // INITIAL LOAD
+  // LOAD CACHE + API
   // =====================================================
 
   useEffect(() => {
-    let cancelled = false
 
-    const run = async () => {
-      if (cancelled) return
+    // ---------------------------------------------------
+    // SHOW CACHE IMMEDIATELY
+    // ---------------------------------------------------
 
-      await loadCategories()
+    const cachedCategories =
+      getCachedCategories()
+
+    if (
+      cachedCategories.length > 0
+    ) {
+      dispatch(
+        fetchCategoriesSuccess(
+          cachedCategories
+        )
+      )
     }
 
-    run()
+    // ---------------------------------------------------
+    // LOAD API
+    // ---------------------------------------------------
+
+    let cancelled = false
+
+    const load = async () => {
+
+      dispatch(
+        fetchCategoriesStart()
+      )
+
+      try {
+
+        const result =
+          await loadCategoriesData()
+
+        if (cancelled) {
+          return
+        }
+
+        setRestaurantId(
+          result.restaurant.id
+        )
+
+        dispatch(
+          fetchCategoriesSuccess(
+            result.categories
+          )
+        )
+
+      } catch (error) {
+
+        if (cancelled) {
+          return
+        }
+
+        console.error(
+          'Load categories error:',
+          error
+        )
+
+        dispatch(
+          fetchCategoriesFailure(
+            error?.response
+              ?.data
+              ?.message ||
+            error?.message ||
+            t.loadCategoriesError ||
+            'Failed to load categories.'
+          )
+        )
+
+      }
+
+    }
+
+    load()
 
     return () => {
       cancelled = true
     }
-  }, [loadCategories])
+
+  }, [
+    dispatch,
+  ])
+
+  // =====================================================
+  // ERROR
+  // =====================================================
+
+  const error =
+    reduxError || ''
 
   // =====================================================
   // REFRESH
   // =====================================================
 
-  const handleRefresh = async () => {
-    setLoading(true)
+  const handleRefresh =
+    async () => {
 
-    await loadCategories()
-  }
+      dispatch(
+        fetchCategoriesStart()
+      )
+
+      try {
+
+        const result =
+          await loadCategoriesData()
+
+        setRestaurantId(
+          result.restaurant.id
+        )
+
+        dispatch(
+          fetchCategoriesSuccess(
+            result.categories
+          )
+        )
+
+      } catch (error) {
+
+        console.error(
+          'Refresh categories error:',
+          error
+        )
+
+        dispatch(
+          fetchCategoriesFailure(
+            error?.response
+              ?.data
+              ?.message ||
+            error?.message ||
+            t.loadCategoriesError ||
+            'Failed to load categories.'
+          )
+        )
+      }
+    }
 
   // =====================================================
   // OPEN MODAL
@@ -327,6 +294,7 @@ const CategoriesPage = () => {
   const handleOpen = (
     category
   ) => {
+
     setEditing(
       category || null
     )
@@ -348,7 +316,10 @@ const CategoriesPage = () => {
           }
     )
 
-    setError('')
+    dispatch(
+      clearCategoryError()
+    )
+
     setIsOpen(true)
   }
 
@@ -357,223 +328,280 @@ const CategoriesPage = () => {
   // =====================================================
 
   const handleClose = () => {
-    if (saving) return
+
+    if (saving) {
+      return
+    }
 
     setIsOpen(false)
+
     setEditing(null)
 
     setForm({
       name: '',
       description: '',
     })
+
+    dispatch(
+      clearCategoryError()
+    )
   }
 
   // =====================================================
   // SAVE CATEGORY
   // =====================================================
 
-  const handleSave = async () => {
-    if (!restaurantId) {
-      setError(
-        t.restaurantNotFound ||
-        'Restaurant not found.'
-      )
+  const handleSave =
+    async () => {
 
-      return
-    }
+      if (!restaurantId) {
 
-    if (!form.name.trim()) {
-      setError(
-        t.categoryNameRequired ||
-        'Category name is required.'
-      )
+        dispatch(
+          setCategoryError(
+            t.restaurantNotFound ||
+            'Restaurant not found.'
+          )
+        )
 
-      return
-    }
-
-    setSaving(true)
-    setError('')
-
-    try {
-      let response
-
-      const payload = {
-        name:
-          form.name.trim(),
-
-        description:
-          form.description?.trim() ||
-          '',
-
-        status: 'active',
+        return
       }
 
-      // -------------------------------------------------
-      // EDIT
-      // -------------------------------------------------
+      if (
+        !form.name.trim()
+      ) {
 
-      if (editing) {
-        response =
-          await axiosClient.put(
-            `/restaurants/${restaurantId}/categories/${editing.id}`,
-            payload
+        dispatch(
+          setCategoryError(
+            t.categoryNameRequired ||
+            'Category name is required.'
+          )
+        )
+
+        return
+      }
+
+      dispatch(
+        setCategorySaving(true)
+      )
+
+      dispatch(
+        clearCategoryError()
+      )
+
+      try {
+
+        // =================================================
+        // EDIT
+        // =================================================
+
+        if (editing) {
+
+          const updatedCategory =
+            await updateCategoryApi({
+              restaurantId,
+              categoryId:
+                editing.id,
+
+              name:
+                form.name,
+
+              description:
+                form.description,
+            })
+
+          dispatch(
+            updateCategory(
+              updatedCategory
+            )
           )
 
-        const updatedCategory =
-          response.data?.data ||
-          response.data
-
-        setCategories(
-          (current) => {
-            const updated =
-              current.map(
-                (category) =>
-                  category.id ===
-                  editing.id
-                    ? updatedCategory
-                    : category
-              )
-
-            saveCategoriesToCache(
-              updated
+          // Update cache from Redux-like current data
+          const currentCategories =
+            categories.map(
+              (category) =>
+                category.id ===
+                updatedCategory.id
+                  ? updatedCategory
+                  : category
             )
 
-            return updated
-          }
-        )
-      }
-
-      // -------------------------------------------------
-      // CREATE
-      // -------------------------------------------------
-
-      else {
-        response =
-          await axiosClient.post(
-            `/restaurants/${restaurantId}/categories`,
-            payload
+          saveCategoriesToCache(
+            currentCategories
           )
 
-        const newCategory =
-          response.data?.data ||
-          response.data
+        }
 
-        setCategories(
-          (current) => {
-            const updated = [
-              ...current,
-              newCategory,
-            ]
+        // =================================================
+        // CREATE
+        // =================================================
 
-            saveCategoriesToCache(
-              updated
+        else {
+
+          const newCategory =
+            await createCategory({
+              restaurantId,
+
+              name:
+                form.name,
+
+              description:
+                form.description,
+            })
+
+          dispatch(
+            addCategory(
+              newCategory
             )
+          )
 
-            return updated
-          }
+          const updatedCategories = [
+            ...categories,
+            newCategory,
+          ]
+
+          saveCategoriesToCache(
+            updatedCategories
+          )
+        }
+
+        // =================================================
+        // CLOSE
+        // =================================================
+
+        setIsOpen(false)
+
+        setEditing(null)
+
+        setForm({
+          name: '',
+          description: '',
+        })
+
+      } catch (error) {
+
+        console.error(
+          'Save category error:',
+          error?.response
+            ?.data ||
+          error
+        )
+
+        dispatch(
+          setCategoryError(
+            error?.response
+              ?.data
+              ?.message ||
+            error?.message ||
+            t.saveCategoryError ||
+            'Failed to save category.'
+          )
+        )
+
+      } finally {
+
+        dispatch(
+          setCategorySaving(false)
         )
       }
-
-      // -------------------------------------------------
-      // CLOSE
-      // -------------------------------------------------
-
-      setIsOpen(false)
-      setEditing(null)
-
-      setForm({
-        name: '',
-        description: '',
-      })
-    } catch (err) {
-      console.error(
-        'Save category error:',
-        err?.response?.data ||
-          err
-      )
-
-      setError(
-        err?.response?.data
-          ?.message ||
-        err?.message ||
-        t.saveCategoryError ||
-        'Failed to save category.'
-      )
-    } finally {
-      setSaving(false)
     }
-  }
 
   // =====================================================
   // DELETE CATEGORY
   // =====================================================
 
-  const handleDelete = async (
-    category
-  ) => {
-    if (
-      !restaurantId ||
-      !category?.id
-    ) {
-      return
-    }
+  const handleDelete =
+    async (
+      category
+    ) => {
 
-    const categoryName =
-      category.name ||
-      'Category'
+      if (
+        !restaurantId ||
+        !category?.id
+      ) {
+        return
+      }
 
-    const confirmed =
-      window.confirm(
-        `${t.deleteCategoryConfirm || 'Delete category'} "${categoryName}"?`
+      const categoryName =
+        category.name ||
+        'Category'
+
+      const confirmed =
+        window.confirm(
+          `${
+            t.deleteCategoryConfirm ||
+            'Delete category'
+          } "${categoryName}"?`
+        )
+
+      if (!confirmed) {
+        return
+      }
+
+      dispatch(
+        setCategoryDeleting(
+          category.id
+        )
       )
 
-    if (!confirmed) return
-
-    setDeletingId(
-      category.id
-    )
-
-    setError('')
-
-    try {
-      await axiosClient.delete(
-        `/restaurants/${restaurantId}/categories/${category.id}`
+      dispatch(
+        clearCategoryError()
       )
 
-      setCategories(
-        (current) => {
-          const updated =
-            current.filter(
-              (item) =>
-                item.id !==
-                category.id
-            )
+      try {
 
-          saveCategoriesToCache(
-            updated
+        await deleteCategoryApi({
+          restaurantId,
+
+          categoryId:
+            category.id,
+        })
+
+        dispatch(
+          removeCategory(
+            category.id
+          )
+        )
+
+        const updatedCategories =
+          categories.filter(
+            (item) =>
+              item.id !==
+              category.id
           )
 
-          return updated
-        }
-      )
-    } catch (err) {
-      console.error(
-        'Delete category error:',
-        err?.response?.data ||
-          err
-      )
+        saveCategoriesToCache(
+          updatedCategories
+        )
 
-      setError(
-        err?.response?.data
-          ?.message ||
-        err?.message ||
-        t.deleteCategoryError ||
-        'Failed to delete category.'
-      )
-    } finally {
-      setDeletingId(null)
+      } catch (error) {
+
+        console.error(
+          'Delete category error:',
+          error?.response
+            ?.data ||
+          error
+        )
+
+        dispatch(
+          setCategoryError(
+            error?.response
+              ?.data
+              ?.message ||
+            error?.message ||
+            t.deleteCategoryError ||
+            'Failed to delete category.'
+          )
+        )
+
+      } finally {
+
+        dispatch(
+          setCategoryDeleting(
+            null
+          )
+        )
+      }
     }
-  }
 
   // =====================================================
   // UI
@@ -610,7 +638,9 @@ const CategoriesPage = () => {
             onClick={
               handleRefresh
             }
-            disabled={loading}
+            disabled={
+              loading
+            }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
 
@@ -634,13 +664,22 @@ const CategoriesPage = () => {
 
           <Button
             onClick={() =>
-              handleOpen(null)
+              handleOpen(
+                null
+              )
             }
           >
+
             <span className="flex items-center gap-2">
-              <Plus size={17} />
+
+              <Plus
+                size={17}
+              />
+
               {t.addCategory}
+
             </span>
+
           </Button>
 
         </div>
@@ -652,8 +691,11 @@ const CategoriesPage = () => {
       ================================================= */}
 
       {error && (
+
         <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+
           {error}
+
         </div>
       )}
 
@@ -661,15 +703,18 @@ const CategoriesPage = () => {
           LOADING
       ================================================= */}
 
-      {loading ? (
+      {loading &&
+      categories.length === 0 ? (
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
 
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+
             {t.loading ||
               'Loading...'}
+
           </p>
 
         </div>
@@ -685,29 +730,39 @@ const CategoriesPage = () => {
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
 
-            <Plus size={30} />
+            <Plus
+              size={30}
+            />
 
           </div>
 
           <h2 className="mt-5 text-xl font-semibold">
+
             {t.noCategoriesAdded ||
               'No categories added yet.'}
+
           </h2>
 
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+
             {t.categoriesDescription ||
               'Create your first category to organize your menu.'}
+
           </p>
 
           <button
             type="button"
             onClick={() =>
-              handleOpen(null)
+              handleOpen(
+                null
+              )
             }
             className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
 
-            <Plus size={18} />
+            <Plus
+              size={18}
+            />
 
             {t.addCategory}
 
@@ -909,11 +964,15 @@ const CategoriesPage = () => {
         <div className="grid gap-5">
 
           <Input
-            label={t.name}
+            label={
+              t.name
+            }
             value={
               form.name
             }
-            onChange={(e) =>
+            onChange={(
+              e
+            ) =>
               setForm({
                 ...form,
                 name:
@@ -929,7 +988,9 @@ const CategoriesPage = () => {
             value={
               form.description
             }
-            onChange={(e) =>
+            onChange={(
+              e
+            ) =>
               setForm({
                 ...form,
                 description:

@@ -171,8 +171,8 @@ const translations = {
     alreadyHaveAccount:
       'Already have an account? Login',
 
-    registerRestaurant:
-      'Register restaurant',
+    // registerRestaurant:
+    //   'Register restaurant',
 
     mealName: 'Meal name',
 

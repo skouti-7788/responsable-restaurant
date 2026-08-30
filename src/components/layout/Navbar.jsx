@@ -35,6 +35,12 @@ const Navbar = () => {
       label: t.arabic,
     },
   ]
+  
+  const onLgout = ()=>{
+  dispatch(logout())
+  document.documentElement.dir = 'ltr'
+  }
+
   useEffect(() => {
   document.documentElement.dir =
     language === 'ar' ? 'rtl' : 'ltr'
@@ -62,7 +68,7 @@ const Navbar = () => {
       <div className="flex items-center gap-3">
 
         {/* Notifications */}
-        <button
+        <button 
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           aria-label="Notifications"
@@ -134,9 +140,7 @@ const Navbar = () => {
         {/* Logout */}
         <button
           type="button"
-          onClick={() =>
-            dispatch(logout())
-          }
+          onClick={onLgout}
           className="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           {t.logout}

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice'
-import translations from '../../i18n/translations'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import axiosClient from '../../api/axiosClient'
@@ -10,12 +9,12 @@ import axiosClient from '../../api/axiosClient'
 const LoginPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { language, loading, error } = useSelector((state) => ({
+  const  {loading, error } = useSelector((state) => ({
     language: state.ui.language,
     loading: state.auth.loading,
     error: state.auth.error,
   }))
-  const t = translations[language]
+  
   const [form, setForm] = useState({ email: '', password: '' })
 
   const handleSubmit = async (e) => {
@@ -37,40 +36,44 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-xl rounded-[2rem] border border-slate-800 bg-slate-950/95 p-10 shadow-card">
+    <div className="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 lg:px-8 bg-white ">
+      <div className="mx-auto max-w-xl rounded-[2rem]   bg-white p-10 shadow-[20px_20px_40px_rgba(0,0,0,0.15)]">
         <div className="mb-8 space-y-3 text-center">
           <p className="text-sm uppercase tracking-[0.35em] text-sky-400/80">Restaurant manager</p>
-          <h1 className="text-3xl font-semibold text-slate-100">{t.login}</h1>
-          <p className="text-sm text-slate-400">Secure access to your Restaurant SaaS dashboard.</p>
+          <h1 className="text-3xl font-semibold text-slate-600 ">Login</h1>
+          {/* <p className="text-sm text-slate-400">Secure access to your Restaurant SaaS dashboard.</p> */}
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <Input
-            label={t.email}
+            label='Email'
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="manager@example.com"
             type="email"
           />
           <Input
-            label={t.password}
+            label= 'Password'
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             placeholder="••••••••"
             type="password"
           />
+          
+     
+
+        <div className="col-span-full flex flex-col gap-3 pt-2">
           {error && <p className="text-sm text-rose-400">{error}</p>}
           <Button type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : t.login}
+            {loading ? 'Signing in...' :  'Login'}
           </Button>
+          <p className="mt-6 text-center text-sm text-slate-400">
+            <Link to="/register" className="text-sky-400 hover:text-sky-300">
+             Already have an account? Login 
+            </Link>
+          </p>
+        </div>
         </form>
-
-        <p className="mt-6 text-center text-sm text-slate-400">
-          <Link to="/register" className="text-sky-400 hover:text-sky-300">
-            {t.alreadyHaveAccount}
-          </Link>
-        </p>
       </div>
     </div>
   )

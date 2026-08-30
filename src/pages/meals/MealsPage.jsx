@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+
 import { useSelector } from 'react-redux'
+
 import {
   Plus,
   Pencil,
@@ -8,8 +15,31 @@ import {
   Utensils,
 } from 'lucide-react'
 
-import axiosClient from '../../api/axiosClient'
+import {
+  getRestaurant,
+  getRestaurantCategories,
+  getRestaurantMeals,
+  createMeal,
+  updateMeal,
+  deleteMeal,
+} from '../../data/dataMeals'
+
 import translations from '../../i18n/translations'
+
+const MEALS_CACHE_KEY = 'restaurant_meals_cache'
+const CATEGORIES_CACHE_KEY = 'restaurant_categories_cache'
+const RESTAURANT_CACHE_KEY = 'restaurant_current_cache'
+
+const emptyForm = {
+  name: '',
+  description: '',
+  price: '',
+  category_id: '',
+  status: 'active',
+  featured: false,
+  image: '',
+  imageFile: null,
+}
 
 const MealsPage = () => {
   const { language } = useSelector((state) => state.ui)
@@ -20,28 +50,14 @@ const MealsPage = () => {
     {}
 
   // =====================================================
-  // CACHE KEYS
-  // =====================================================
-
-  const MEALS_CACHE_KEY =
-    'restaurant_meals_cache'
-
-  const CATEGORIES_CACHE_KEY =
-    'restaurant_categories_cache'
-
-  const RESTAURANT_CACHE_KEY =
-    'restaurant_current_cache'
-
-  // =====================================================
-  // HELPERS - READ CACHE
+  // CACHE HELPERS
   // =====================================================
 
   const getCachedRestaurant = () => {
     try {
-      const cached =
-        localStorage.getItem(
-          RESTAURANT_CACHE_KEY
-        )
+      const cached = localStorage.getItem(
+        RESTAURANT_CACHE_KEY
+      )
 
       return cached
         ? JSON.parse(cached)
@@ -69,7 +85,7 @@ const MealsPage = () => {
   }
 
   // =====================================================
-  // STATE
+  // INITIAL CACHE
   // =====================================================
 
   const cachedRestaurant =
@@ -85,6 +101,10 @@ const MealsPage = () => {
       CATEGORIES_CACHE_KEY
     )
 
+  // =====================================================
+  // STATE
+  // =====================================================
+
   const [meals, setMeals] =
     useState(cachedMeals)
 
@@ -96,10 +116,16 @@ const MealsPage = () => {
       cachedRestaurant?.id || null
     )
 
+  // Loading ديال أول دخول فقط
+  // إلا كان cache موجود مايبانش loading
   const [loading, setLoading] =
     useState(
       cachedMeals.length === 0
     )
+
+  // Loading خاص غير بزر Refresh
+  const [refreshing, setRefreshing] =
+    useState(false)
 
   const [error, setError] =
     useState('')
@@ -127,17 +153,6 @@ const MealsPage = () => {
   // FORM
   // =====================================================
 
-  const emptyForm = {
-    name: '',
-    description: '',
-    price: '',
-    category_id: '',
-    status: 'active',
-    featured: false,
-    image: '',
-    imageFile: null,
-  }
-
   const [form, setForm] =
     useState(emptyForm)
 
@@ -145,8 +160,8 @@ const MealsPage = () => {
   // CACHE - MEALS
   // =====================================================
 
-  const saveMealsToCache = useCallback(
-    (data) => {
+  const saveMealsToCache =
+    useCallback((data) => {
       try {
         localStorage.setItem(
           MEALS_CACHE_KEY,
@@ -158,9 +173,7 @@ const MealsPage = () => {
           err
         )
       }
-    },
-    []
-  )
+    }, [])
 
   // =====================================================
   // CACHE - CATEGORIES
@@ -194,6 +207,7 @@ const MealsPage = () => {
             id:
               restaurant?.id ||
               null,
+
             slug:
               restaurant?.slug ||
               null,
@@ -208,161 +222,135 @@ const MealsPage = () => {
     }, [])
 
   // =====================================================
-  // LOAD DATA FROM API
+  // LOAD DATA
   // =====================================================
 
-  const loadMeals = useCallback(
-    async () => {
-      setError('')
-
-      try {
-        // -------------------------------------------------
-        // GET RESTAURANT
-        // -------------------------------------------------
-
-        const restaurantsResponse =
-          await axiosClient.get(
-            '/restaurants'
-          )
-
-        const restaurantsData =
-          restaurantsResponse.data?.data ||
-          restaurantsResponse.data ||
-          []
-
-        const restaurant =
-          restaurantsData[0] || null
-
-        if (!restaurant?.id) {
-          /*
-           * مهم:
-           * إلا API رجع restaurant فارغ،
-           * ما نمسحوش cache القديمة.
-           */
-          setError(
-            t.restaurantNotFound ||
-              'Restaurant not found.'
-          )
-
-          return
+  const loadMeals =
+    useCallback(
+      async (showRefreshLoading = false) => {
+        if (showRefreshLoading) {
+          setRefreshing(true)
+        } else if (meals.length === 0) {
+          setLoading(true)
         }
 
-        const id = restaurant.id
+        setError('')
 
-        setRestaurantId(id)
+        try {
+          // -------------------------------------------------
+          // RESTAURANT
+          // -------------------------------------------------
 
-        saveRestaurantToCache(
-          restaurant
-        )
+          const restaurant =
+            await getRestaurant()
 
-        // -------------------------------------------------
-        // GET CATEGORIES
-        // -------------------------------------------------
+          if (!restaurant?.id) {
+            setError(
+              t.restaurantNotFound ||
+                'Restaurant not found.'
+            )
 
-        const categoriesResponse =
-          await axiosClient.get(
-            `/restaurants/${id}/categories`
+            return
+          }
+
+          const id =
+            restaurant.id
+
+          setRestaurantId(id)
+
+          saveRestaurantToCache(
+            restaurant
           )
 
-        const categoriesData =
-          categoriesResponse.data?.data ||
-          categoriesResponse.data ||
-          []
+          // -------------------------------------------------
+          // CATEGORIES
+          // -------------------------------------------------
 
-        const normalizedCategories =
-          Array.isArray(
-            categoriesData
-          )
-            ? categoriesData
-            : []
+          const categoriesData =
+            await getRestaurantCategories(
+              id
+            )
 
-        setCategories(
-          normalizedCategories
-        )
+          const normalizedCategories =
+            Array.isArray(
+              categoriesData
+            )
+              ? categoriesData
+              : []
 
-        saveCategoriesToCache(
-          normalizedCategories
-        )
-
-        // -------------------------------------------------
-        // GET MEALS
-        // -------------------------------------------------
-
-        const mealsResponse =
-          await axiosClient.get(
-            `/restaurants/${id}/meals`
+          setCategories(
+            normalizedCategories
           )
 
-        const mealsData =
-          mealsResponse.data?.data ||
-          mealsResponse.data ||
-          []
+          saveCategoriesToCache(
+            normalizedCategories
+          )
 
-        const normalizedMeals =
-          Array.isArray(mealsData)
-            ? mealsData
-            : []
+          // -------------------------------------------------
+          // MEALS
+          // -------------------------------------------------
 
-        setMeals(
-          normalizedMeals
-        )
+          const mealsData =
+            await getRestaurantMeals(
+              id
+            )
 
-        saveMealsToCache(
-          normalizedMeals
-        )
-      } catch (err) {
-        console.error(
-          'Load meals/categories error:',
-          err
-        )
+          const normalizedMeals =
+            Array.isArray(
+              mealsData
+            )
+              ? mealsData
+              : []
 
-        /*
-         * مهم بزاف:
-         *
-         * ما نديروش:
-         *
-         * setMeals([])
-         *
-         * حيث إلا API فشل،
-         * خاصنا نخليو cache القديمة.
-         */
+          setMeals(
+            normalizedMeals
+          )
 
-        setError(
-          err?.response?.data?.message ||
-            err?.message ||
-            t.loadMealsError ||
-            'Failed to load meals.'
-        )
-      } finally {
-        setLoading(false)
-      }
-    },
-    [
-      saveMealsToCache,
-      saveCategoriesToCache,
-      saveRestaurantToCache,
-      t.restaurantNotFound,
-      t.loadMealsError,
-    ]
-  )
+          saveMealsToCache(
+            normalizedMeals
+          )
+        } catch (err) {
+          console.error(
+            'Load meals/categories error:',
+            err
+          )
+
+          setError(
+            err?.response?.data
+              ?.message ||
+              err?.message ||
+              t.loadMealsError ||
+              'Failed to load meals.'
+          )
+        } finally {
+          if (showRefreshLoading) {
+            setRefreshing(false)
+          } else {
+            setLoading(false)
+          }
+        }
+      },
+      [
+        meals.length,
+        saveMealsToCache,
+        saveCategoriesToCache,
+        saveRestaurantToCache,
+        t.restaurantNotFound,
+        t.loadMealsError,
+      ]
+    )
 
   // =====================================================
   // INITIAL LOAD
   // =====================================================
 
   useEffect(() => {
-    let cancelled = false
-
-    const run = async () => {
-      if (cancelled) return
-
-      await loadMeals()
-    }
-
-    run()
+    const timer = setTimeout(() => {
+      loadMeals(false)
+    }, 0)
 
     return () => {
-      cancelled = true
+      clearTimeout(timer)
     }
   }, [loadMeals])
 
@@ -370,426 +358,437 @@ const MealsPage = () => {
   // REFRESH
   // =====================================================
 
-  const handleRefresh = async () => {
-    setLoading(true)
-
-    await loadMeals()
-  }
+  const handleRefresh = useCallback(
+    async () => {
+      await loadMeals(true)
+    },
+    [loadMeals]
+  )
 
   // =====================================================
   // OPEN ADD / EDIT
   // =====================================================
 
-  const handleOpen = (meal = null) => {
-    setEditing(meal)
+  const handleOpen =
+    useCallback(
+      (meal = null) => {
+        setEditing(meal)
 
-    if (meal) {
-      setForm({
-        name:
-          meal.name || '',
+        if (meal) {
+          setForm({
+            name:
+              meal.name || '',
 
-        description:
-          meal.description || '',
+            description:
+              meal.description ||
+              '',
 
-        price:
-          meal.price ?? '',
+            price:
+              meal.price ?? '',
 
-        category_id:
-          meal.category_id ??
-          '',
+            category_id:
+              meal.category_id ??
+              '',
 
-        status:
-          meal.status || 'active',
+            status:
+              meal.status ||
+              'active',
 
-        featured:
-          !!meal.featured,
+            featured:
+              !!meal.featured,
 
-        image:
-          meal.image_url ||
-          meal.image ||
-          '',
+            image:
+              meal.image_url ||
+              meal.image ||
+              '',
 
-        imageFile:
-          null,
-      })
+            imageFile:
+              null,
+          })
 
-      setImagePreview(
-        meal.image_url ||
-          meal.image ||
-          ''
-      )
-    } else {
-      setForm({
-        ...emptyForm,
-      })
+          setImagePreview(
+            meal.image_url ||
+              meal.image ||
+              ''
+          )
+        } else {
+          setForm({
+            ...emptyForm,
+          })
 
-      setImagePreview('')
-    }
+          setImagePreview('')
+        }
 
-    setError('')
-    setOpen(true)
-  }
+        setError('')
+        setOpen(true)
+      },
+      []
+    )
 
   // =====================================================
   // CLOSE MODAL
   // =====================================================
 
-  const handleClose = () => {
-    if (saving) return
+  const handleClose =
+    useCallback(() => {
+      if (saving) return
 
-    setOpen(false)
-    setEditing(null)
+      setOpen(false)
+      setEditing(null)
 
-    setForm({
-      ...emptyForm,
-    })
+      setForm({
+        ...emptyForm,
+      })
 
-    setImagePreview('')
-  }
+      setImagePreview('')
+    }, [saving])
 
   // =====================================================
   // IMAGE CHANGE
   // =====================================================
 
-  const handleImageChange = (e) => {
-    const file =
-      e.target.files?.[0]
+  const handleImageChange =
+    useCallback((e) => {
+      const file =
+        e.target.files?.[0]
 
-    if (!file) return
+      if (!file) return
 
-    setForm((current) => ({
-      ...current,
-      imageFile: file,
-      image: file.name,
-    }))
+      setForm((current) => ({
+        ...current,
+        imageFile: file,
+        image: file.name,
+      }))
 
-    const previewUrl =
-      URL.createObjectURL(file)
+      const previewUrl =
+        URL.createObjectURL(file)
 
-    setImagePreview(previewUrl)
-  }
+      setImagePreview(
+        previewUrl
+      )
+    }, [])
 
   // =====================================================
   // SAVE MEAL
   // =====================================================
 
-  const handleSave = async () => {
-    if (!restaurantId) {
-      setError(
-        t.restaurantNotFound ||
-          'Restaurant not found.'
-      )
-
-      return
-    }
-
-    if (!form.name.trim()) {
-      setError(
-        t.mealNameRequired ||
-          'Meal name is required.'
-      )
-
-      return
-    }
-
-    if (!form.category_id) {
-      setError(
-        t.categoryRequired ||
-          'Please select a category.'
-      )
-
-      return
-    }
-
-    if (
-      form.price === '' ||
-      Number(form.price) < 0
-    ) {
-      setError(
-        t.priceRequired ||
-          'Price is required.'
-      )
-
-      return
-    }
-
-    setSaving(true)
-    setError('')
-
-    const data =
-      new FormData()
-
-    data.append(
-      'category_id',
-      String(form.category_id)
-    )
-
-    data.append(
-      'name',
-      form.name.trim()
-    )
-
-    data.append(
-      'description',
-      form.description || ''
-    )
-
-    data.append(
-      'price',
-      String(form.price)
-    )
-
-    data.append(
-      'status',
-      form.status || 'active'
-    )
-
-    data.append(
-      'featured',
-      form.featured
-        ? '1'
-        : '0'
-    )
-
-    if (form.imageFile) {
-      data.append(
-        'image',
-        form.imageFile
-      )
-    }
-
-    try {
-      let response
-
-      // -------------------------------------------------
-      // UPDATE
-      // -------------------------------------------------
-
-      if (editing?.id) {
-        data.append(
-          '_method',
-          'PUT'
+  const handleSave =
+    useCallback(async () => {
+      if (!restaurantId) {
+        setError(
+          t.restaurantNotFound ||
+            'Restaurant not found.'
         )
 
-        response =
-          await axiosClient.post(
-            `/restaurants/${restaurantId}/meals/${editing.id}`,
-            data,
-            {
-              headers: {
-                'Content-Type':
-                  'multipart/form-data',
-              },
-            }
-          )
+        return
+      }
 
-        const updatedMeal =
-          response.data?.data ||
-          response.data?.meal ||
-          response.data
+      if (!form.name.trim()) {
+        setError(
+          t.mealNameRequired ||
+            'Meal name is required.'
+        )
 
-        setMeals((current) => {
-          const updated =
-            current.map(
-              (meal) =>
-                meal.id ===
-                editing.id
-                  ? updatedMeal
-                  : meal
+        return
+      }
+
+      if (!form.category_id) {
+        setError(
+          t.categoryRequired ||
+            'Please select a category.'
+        )
+
+        return
+      }
+
+      if (
+        form.price === '' ||
+        Number(form.price) < 0
+      ) {
+        setError(
+          t.priceRequired ||
+            'Price is required.'
+        )
+
+        return
+      }
+
+      setSaving(true)
+      setError('')
+
+      const data =
+        new FormData()
+
+      data.append(
+        'category_id',
+        String(
+          form.category_id
+        )
+      )
+
+      data.append(
+        'name',
+        form.name.trim()
+      )
+
+      data.append(
+        'description',
+        form.description || ''
+      )
+
+      data.append(
+        'price',
+        String(form.price)
+      )
+
+      data.append(
+        'status',
+        form.status || 'active'
+      )
+
+      data.append(
+        'featured',
+        form.featured
+          ? '1'
+          : '0'
+      )
+
+      if (form.imageFile) {
+        data.append(
+          'image',
+          form.imageFile
+        )
+      }
+
+      try {
+        // -------------------------------------------------
+        // UPDATE
+        // -------------------------------------------------
+
+        if (editing?.id) {
+          const updatedMeal =
+            await updateMeal(
+              restaurantId,
+              editing.id,
+              data
             )
 
-          saveMealsToCache(
-            updated
-          )
+          setMeals((current) => {
+            const updated =
+              current.map(
+                (meal) =>
+                  meal.id ===
+                  editing.id
+                    ? updatedMeal
+                    : meal
+              )
 
-          return updated
-        })
+            saveMealsToCache(
+              updated
+            )
+
+            return updated
+          })
+        }
+
+        // -------------------------------------------------
+        // CREATE
+        // -------------------------------------------------
+
+        else {
+          const newMeal =
+            await createMeal(
+              restaurantId,
+              data
+            )
+
+          setMeals((current) => {
+            const updated = [
+              ...current,
+              newMeal,
+            ]
+
+            saveMealsToCache(
+              updated
+            )
+
+            return updated
+          })
+        }
+
+        handleClose()
+      } catch (err) {
+        console.error(
+          'Meal save error:',
+          err?.response?.data ||
+            err
+        )
+
+        setError(
+          err?.response?.data
+            ?.message ||
+            err?.message ||
+            t.saveMealError ||
+            'Failed to save meal.'
+        )
+      } finally {
+        setSaving(false)
       }
-
-      // -------------------------------------------------
-      // CREATE
-      // -------------------------------------------------
-
-      else {
-        response =
-          await axiosClient.post(
-            `/restaurants/${restaurantId}/meals`,
-            data,
-            {
-              headers: {
-                'Content-Type':
-                  'multipart/form-data',
-              },
-            }
-          )
-
-        const newMeal =
-          response.data?.data ||
-          response.data?.meal ||
-          response.data
-
-        setMeals((current) => {
-          const updated = [
-            ...current,
-            newMeal,
-          ]
-
-          saveMealsToCache(
-            updated
-          )
-
-          return updated
-        })
-      }
-
-      handleClose()
-    } catch (err) {
-      console.error(
-        'Meal save error:',
-        err?.response?.data ||
-          err
-      )
-
-      setError(
-        err?.response?.data
-          ?.message ||
-          err?.message ||
-          t.saveMealError ||
-          'Failed to save meal.'
-      )
-    } finally {
-      setSaving(false)
-    }
-  }
+    }, [
+      restaurantId,
+      form,
+      editing,
+      saveMealsToCache,
+      handleClose,
+      t.restaurantNotFound,
+      t.mealNameRequired,
+      t.categoryRequired,
+      t.priceRequired,
+      t.saveMealError,
+    ])
 
   // =====================================================
   // DELETE MEAL
   // =====================================================
 
-  const handleDelete = async (
-    meal
-  ) => {
-    if (
-      !restaurantId ||
-      !meal?.id
-    ) {
-      return
-    }
+  const handleDelete =
+    useCallback(
+      async (meal) => {
+        if (
+          !restaurantId ||
+          !meal?.id
+        ) {
+          return
+        }
 
-    const mealName =
-      meal.name ||
-      t.meal ||
-      'Meal'
+        const mealName =
+          meal.name ||
+          t.meal ||
+          'Meal'
 
-    const confirmed =
-      window.confirm(
-        `${t.deleteMealConfirm || 'Delete meal'} "${mealName}"?`
-      )
-
-    if (!confirmed) return
-
-    setDeletingId(
-      meal.id
-    )
-
-    setError('')
-
-    try {
-      await axiosClient.delete(
-        `/restaurants/${restaurantId}/meals/${meal.id}`
-      )
-
-      setMeals((current) => {
-        const updated =
-          current.filter(
-            (item) =>
-              item.id !==
-              meal.id
+        const confirmed =
+          window.confirm(
+            `${
+              t.deleteMealConfirm ||
+              'Delete meal'
+            } "${mealName}"?`
           )
 
-        saveMealsToCache(
-          updated
+        if (!confirmed) return
+
+        setDeletingId(
+          meal.id
         )
 
-        return updated
-      })
-    } catch (err) {
-      console.error(
-        'Meal delete error:',
-        err?.response?.data ||
-          err
-      )
+        setError('')
 
-      setError(
-        err?.response?.data
-          ?.message ||
-          err?.message ||
-          t.deleteMealError ||
-          'Failed to delete meal.'
-      )
-    } finally {
-      setDeletingId(null)
-    }
-  }
+        try {
+          await deleteMeal(
+            restaurantId,
+            meal.id
+          )
+
+          setMeals((current) => {
+            const updated =
+              current.filter(
+                (item) =>
+                  item.id !==
+                  meal.id
+              )
+
+            saveMealsToCache(
+              updated
+            )
+
+            return updated
+          })
+        } catch (err) {
+          console.error(
+            'Meal delete error:',
+            err?.response?.data ||
+              err
+          )
+
+          setError(
+            err?.response?.data
+              ?.message ||
+              err?.message ||
+              t.deleteMealError ||
+              'Failed to delete meal.'
+          )
+        } finally {
+          setDeletingId(null)
+        }
+      },
+      [
+        restaurantId,
+        saveMealsToCache,
+        t.meal,
+        t.deleteMealConfirm,
+        t.deleteMealError,
+      ]
+    )
 
   // =====================================================
   // STATUS LABEL
   // =====================================================
 
-  const getStatusLabel = (
-    status
-  ) => {
-    const labels = {
-      active:
-        t.active ||
-        'Active',
+  const getStatusLabel =
+    useCallback(
+      (status) => {
+        const labels = {
+          active:
+            t.active ||
+            'Active',
 
-      inactive:
-        t.inactive ||
-        'Inactive',
+          inactive:
+            t.inactive ||
+            'Inactive',
 
-      available:
-        t.available ||
-        'Available',
+          available:
+            t.available ||
+            'Available',
 
-      unavailable:
-        t.unavailable ||
-        'Unavailable',
-    }
+          unavailable:
+            t.unavailable ||
+            'Unavailable',
+        }
 
-    return (
-      labels[status] ||
-      status
+        return (
+          labels[status] ||
+          status
+        )
+      },
+      [
+        t.active,
+        t.inactive,
+        t.available,
+        t.unavailable,
+      ]
     )
-  }
 
   // =====================================================
   // STATUS CLASS
   // =====================================================
 
-  const getStatusClass = (
-    status
-  ) => {
-    if (
-      status ===
-        'active' ||
-      status ===
-        'available'
-    ) {
-      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
-    }
+  const getStatusClass =
+    useCallback((status) => {
+      if (
+        status === 'active' ||
+        status === 'available'
+      ) {
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+      }
 
-    if (
-      status ===
-        'inactive' ||
-      status ===
-        'unavailable'
-    ) {
-      return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-    }
+      if (
+        status === 'inactive' ||
+        status === 'unavailable'
+      ) {
+        return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+      }
 
-    return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
-  }
+      return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+    }, [])
 
   // =====================================================
   // MEAL CARDS
@@ -817,18 +816,15 @@ const MealsPage = () => {
 
           return (
             <div
-              key={
-                meal.id
-              }
+              key={meal.id}
               className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
             >
               {/* IMAGE */}
+
               <div className="h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
                 {image ? (
                   <img
-                    src={
-                      image
-                    }
+                    src={image}
                     alt={
                       meal.name ||
                       'Meal'
@@ -844,9 +840,11 @@ const MealsPage = () => {
               </div>
 
               {/* CONTENT */}
+
               <div className="p-6">
 
                 {/* TITLE + STATUS */}
+
                 <div className="flex items-start justify-between gap-3">
 
                   <h2 className="min-w-0 flex-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -866,15 +864,15 @@ const MealsPage = () => {
                 </div>
 
                 {/* DESCRIPTION */}
+
                 {meal.description && (
                   <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                    {
-                      meal.description
-                    }
+                    {meal.description}
                   </p>
                 )}
 
                 {/* CATEGORY + FEATURED */}
+
                 <div className="mt-4 flex flex-wrap items-center gap-2">
 
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -893,6 +891,7 @@ const MealsPage = () => {
                 </div>
 
                 {/* PRICE + ACTIONS */}
+
                 <div className="mt-5 flex items-center justify-between gap-3">
 
                   <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
@@ -900,14 +899,13 @@ const MealsPage = () => {
                     {Number(
                       meal.price ||
                         0
-                    ).toFixed(
-                      2
-                    )}
+                    ).toFixed(2)}
                   </span>
 
                   <div className="flex gap-2">
 
                     {/* EDIT */}
+
                     <button
                       type="button"
                       onClick={() =>
@@ -918,9 +916,7 @@ const MealsPage = () => {
                       className="flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     >
                       <Pencil
-                        size={
-                          16
-                        }
+                        size={16}
                       />
 
                       <span className="hidden sm:inline">
@@ -930,6 +926,7 @@ const MealsPage = () => {
                     </button>
 
                     {/* DELETE */}
+
                     <button
                       type="button"
                       onClick={() =>
@@ -948,9 +945,7 @@ const MealsPage = () => {
                       }
                     >
                       <Trash2
-                        size={
-                          16
-                        }
+                        size={16}
                         className={
                           deletingId ===
                           meal.id
@@ -972,8 +967,16 @@ const MealsPage = () => {
     }, [
       meals,
       categories,
-      t,
+      t.noImage,
+      t.selectCategory,
+      t.featured,
+      t.editMeal,
+      t.deleteMeal,
       deletingId,
+      getStatusClass,
+      getStatusLabel,
+      handleOpen,
+      handleDelete,
     ])
 
   // =====================================================
@@ -983,9 +986,7 @@ const MealsPage = () => {
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* =================================================
-          HEADER
-      ================================================= */}
+      {/* HEADER */}
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -1004,22 +1005,21 @@ const MealsPage = () => {
         <div className="flex gap-2">
 
           {/* REFRESH */}
+
           <button
             type="button"
             onClick={
               handleRefresh
             }
             disabled={
-              loading
+              refreshing
             }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <RefreshCw
-              size={
-                17
-              }
+              size={17}
               className={
-                loading
+                refreshing
                   ? 'animate-spin'
                   : ''
               }
@@ -1032,6 +1032,7 @@ const MealsPage = () => {
           </button>
 
           {/* ADD */}
+
           <button
             type="button"
             onClick={() =>
@@ -1039,23 +1040,16 @@ const MealsPage = () => {
             }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
-            <Plus
-              size={
-                18
-              }
-            />
+            <Plus size={18} />
 
             {t.addMeal ||
               'Add meal'}
           </button>
 
         </div>
-
       </div>
 
-      {/* =================================================
-          ERROR
-      ================================================= */}
+      {/* ERROR */}
 
       {error && (
         <div className="mb-5 flex items-start justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
@@ -1081,9 +1075,7 @@ const MealsPage = () => {
         </div>
       )}
 
-      {/* =================================================
-          LOADING
-      ================================================= */}
+      {/* LOADING */}
 
       {loading ? (
 
@@ -1098,21 +1090,14 @@ const MealsPage = () => {
 
         </div>
 
-      ) : meals.length ===
-        0 ? (
+      ) : meals.length === 0 ? (
 
-        /* =================================================
-            EMPTY
-        ================================================= */
+        /* EMPTY */
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
-            <Utensils
-              size={
-                30
-              }
-            />
+            <Utensils size={30} />
           </div>
 
           <h2 className="mt-5 text-xl font-semibold">
@@ -1132,11 +1117,7 @@ const MealsPage = () => {
             }
             className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
-            <Plus
-              size={
-                18
-              }
-            />
+            <Plus size={18} />
 
             {t.addMeal ||
               'Add meal'}
@@ -1146,21 +1127,15 @@ const MealsPage = () => {
 
       ) : (
 
-        /* =================================================
-            MEALS
-        ================================================= */
+        /* MEALS */
 
         <div className="grid gap-5 lg:grid-cols-2">
-
           {mealCards}
-
         </div>
 
       )}
 
-      {/* =================================================
-          ADD / EDIT MODAL
-      ================================================= */}
+      {/* ADD / EDIT MODAL */}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
@@ -1168,6 +1143,7 @@ const MealsPage = () => {
           <div className="my-8 w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
 
             {/* MODAL HEADER */}
+
             <div className="flex items-center justify-between gap-4">
 
               <div>
@@ -1208,6 +1184,7 @@ const MealsPage = () => {
             </div>
 
             {/* MODAL ERROR */}
+
             {error && (
               <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
                 {error}
@@ -1215,9 +1192,11 @@ const MealsPage = () => {
             )}
 
             {/* FORM */}
+
             <div className="mt-6 grid gap-5">
 
               {/* NAME */}
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.mealName ||
@@ -1248,6 +1227,7 @@ const MealsPage = () => {
               </div>
 
               {/* DESCRIPTION */}
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.description ||
@@ -1278,6 +1258,7 @@ const MealsPage = () => {
               </div>
 
               {/* PRICE */}
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.price ||
@@ -1307,6 +1288,7 @@ const MealsPage = () => {
               </div>
 
               {/* CATEGORY */}
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.selectCategory ||
@@ -1335,9 +1317,7 @@ const MealsPage = () => {
                   </option>
 
                   {categories.map(
-                    (
-                      category
-                    ) => (
+                    (category) => (
                       <option
                         key={
                           category.id
@@ -1356,6 +1336,7 @@ const MealsPage = () => {
               </div>
 
               {/* IMAGE */}
+
               <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -1409,6 +1390,7 @@ const MealsPage = () => {
               </div>
 
               {/* STATUS */}
+
               <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -1446,6 +1428,7 @@ const MealsPage = () => {
               </div>
 
               {/* FEATURED */}
+
               <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-200">
 
                 <input
@@ -1474,6 +1457,7 @@ const MealsPage = () => {
             </div>
 
             {/* MODAL FOOTER */}
+
             <div className="mt-7 flex justify-end gap-3">
 
               <button
@@ -1500,11 +1484,10 @@ const MealsPage = () => {
                 }
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
+
                 {saving && (
                   <RefreshCw
-                    size={
-                      16
-                    }
+                    size={16}
                     className="animate-spin"
                   />
                 )}
@@ -1517,6 +1500,7 @@ const MealsPage = () => {
                       'Save changes'
                     : t.addMeal ||
                       'Add meal'}
+
               </button>
 
             </div>

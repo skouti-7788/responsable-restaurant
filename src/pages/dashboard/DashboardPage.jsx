@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
+
 import { useSelector } from 'react-redux'
+
 import {
   Activity,
   BarChart2,
@@ -8,11 +14,18 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
-import axiosClient from '../../api/axiosClient'
+import {
+  fetchDashboardData,
+  getDashboardCache,
+} from '../../data/dataDashboard'
+
 import translations from '../../i18n/translations'
 
 const DashboardPage = () => {
-  const { language } = useSelector((state) => state.ui)
+  const { language } =
+    useSelector(
+      (state) => state.ui
+    )
 
   const t =
     translations[language] ||
@@ -20,425 +33,93 @@ const DashboardPage = () => {
     {}
 
   // =====================================================
-  // CACHE KEYS
-  // =====================================================
-
-  const DASHBOARD_CACHE_KEY =
-    'restaurant_dashboard_cache'
-
-  const RESTAURANT_CACHE_KEY =
-    'restaurant_current_cache'
-
-  // =====================================================
-  // RESTAURANT
-  // =====================================================
-
-  // const [restaurantId, setRestaurantId] =
-    useState(() => {
-      try {
-        const cached =
-          localStorage.getItem(
-            RESTAURANT_CACHE_KEY
-          )
-
-        const restaurant = cached
-          ? JSON.parse(cached)
-          : null
-
-        return restaurant?.id || null
-      } catch {
-        return null
-      }
-    })
-
-  // =====================================================
   // DASHBOARD CACHE
   // =====================================================
 
-  const [dashboard, setDashboard] =
-    useState(() => {
-      try {
-        const cached =
-          localStorage.getItem(
-            DASHBOARD_CACHE_KEY
-          )
-
-        if (!cached) {
-          return {
-            totalMeals: 0,
-            totalCategories: 0,
-            totalOrders: 0,
-            menuViews: 0,
-            popularMeals: [],
-            activities: [],
-          }
-        }
-
-        return JSON.parse(cached)
-      } catch {
-        return {
-          totalMeals: 0,
-          totalCategories: 0,
-          totalOrders: 0,
-          menuViews: 0,
-          popularMeals: [],
-          activities: [],
-        }
-      }
-    })
+  const [
+    dashboard,
+    setDashboard,
+  ] = useState(
+    getDashboardCache
+  )
 
   // =====================================================
   // LOADING
   // =====================================================
 
-  const [loading, setLoading] =
-    useState(() => {
-      try {
-        return !localStorage.getItem(
-          DASHBOARD_CACHE_KEY
-        )
-      } catch {
-        return true
-      }
-    })
-
-  const [error, setError] = useState('')
-
-  // =====================================================
-  // SAVE DASHBOARD CACHE
-  // =====================================================
-
-  const saveDashboardToCache = (
-    data
-  ) => {
+  const [
+    loading,
+    setLoading,
+  ] = useState(() => {
     try {
-      localStorage.setItem(
-        DASHBOARD_CACHE_KEY,
-        JSON.stringify(data)
+      return !localStorage.getItem(
+        'restaurant_dashboard_cache'
       )
-    } catch (err) {
-      console.error(
-        'Save dashboard cache error:',
-        err
-      )
+    } catch {
+      return true
     }
-  }
+  })
 
   // =====================================================
-  // SAVE RESTAURANT CACHE
+  // ERROR
   // =====================================================
 
-  const saveRestaurantToCache = (
-    restaurant
-  ) => {
-    try {
-      localStorage.setItem(
-        RESTAURANT_CACHE_KEY,
-        JSON.stringify({
-          id: restaurant?.id || null,
-          slug:
-            restaurant?.slug || null,
-        })
-      )
-    } catch (err) {
-      console.error(
-        'Save restaurant cache error:',
-        err
-      )
-    }
-  }
+  const [
+    error,
+    setError,
+  ] = useState('')
 
   // =====================================================
   // LOAD DASHBOARD
   // =====================================================
 
   const loadDashboardData =
-    useCallback(async () => {
-      setError('')
+    useCallback(
+      async () => {
+        setError('')
 
-      try {
-        // -------------------------------------------------
-        // GET RESTAURANT
-        // -------------------------------------------------
+        try {
+          setLoading(true)
 
-        const restaurantsResponse =
-          await axiosClient.get(
-            '/restaurants'
-          )
-
-        const restaurantsData =
-          restaurantsResponse.data?.data ||
-          restaurantsResponse.data ||
-          []
-
-        const restaurant =
-          restaurantsData[0] || null
-
-        if (!restaurant?.id) {
-          setError(
-            t.restaurantNotFound ||
-              'Restaurant not found.'
-          )
-
-          return
-        }
-
-        const id = restaurant.id
-
-        // setRestaurantId(id)
-
-        saveRestaurantToCache(
-          restaurant
-        )
-
-        // -------------------------------------------------
-        // GET DATA
-        // -------------------------------------------------
-
-        const [
-          categoriesResponse,
-          mealsResponse,
-          ordersResponse,
-        ] = await Promise.all([
-          axiosClient.get(
-            `/restaurants/${id}/categories`
-          ),
-
-          axiosClient.get(
-            `/restaurants/${id}/meals`
-          ),
-
-          axiosClient.get(
-            `/restaurants/${id}/orders`
-          ),
-        ])
-
-        const categories =
-          categoriesResponse.data?.data ||
-          categoriesResponse.data ||
-          []
-
-        const meals =
-          mealsResponse.data?.data ||
-          mealsResponse.data ||
-          []
-
-        const orders =
-          ordersResponse.data?.data ||
-          ordersResponse.data ||
-          []
-
-        const normalizedCategories =
-          Array.isArray(categories)
-            ? categories
-            : []
-
-        const normalizedMeals =
-          Array.isArray(meals)
-            ? meals
-            : []
-
-        const normalizedOrders =
-          Array.isArray(orders)
-            ? orders
-            : []
-
-        // -------------------------------------------------
-        // POPULAR MEALS
-        // -------------------------------------------------
-        //
-        // إذا الـAPI ما فيهش popularity،
-        // نرتبو meals حسب عدد الطلبات.
-        //
-
-        const mealOrderCount = {}
-
-        normalizedOrders.forEach(
-          (order) => {
-            const items =
-              Array.isArray(
-                order.items
-              )
-                ? order.items
-                : []
-
-            items.forEach((item) => {
-              const mealId =
-                item.meal_id ||
-                item.meal?.id
-
-              if (!mealId) return
-
-              const quantity =
-                Number(
-                  item.quantity
-                ) || 1
-
-              mealOrderCount[
-                mealId
-              ] =
-                (mealOrderCount[
-                  mealId
-                ] || 0) + quantity
+          const data =
+            await fetchDashboardData({
+              language,
+              translations: t,
             })
-          }
-        )
 
-        const sortedMeals =
-          [...normalizedMeals]
-            .map((meal) => ({
-              ...meal,
-              orderCount:
-                mealOrderCount[
-                  meal.id
-                ] || 0,
-            }))
-            .sort(
-              (a, b) =>
-                b.orderCount -
-                a.orderCount
-            )
-
-        const topMeals =
-          sortedMeals.slice(0, 4)
-
-        const maxOrders =
-          topMeals.length > 0
-            ? Math.max(
-                ...topMeals.map(
-                  (meal) =>
-                    meal.orderCount
-                )
-              )
-            : 0
-
-        const popularMeals =
-          topMeals.map((meal) => ({
-            name:
-              meal.name ||
-              'Unnamed meal',
-
-            percent:
-              maxOrders > 0
-                ? Math.round(
-                    (meal.orderCount /
-                      maxOrders) *
-                      100
-                  )
-                : 0,
-
-            orderCount:
-              meal.orderCount,
-          }))
-
-        // -------------------------------------------------
-        // RECENT ACTIVITIES
-        // -------------------------------------------------
-
-        const recentOrders =
-          [...normalizedOrders]
-            .sort(
-              (a, b) =>
-                new Date(
-                  b.created_at || 0
-                ) -
-                new Date(
-                  a.created_at || 0
-                )
-            )
-            .slice(0, 4)
-
-        const activities =
-          recentOrders.map(
-            (order) => ({
-              event:
-                `${t.newOrderReceived || 'New order received'} #${order.id}`,
-
-              time:
-                formatRelativeTime(
-                  order.created_at,
-                  language
-                ),
-            })
+          setDashboard(data)
+        } catch (err) {
+          console.error(
+            'Load dashboard error:',
+            err
           )
-
-        // -------------------------------------------------
-        // FINAL DATA
-        // -------------------------------------------------
-
-        const newDashboard = {
-          totalMeals:
-            normalizedMeals.length,
-
-          totalCategories:
-            normalizedCategories.length,
-
-          totalOrders:
-            normalizedOrders.length,
 
           /*
-           * ما عندناش endpoint حقيقي ديال
-           * menu views حاليا.
+           * مهم:
+           * ما نمسحوش dashboard القديم.
            *
-           * نخليو القيمة الموجودة فالcache
-           * باش ما تضيعش.
+           * إذا API فشل:
+           * البيانات القديمة تبقى ظاهرة.
            */
-          menuViews:
-            Number(
-              dashboard.menuViews
-            ) || 0,
 
-          popularMeals,
-
-          activities,
+          setError(
+            err?.response?.data
+              ?.message ||
+              err?.message ||
+              t.loadDashboardError ||
+              'Failed to load dashboard.'
+          )
+        } finally {
+          setLoading(false)
         }
-
-        // -------------------------------------------------
-        // UPDATE STATE
-        // -------------------------------------------------
-
-        setDashboard(
-          newDashboard
-        )
-
-        // -------------------------------------------------
-        // UPDATE CACHE
-        // -------------------------------------------------
-
-        saveDashboardToCache(
-          newDashboard
-        )
-      } catch (err) {
-        console.error(
-          'Load dashboard error:',
-          err
-        )
-
-        /*
-         * مهم:
-         * ما نمسحوش dashboard القديم.
-         *
-         * إذا API فشل:
-         * cache/data القديمة تبقى ظاهرة.
-         */
-
-        setError(
-          err?.response?.data
-            ?.message ||
-            err?.message ||
-            t.loadDashboardError ||
-            'Failed to load dashboard.'
-        )
-      } finally {
-        setLoading(false)
-      }
-    }, [
-      dashboard.menuViews,
-      language,
-      t.loadDashboardError,
-      t.newOrderReceived,
-      t.restaurantNotFound,
-    ])
+      },
+      [
+        language,
+        t.loadDashboardError,
+        t.newOrderReceived,
+        t.restaurantNotFound,
+      ]
+    )
 
   // =====================================================
   // INITIAL LOAD
@@ -461,13 +142,7 @@ const DashboardPage = () => {
 
   const handleRefresh =
     async () => {
-      setLoading(true)
-
       /*
-       * مهم:
-       * ما نديروش setDashboard([])
- * ولا نمسحو cache.
-       *
        * البيانات القديمة كتبقى باينة
        * حتى تجي data الجديدة.
        */
@@ -716,6 +391,7 @@ const DashboardPage = () => {
                     (meal) => (
                       <div
                         key={
+                          meal.id ||
                           meal.name
                         }
                         className="space-y-3"
@@ -743,7 +419,15 @@ const DashboardPage = () => {
                           <div
                             className="h-full rounded-full bg-sky-400 transition-all duration-500"
                             style={{
-                              width: `${meal.percent}%`,
+                              width: `${Math.max(
+                                0,
+                                Math.min(
+                                  100,
+                                  Number(
+                                    meal.percent
+                                  ) || 0
+                                )
+                              )}%`,
                             }}
                           />
 
@@ -800,7 +484,10 @@ const DashboardPage = () => {
                       index
                     ) => (
                       <div
-                        key={`${activity.event}-${index}`}
+                        key={
+                          activity.id ||
+                          `${activity.event}-${index}`
+                        }
                         className="rounded-3xl border border-slate-200 bg-slate-50 p-4 transition-colors dark:border-slate-800 dark:bg-slate-950/80"
                       >
 
@@ -839,78 +526,6 @@ const DashboardPage = () => {
 
     </div>
   )
-}
-
-// =====================================================
-// RELATIVE TIME
-// =====================================================
-
-const formatRelativeTime = (
-  date,
-  language
-) => {
-  if (!date) {
-    return ''
-  }
-
-  const timestamp =
-    new Date(date).getTime()
-
-  if (Number.isNaN(timestamp)) {
-    return ''
-  }
-
-  const diff =
-    Date.now() - timestamp
-
-  const minutes = Math.floor(
-    diff / 60000
-  )
-
-  const hours = Math.floor(
-    minutes / 60
-  )
-
-  const days = Math.floor(
-    hours / 24
-  )
-
-  if (language === 'ar') {
-    if (minutes < 1)
-      return 'الآن'
-
-    if (minutes < 60)
-      return `منذ ${minutes} دقيقة`
-
-    if (hours < 24)
-      return `منذ ${hours} ساعة`
-
-    return `منذ ${days} يوم`
-  }
-
-  if (language === 'fr') {
-    if (minutes < 1)
-      return "À l'instant"
-
-    if (minutes < 60)
-      return `Il y a ${minutes} min`
-
-    if (hours < 24)
-      return `Il y a ${hours} h`
-
-    return `Il y a ${days} j`
-  }
-
-  if (minutes < 1)
-    return 'Just now'
-
-  if (minutes < 60)
-    return `${minutes}m ago`
-
-  if (hours < 24)
-    return `${hours}h ago`
-
-  return `${days}d ago`
 }
 
 export default DashboardPage
