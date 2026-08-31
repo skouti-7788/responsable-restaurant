@@ -15,12 +15,12 @@ import translations from '../../i18n/translations'
 
 const navItems = [
   { to: '/', labelKey: 'dashboard', icon: Home },
-  { to: '/profile', labelKey: 'profile', icon: User },
   { to: '/categories', labelKey: 'categories', icon: Layers },
   { to: '/meals', labelKey: 'meals', icon: ListChecks },
   { to: '/orders', labelKey: 'orders', icon: ListChecks },
   { to: '/tables', labelKey: 'tables', icon: Armchair }, 
   { to: '/qr-code', labelKey: 'qrCode', icon: QrCode },
+  { to: '/profile', labelKey: 'profile', icon: User },
 
 ]
 

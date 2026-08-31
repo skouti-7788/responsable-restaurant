@@ -24,7 +24,6 @@ import {
 
 import {
   fetchOrdersSuccess,
-  // fetchOrdersFailure,
   updateOrder,
   removeOrder,
 } from '../../store/orderSlice'
@@ -393,7 +392,7 @@ const OrdersPage = () => {
   )
 
   // ===================================================
-  // REFRESH LOADING
+  // REFRESHING
   // ===================================================
 
   const [
@@ -421,7 +420,7 @@ const OrdersPage = () => {
       ) => {
         try {
           // =============================================
-          // CACHE
+          // USE CACHE FIRST
           // =============================================
 
           if (useCache) {
@@ -469,7 +468,7 @@ const OrdersPage = () => {
           }
 
           // =============================================
-          // RESTAURANTS
+          // GET RESTAURANTS
           // =============================================
 
           const restaurantsData =
@@ -486,6 +485,10 @@ const OrdersPage = () => {
 
           const restaurant =
             restaurantsData[0]
+
+          // =============================================
+          // NO RESTAURANT
+          // =============================================
 
           if (!restaurant?.id) {
             setMeals([])
@@ -505,7 +508,7 @@ const OrdersPage = () => {
           }
 
           // =============================================
-          // MEALS + TABLES
+          // GET MEALS + TABLES
           // =============================================
 
           const [
@@ -515,6 +518,7 @@ const OrdersPage = () => {
             getRestaurantMeals(
               restaurant.id
             ),
+
             getRestaurantTables(
               restaurant.id
             ),
@@ -552,7 +556,7 @@ const OrdersPage = () => {
     )
 
   // =====================================================
-  // CHECK ORDERS
+  // CHECK ORDERS / REFRESH
   // =====================================================
 
   const checkOrders =
@@ -567,10 +571,18 @@ const OrdersPage = () => {
         }
 
         try {
+          // =============================================
+          // LOAD RESTAURANT
+          // =============================================
+
           const restaurant =
             await loadRestaurantData(
               true
             )
+
+          // =============================================
+          // NO RESTAURANT
+          // =============================================
 
           if (!restaurant?.id) {
             dispatch(
@@ -586,6 +598,10 @@ const OrdersPage = () => {
 
             return
           }
+
+          // =============================================
+          // GET FRESH ORDERS
+          // =============================================
 
           const freshOrders =
             await getRestaurantOrders(
@@ -617,6 +633,10 @@ const OrdersPage = () => {
             'Orders check error:',
             err
           )
+
+          // =============================================
+          // KEEP OLD CACHE
+          // =============================================
 
           const oldOrders =
             readCache(
@@ -656,6 +676,13 @@ const OrdersPage = () => {
 
   // =====================================================
   // INITIAL LOAD
+  //
+  // IMPORTANT:
+  // ملي كتدخل للصفحة:
+  // - cache كتبان مباشرة
+  // - refresh كيبدا أوتوماتيكياً
+  // - السهم ديال button هو اللي كيدور
+  // - ما كتمسحش البيانات القديمة
   // =====================================================
 
   useEffect(() => {
@@ -690,12 +717,20 @@ const OrdersPage = () => {
         }
 
         // ===============================================
-        // BACKGROUND CHECK
+        // AUTO REFRESH
         // ===============================================
 
-        await checkOrders(
-          ordersCache.length === 0
-        )
+        setRefreshing(true)
+
+        try {
+          await checkOrders(
+            false
+          )
+        } finally {
+          if (!cancelled) {
+            setRefreshing(false)
+          }
+        }
       }
 
     initialize()
@@ -722,6 +757,10 @@ const OrdersPage = () => {
       setError('')
 
       try {
+        // =============================================
+        // REFRESH WITHOUT FULL PAGE LOADING
+        // =============================================
+
         await checkOrders(
           false
         )
@@ -1450,7 +1489,9 @@ const OrdersPage = () => {
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* HEADER */}
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -1466,7 +1507,9 @@ const OrdersPage = () => {
           </p>
         </div>
 
-        {/* REFRESH */}
+        {/* =================================================
+            REFRESH BUTTON
+        ================================================= */}
 
         <button
           type="button"
@@ -1492,9 +1535,12 @@ const OrdersPage = () => {
               'Refresh'}
           </span>
         </button>
+
       </div>
 
-      {/* ERROR */}
+      {/* =================================================
+          ERROR
+      ================================================= */}
 
       {error && (
         <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
@@ -1502,7 +1548,9 @@ const OrdersPage = () => {
         </div>
       )}
 
-      {/* FIRST LOAD ONLY */}
+      {/* =================================================
+          FIRST LOAD ONLY
+      ================================================= */}
 
       {loading ? (
         <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
@@ -1518,6 +1566,10 @@ const OrdersPage = () => {
       ) : (
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+          {/* =================================================
+              NO ORDERS
+          ================================================= */}
 
           {orders.length === 0 ? (
 
@@ -1560,7 +1612,9 @@ const OrdersPage = () => {
                     className="flex flex-col rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
                   >
 
-                    {/* ORDER HEADER */}
+                    {/* =================================================
+                        ORDER HEADER
+                    ================================================= */}
 
                     <div className="flex items-start justify-between gap-4">
 
@@ -1600,7 +1654,9 @@ const OrdersPage = () => {
 
                     </div>
 
-                    {/* TABLE */}
+                    {/* =================================================
+                        TABLE
+                    ================================================= */}
 
                     <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/60">
 
@@ -1617,7 +1673,9 @@ const OrdersPage = () => {
 
                     </div>
 
-                    {/* ITEMS + TOTAL */}
+                    {/* =================================================
+                        ITEMS + TOTAL
+                    ================================================= */}
 
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
 
@@ -1709,7 +1767,9 @@ const OrdersPage = () => {
 
                     </div>
 
-                    {/* ACTIONS */}
+                    {/* =================================================
+                        ACTIONS
+                    ================================================= */}
 
                     <div className="mt-6 flex flex-wrap gap-3">
 
@@ -1791,4 +1851,3 @@ const OrdersPage = () => {
 }
 
 export default OrdersPage
- 

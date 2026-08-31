@@ -4,6 +4,7 @@ const initialState = {
   items: [],
   loading: false,
   error: null,
+  notafication:false
 }
 
 const orderSlice = createSlice({
@@ -91,6 +92,11 @@ const orderSlice = createSlice({
     clearOrdersError(state) {
       state.error = null
     },
+    // =================================================
+    // NOTAFICATION 
+    // =================================================
+    setNotafication(state,action){state.notafication = action.payload},
+    clearNotafication(state){state.notafication = false},
   },
 })
 
@@ -101,6 +107,8 @@ export const {
   updateOrder,
   removeOrder,
   clearOrdersError,
+  setNotafication,
+  clearNotafication,
 } = orderSlice.actions
 
 export default orderSlice.reducer

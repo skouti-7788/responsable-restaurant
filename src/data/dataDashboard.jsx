@@ -1,4 +1,5 @@
 import axiosClient from '../api/axiosClient'
+import { setNotafication } from '../store/orderSlice'
 
 // =====================================================
 // CACHE KEYS
@@ -56,9 +57,7 @@ export const getDashboardCache = () => {
 // SAVE DASHBOARD CACHE
 // =====================================================
 
-const saveDashboardToCache = (
-  data
-) => {
+const saveDashboardToCache = (data) => {
   try {
     localStorage.setItem(
       DASHBOARD_CACHE_KEY,
@@ -158,40 +157,61 @@ const formatRelativeTime = (
     hours / 24
   )
 
+  // -------------------------------------------------
+  // ARABIC
+  // -------------------------------------------------
+
   if (language === 'ar') {
-    if (minutes < 1)
+    if (minutes < 1) {
       return 'الآن'
+    }
 
-    if (minutes < 60)
+    if (minutes < 60) {
       return `منذ ${minutes} دقيقة`
+    }
 
-    if (hours < 24)
+    if (hours < 24) {
       return `منذ ${hours} ساعة`
+    }
 
     return `منذ ${days} يوم`
   }
 
+  // -------------------------------------------------
+  // FRENCH
+  // -------------------------------------------------
+
   if (language === 'fr') {
-    if (minutes < 1)
+    if (minutes < 1) {
       return "À l'instant"
+    }
 
-    if (minutes < 60)
+    if (minutes < 60) {
       return `Il y a ${minutes} min`
+    }
 
-    if (hours < 24)
+    if (hours < 24) {
       return `Il y a ${hours} h`
+    }
 
     return `Il y a ${days} j`
   }
 
-  if (minutes < 1)
+  // -------------------------------------------------
+  // ENGLISH
+  // -------------------------------------------------
+
+  if (minutes < 1) {
     return 'Just now'
+  }
 
-  if (minutes < 60)
+  if (minutes < 60) {
     return `${minutes}m ago`
+  }
 
-  if (hours < 24)
+  if (hours < 24) {
     return `${hours}h ago`
+  }
 
   return `${days}d ago`
 }
@@ -200,120 +220,146 @@ const formatRelativeTime = (
 // FETCH DASHBOARD DATA
 // =====================================================
 
-export const fetchDashboardData =
-  async ({
-    language = 'en',
-    translations = {},
-  } = {}) => {
+export const fetchDashboardData = async ({
+  language = 'en',
+  translations = {},
+  dispatch,
+} = {}) => {
 
-    // -------------------------------------------------
-    // GET RESTAURANT
-    // -------------------------------------------------
+  // ===================================================
+  // GET RESTAURANT
+  // ===================================================
 
-    const restaurantsResponse =
-      await axiosClient.get(
-        '/restaurants'
-      )
-
-    const restaurantsData =
-      restaurantsResponse.data?.data ||
-      restaurantsResponse.data ||
-      []
-
-    const restaurant =
-      Array.isArray(
-        restaurantsData
-      )
-        ? restaurantsData[0]
-        : null
-
-    if (!restaurant?.id) {
-      throw new Error(
-        translations.restaurantNotFound ||
-          'Restaurant not found.'
-      )
-    }
-
-    const id =
-      restaurant.id
-
-    saveRestaurantToCache(
-      restaurant
+  const restaurantsResponse =
+    await axiosClient.get(
+      '/restaurants'
     )
 
-    // -------------------------------------------------
-    // GET CATEGORIES / MEALS / ORDERS
-    // -------------------------------------------------
+  const restaurantsData =
+    restaurantsResponse.data?.data ||
+    restaurantsResponse.data ||
+    []
 
-    const [
-      categoriesResponse,
-      mealsResponse,
-      ordersResponse,
-    ] = await Promise.all([
-      axiosClient.get(
-        `/restaurants/${id}/categories`
-      ),
+  const restaurant =
+    Array.isArray(
+      restaurantsData
+    )
+      ? restaurantsData[0]
+      : null
 
-      axiosClient.get(
-        `/restaurants/${id}/meals`
-      ),
+  if (!restaurant?.id) {
+    throw new Error(
+      translations.restaurantNotFound ||
+        'Restaurant not found.'
+    )
+  }
 
-      axiosClient.get(
-        `/restaurants/${id}/orders`
-      ),
-    ])
+  const id =
+    restaurant.id
 
-    // -------------------------------------------------
-    // NORMALIZE API DATA
-    // -------------------------------------------------
+  // ===================================================
+  // SAVE RESTAURANT CACHE
+  // ===================================================
 
-    const categories =
-      categoriesResponse.data?.data ||
-      categoriesResponse.data ||
-      []
+  saveRestaurantToCache(
+    restaurant
+  )
 
-    const meals =
-      mealsResponse.data?.data ||
-      mealsResponse.data ||
-      []
+  // ===================================================
+  // GET CATEGORIES / MEALS / ORDERS
+  // ===================================================
 
-    const orders =
-      ordersResponse.data?.data ||
-      ordersResponse.data ||
-      []
+  const [
+    categoriesResponse,
+    mealsResponse,
+    ordersResponse,
+  ] = await Promise.all([
+    axiosClient.get(
+      `/restaurants/${id}/categories`
+    ),
 
-    const normalizedCategories =
-      Array.isArray(categories)
-        ? categories
-        : []
+    axiosClient.get(
+      `/restaurants/${id}/meals`
+    ),
 
-    const normalizedMeals =
-      Array.isArray(meals)
-        ? meals
-        : []
+    axiosClient.get(
+      `/restaurants/${id}/orders`
+    ),
+  ])
 
-    const normalizedOrders =
-      Array.isArray(orders)
-        ? orders
-        : []
+  // ===================================================
+  // NORMALIZE API DATA
+  // ===================================================
 
-    // -------------------------------------------------
-    // POPULAR MEALS
-    // -------------------------------------------------
+  const categories =
+    categoriesResponse.data?.data ||
+    categoriesResponse.data ||
+    []
 
-    const mealOrderCount = {}
+  const meals =
+    mealsResponse.data?.data ||
+    mealsResponse.data ||
+    []
 
-    normalizedOrders.forEach(
-      (order) => {
+  const orders =
+    ordersResponse.data?.data ||
+    ordersResponse.data ||
+    []
 
-        const items =
-          Array.isArray(
-            order.items
-          )
-            ? order.items
-            : []
+  const normalizedCategories =
+    Array.isArray(categories)
+      ? categories
+      : []
 
-        items.forEach((item) => {
+  const normalizedMeals =
+    Array.isArray(meals)
+      ? meals
+      : []
+
+  const normalizedOrders =
+    Array.isArray(orders)
+      ? orders
+      : []
+
+  // ===================================================
+  // NOTIFICATION
+  // ===================================================
+  //
+  // إذا كان عندنا orders
+  // نخلي notification = true
+  //
+  // dispatch كيتوصل من Component
+  // وما بقيناش كنستعملو useDispatch هنا
+  //
+  // ===================================================
+
+  if (
+    normalizedOrders.length > 0 &&
+    dispatch
+  ) {
+    dispatch(
+      setNotafication(true)
+    )
+  }
+
+  // ===================================================
+  // POPULAR MEALS
+  // ===================================================
+
+  const mealOrderCount = {}
+
+  normalizedOrders.forEach(
+    (order) => {
+
+      const items =
+        Array.isArray(
+          order.items
+        )
+          ? order.items
+          : []
+
+      items.forEach(
+        (item) => {
 
           const mealId =
             item.meal_id ||
@@ -336,41 +382,55 @@ export const fetchDashboardData =
                 mealId
               ] || 0
             ) + quantity
-        })
-      }
-    )
+        }
+      )
+    }
+  )
 
-    const sortedMeals =
-      [...normalizedMeals]
-        .map((meal) => ({
-          ...meal,
+  // ===================================================
+  // SORT MEALS
+  // ===================================================
 
-          orderCount:
-            mealOrderCount[
-              meal.id
-            ] || 0,
-        }))
-        .sort(
-          (a, b) =>
-            b.orderCount -
-            a.orderCount
-        )
+  const sortedMeals =
+    [...normalizedMeals]
+      .map((meal) => ({
+        ...meal,
 
-    const topMeals =
-      sortedMeals.slice(0, 4)
+        orderCount:
+          mealOrderCount[
+            meal.id
+          ] || 0,
+      }))
+      .sort(
+        (a, b) =>
+          b.orderCount -
+          a.orderCount
+      )
 
-    const maxOrders =
-      topMeals.length > 0
-        ? Math.max(
-            ...topMeals.map(
-              (meal) =>
-                meal.orderCount
-            )
+  // ===================================================
+  // TOP 4 MEALS
+  // ===================================================
+
+  const topMeals =
+    sortedMeals.slice(0, 4)
+
+  const maxOrders =
+    topMeals.length > 0
+      ? Math.max(
+          ...topMeals.map(
+            (meal) =>
+              meal.orderCount
           )
-        : 0
+        )
+      : 0
 
-    const popularMeals =
-      topMeals.map((meal) => ({
+  // ===================================================
+  // POPULAR MEALS DATA
+  // ===================================================
+
+  const popularMeals =
+    topMeals.map(
+      (meal) => ({
         id: meal.id,
 
         name:
@@ -388,77 +448,85 @@ export const fetchDashboardData =
 
         orderCount:
           meal.orderCount,
-      }))
-
-    // -------------------------------------------------
-    // RECENT ACTIVITIES
-    // -------------------------------------------------
-
-    const recentOrders =
-      [...normalizedOrders]
-        .sort(
-          (a, b) =>
-            new Date(
-              b.created_at || 0
-            ) -
-            new Date(
-              a.created_at || 0
-            )
-        )
-        .slice(0, 4)
-
-    const activities =
-      recentOrders.map(
-        (order) => ({
-          id: order.id,
-
-          event:
-            `${translations.newOrderReceived || 'New order received'} #${order.id}`,
-
-          time:
-            formatRelativeTime(
-              order.created_at,
-              language
-            ),
-        })
-      )
-
-    // -------------------------------------------------
-    // MENU VIEWS
-    // -------------------------------------------------
-
-    const menuViews =
-      getCachedMenuViews()
-
-    // -------------------------------------------------
-    // FINAL DASHBOARD
-    // -------------------------------------------------
-
-    const newDashboard = {
-      totalMeals:
-        normalizedMeals.length,
-
-      totalCategories:
-        normalizedCategories.length,
-
-      totalOrders:
-        normalizedOrders.length,
-
-      menuViews,
-
-      popularMeals,
-
-      activities,
-    }
-
-    // -------------------------------------------------
-    // SAVE CACHE
-    // -------------------------------------------------
-
-    saveDashboardToCache(
-      newDashboard
+      })
     )
 
-    return newDashboard
+  // ===================================================
+  // RECENT ACTIVITIES
+  // ===================================================
+
+  const recentOrders =
+    [...normalizedOrders]
+      .sort(
+        (a, b) =>
+          new Date(
+            b.created_at || 0
+          ) -
+          new Date(
+            a.created_at || 0
+          )
+      )
+      .slice(0, 4)
+
+  const activities =
+    recentOrders.map(
+      (order) => ({
+        id: order.id,
+
+        event:
+          `${
+            translations.newOrderReceived ||
+            'New order received'
+          } #${order.id}`,
+
+        time:
+          formatRelativeTime(
+            order.created_at,
+            language
+          ),
+      })
+    )
+
+  // ===================================================
+  // MENU VIEWS
+  // ===================================================
+
+  const menuViews =
+    getCachedMenuViews()
+
+  // ===================================================
+  // FINAL DASHBOARD
+  // ===================================================
+
+  const newDashboard = {
+    totalMeals:
+      normalizedMeals.length,
+
+    totalCategories:
+      normalizedCategories.length,
+
+    totalOrders:
+      normalizedOrders.length,
+
+    menuViews,
+
+    popularMeals,
+
+    activities,
   }
+
+  // ===================================================
+  // SAVE DASHBOARD CACHE
+  // ===================================================
+
+  saveDashboardToCache(
+    newDashboard
+  )
+
+  // ===================================================
+  // RETURN
+  // ===================================================
+
+  return newDashboard
+}
  

@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
+
+import {
+  useSelector,
+} from 'react-redux'
+
 import {
   Plus,
   Pencil,
@@ -17,649 +25,1235 @@ import {
   deleteAllTables,
 } from '../../data/dataTables'
 
-import {
-  setTables,
-  setRestaurantInfo,
-  setTablesLoading,
-  setTablesError,
-  clearTables,
-} from '../../store/tableSlice'
-
 import translations from '../../i18n/translations'
 
+
 const TablesPage = () => {
-  const dispatch = useDispatch()
 
-  const { language } = useSelector((state) => state.ui)
+  const { language } =
+    useSelector(
+      (state) => state.ui
+    )
 
-  const {
+  const t =
+    translations[language] ||
+    translations.en ||
+    {}
+
+
+  // =====================================================
+  // CACHE KEYS
+  // =====================================================
+
+  const TABLES_CACHE_KEY =
+    'restaurant_tables_cache'
+
+  const RESTAURANT_CACHE_KEY =
+    'restaurant_current_cache'
+
+
+  // =====================================================
+  // GET CACHED TABLES
+  // =====================================================
+
+  const getCachedTables = () => {
+
+    try {
+
+      const cached =
+        localStorage.getItem(
+          TABLES_CACHE_KEY
+        )
+
+      return cached
+        ? JSON.parse(cached)
+        : []
+
+    } catch {
+
+      return []
+
+    }
+
+  }
+
+
+  // =====================================================
+  // GET CACHED RESTAURANT
+  // =====================================================
+
+  const getCachedRestaurant = () => {
+
+    try {
+
+      const cached =
+        localStorage.getItem(
+          RESTAURANT_CACHE_KEY
+        )
+
+      return cached
+        ? JSON.parse(cached)
+        : null
+
+    } catch {
+
+      return null
+
+    }
+
+  }
+
+
+  // =====================================================
+  // STATE
+  // =====================================================
+
+  const cachedRestaurant =
+    getCachedRestaurant()
+
+  const cachedTables =
+    getCachedTables()
+
+
+  const [
     tables,
+    setTables,
+  ] = useState(
+    cachedTables
+  )
+
+
+  const [
     restaurantId,
+    setRestaurantId,
+  ] = useState(
+    cachedRestaurant?.id ||
+    null
+  )
+
+
+  const [
     restaurantSlug,
-    loading,
+    setRestaurantSlug,
+  ] = useState(
+    cachedRestaurant?.slug ||
+    null
+  )
+
+
+  // =====================================================
+  // PAGE LOADING
+  // =====================================================
+
+  const [
+    // loading,
+    setLoading,
+  ] = useState(
+    cachedTables.length === 0
+  )
+
+
+  // =====================================================
+  // REFRESH LOADING
+  // =====================================================
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false)
+
+
+  // =====================================================
+  // OTHER STATES
+  // =====================================================
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false)
+
+
+  const [
     error,
-  } = useSelector((state) => state.tables)
+    setError,
+  ] = useState('')
 
-  const t = translations[language] || translations.en || {}
 
-  // =====================================================
-  // EDIT MODAL
-  // =====================================================
+  const [
+    open,
+    setOpen,
+  ] = useState(false)
 
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [deletingAll, setDeletingAll] = useState(false)
+
+  const [
+    editing,
+    setEditing,
+  ] = useState(null)
+
+
+  const [
+    deletingAll,
+    setDeletingAll,
+  ] = useState(false)
+
 
   // =====================================================
   // QR MODAL
   // =====================================================
 
-  const [qrTable, setQrTable] = useState(null)
-  const [copied, setCopied] = useState(false)
+  const [
+    qrTable,
+    setQrTable,
+  ] = useState(null)
+
+
+  const [
+    copied,
+    setCopied,
+  ] = useState(false)
+
 
   // =====================================================
   // FORM
   // =====================================================
 
-  const [form, setForm] = useState({
+  const [
+    form,
+    setForm,
+  ] = useState({
     number: '',
     name: '',
     status: 'available',
   })
 
+
   // =====================================================
   // BULK ADD
   // =====================================================
 
-  const [bulkOpen, setBulkOpen] = useState(false)
-  const [bulkCount, setBulkCount] = useState('')
-  const [bulkSaving, setBulkSaving] = useState(false)
-  const [bulkError, setBulkError] = useState('')
+  const [
+    bulkOpen,
+    setBulkOpen,
+  ] = useState(false)
+
+
+  const [
+    bulkCount,
+    setBulkCount,
+  ] = useState('')
+
+
+  const [
+    bulkSaving,
+    setBulkSaving,
+  ] = useState(false)
+
+
+  const [
+    bulkError,
+    setBulkError,
+  ] = useState('')
+
 
   // =====================================================
-  // LOAD TABLES
+  // SAVE TABLES CACHE
   // =====================================================
 
-  const loadTables = useCallback(async () => {
-    dispatch(setTablesError(''))
+  const saveTablesToCache =
+    useCallback((data) => {
 
-    try {
-      // -------------------------------------------------
-      // GET RESTAURANT
-      // -------------------------------------------------
+      try {
 
-      const restaurantsResponse =
-        await getRestaurants()
+        localStorage.setItem(
+          TABLES_CACHE_KEY,
+          JSON.stringify(data)
+        )
 
-      const restaurantsData =
-        restaurantsResponse.data?.data ||
-        restaurantsResponse.data ||
-        []
+      } catch (err) {
 
-      const restaurant =
-        restaurantsData[0] || null
+        console.error(
+          'Save tables cache error:',
+          err
+        )
 
-      if (!restaurant?.id) {
-        dispatch(clearTables())
-        return
       }
 
-      const id = restaurant.id
-      const slug = restaurant.slug || null
+    }, [])
 
-      dispatch(
-        setRestaurantInfo({
-          id,
-          slug,
-        })
-      )
 
-      // -------------------------------------------------
-      // GET TABLES
-      // -------------------------------------------------
+  // =====================================================
+  // SAVE RESTAURANT CACHE
+  // =====================================================
 
-      const response =
-        await getTables(id)
+  const saveRestaurantToCache =
+    useCallback((restaurant) => {
 
-      const data =
-        response.data?.data ||
-        response.data ||
-        []
+      try {
 
-      const normalizedTables =
-        Array.isArray(data)
-          ? data
-          : []
+        localStorage.setItem(
+          RESTAURANT_CACHE_KEY,
+          JSON.stringify({
+            id:
+              restaurant?.id ||
+              null,
 
-      dispatch(
-        setTables(normalizedTables)
-      )
-    } catch (err) {
-      console.error(
-        'Load tables error:',
-        err
-      )
-
-      dispatch(
-        setTablesError(
-          err?.response?.data?.message ||
-            err?.message ||
-            t.loadTablesError ||
-            'Failed to load tables.'
+            slug:
+              restaurant?.slug ||
+              null,
+          })
         )
-      )
-    } finally {
-      dispatch(setTablesLoading(false))
-    }
-  }, [
-    dispatch,
-    t.loadTablesError,
-  ])
+
+      } catch (err) {
+
+        console.error(
+          'Save restaurant cache error:',
+          err
+        )
+
+      }
+
+    }, [])
+
+
+  // =====================================================
+  // LOAD TABLES FROM API
+  // =====================================================
+
+  const loadTables =
+    useCallback(async ({
+      showPageLoading = false,
+    } = {}) => {
+
+      setError('')
+
+      if (showPageLoading) {
+        setLoading(true)
+      }
+
+      try {
+
+        // -------------------------------------------------
+        // GET RESTAURANT
+        // -------------------------------------------------
+
+        const restaurantsResponse =
+          await getRestaurants()
+
+
+        const restaurantsData =
+          restaurantsResponse.data?.data ||
+          restaurantsResponse.data ||
+          []
+
+
+        const restaurant =
+          restaurantsData[0] ||
+          null
+
+
+        // -------------------------------------------------
+        // NO RESTAURANT
+        // -------------------------------------------------
+
+        if (!restaurant?.id) {
+
+          setTables([])
+
+          setRestaurantId(null)
+
+          setRestaurantSlug(null)
+
+          localStorage.removeItem(
+            TABLES_CACHE_KEY
+          )
+
+          localStorage.removeItem(
+            RESTAURANT_CACHE_KEY
+          )
+
+          return
+
+        }
+
+
+        // -------------------------------------------------
+        // RESTAURANT INFO
+        // -------------------------------------------------
+
+        const id =
+          restaurant.id
+
+        const slug =
+          restaurant.slug ||
+          null
+
+
+        setRestaurantId(id)
+
+        setRestaurantSlug(slug)
+
+        saveRestaurantToCache(
+          restaurant
+        )
+
+
+        // -------------------------------------------------
+        // GET TABLES
+        // -------------------------------------------------
+
+        const response =
+          await getTables(id)
+
+
+        const data =
+          response.data?.data ||
+          response.data ||
+          []
+
+
+        const normalizedTables =
+          Array.isArray(data)
+            ? data
+            : []
+
+
+        // -------------------------------------------------
+        // UPDATE STATE
+        // -------------------------------------------------
+
+        setTables(
+          normalizedTables
+        )
+
+
+        // -------------------------------------------------
+        // UPDATE CACHE
+        // -------------------------------------------------
+
+        saveTablesToCache(
+          normalizedTables
+        )
+
+      } catch (err) {
+
+        console.error(
+          'Load tables error:',
+          err
+        )
+
+        setError(
+          err?.response?.data?.message ||
+          err?.message ||
+          t.loadTablesError ||
+          'Failed to load tables.'
+        )
+
+      } finally {
+
+        if (showPageLoading) {
+          setLoading(false)
+        }
+
+      }
+
+    }, [
+      saveTablesToCache,
+      saveRestaurantToCache,
+      t.loadTablesError,
+    ])
+
 
   // =====================================================
   // INITIAL LOAD
   // =====================================================
 
   useEffect(() => {
+
     let cancelled = false
 
     const run = async () => {
-      if (cancelled) return
 
-      dispatch(setTablesLoading(true))
+      if (cancelled) {
+        return
+      }
 
-      await loadTables()
+      await loadTables({
+        showPageLoading:
+          cachedTables.length === 0,
+      })
+
     }
 
     run()
 
     return () => {
+
       cancelled = true
+
     }
-  }, [dispatch, loadTables])
+
+  }, [
+    loadTables,
+    cachedTables.length,
+  ])
+
 
   // =====================================================
   // REFRESH
   // =====================================================
 
-  const handleRefresh = async () => {
-    dispatch(setTablesLoading(true))
-    await loadTables()
-  }
+  const handleRefresh =
+    async () => {
+
+      if (refreshing) {
+        return
+      }
+
+      setRefreshing(true)
+
+      setError('')
+
+      try {
+
+        await loadTables({
+          showPageLoading: false,
+        })
+
+      } finally {
+
+        setRefreshing(false)
+
+      }
+
+    }
+
 
   // =====================================================
   // DELETE ALL TABLES
   // =====================================================
 
-  const handleDeleteAll = async () => {
-    if (
-      !restaurantId ||
-      tables.length === 0
-    ) {
-      return
-    }
+  const handleDeleteAll =
+    async () => {
 
-    const confirmed =
-      window.confirm(
-        `${t.deleteAllTablesConfirm} (${tables.length})?`
-      )
+      if (
+        !restaurantId ||
+        tables.length === 0
+      ) {
+        return
+      }
 
-    if (!confirmed) return
 
-    setDeletingAll(true)
-    dispatch(setTablesError(''))
-
-    try {
-      await deleteAllTables(
-        restaurantId
-      )
-
-      dispatch(setTables([]))
-    } catch (err) {
-      console.error(
-        'Delete all tables error:',
-        err
-      )
-
-      dispatch(
-        setTablesError(
-          err?.response?.data?.message ||
-            err?.message ||
-            t.deleteAllTablesError ||
-            'Failed to delete all tables.'
+      const confirmed =
+        window.confirm(
+          `${t.deleteAllTablesConfirm} (${tables.length})?`
         )
-      )
-    } finally {
-      setDeletingAll(false)
+
+
+      if (!confirmed) {
+        return
+      }
+
+
+      setDeletingAll(true)
+
+      setError('')
+
+
+      try {
+
+        await deleteAllTables(
+          restaurantId
+        )
+
+
+        setTables([])
+
+        saveTablesToCache([])
+
+      } catch (err) {
+
+        console.error(
+          'Delete all tables error:',
+          err
+        )
+
+
+        setError(
+          err?.response?.data?.message ||
+          err?.message ||
+          t.deleteAllTablesError ||
+          'Failed to delete all tables.'
+        )
+
+      } finally {
+
+        setDeletingAll(false)
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // OPEN BULK ADD
   // =====================================================
 
-  const handleOpenBulkAdd = () => {
-    setBulkCount('')
-    setBulkError('')
-    setBulkOpen(true)
-  }
+  const handleOpenBulkAdd =
+    () => {
+
+      setBulkCount('')
+
+      setBulkError('')
+
+      setBulkOpen(true)
+
+    }
+
 
   // =====================================================
   // BULK CREATE
   // =====================================================
 
-  const handleBulkSave = async () => {
-    if (!restaurantId) {
-      setBulkError(
-        t.restaurantNotFound ||
+  const handleBulkSave =
+    async () => {
+
+      if (!restaurantId) {
+
+        setBulkError(
+          t.restaurantNotFound ||
           'Restaurant not found.'
-      )
-      return
-    }
-
-    const count = Number(bulkCount)
-
-    if (!count || count < 1) {
-      setBulkError(
-        t.tableCountRequired ||
-          'Table count is required.'
-      )
-      return
-    }
-
-    setBulkSaving(true)
-    setBulkError('')
-
-    try {
-      const existingNumbers =
-        tables.map(
-          (table) =>
-            Number(table.number) || 0
         )
 
-      const startNumber =
-        existingNumbers.length > 0
-          ? Math.max(
-              ...existingNumbers
-            ) + 1
-          : 1
+        return
 
-      const requests = []
-
-      for (
-        let i = 0;
-        i < count;
-        i += 1
-      ) {
-        const number =
-          startNumber + i
-
-        requests.push(
-          createTable(
-            restaurantId,
-            {
-              number,
-              name: `${number}`,
-              status: 'available',
-            }
-          )
-        )
       }
 
-      await Promise.all(requests)
 
-      // نعاودو نجيبو data الجديدة
-      await loadTables()
+      const count =
+        Number(bulkCount)
 
-      setBulkOpen(false)
-      setBulkCount('')
-    } catch (err) {
-      console.error(
-        'Bulk add tables error:',
-        err
-      )
 
-      setBulkError(
-        err?.response?.data?.message ||
+      if (
+        !count ||
+        count < 1
+      ) {
+
+        setBulkError(
+          t.tableCountRequired ||
+          'Table count is required.'
+        )
+
+        return
+
+      }
+
+
+      setBulkSaving(true)
+
+      setBulkError('')
+
+
+      try {
+
+        const existingNumbers =
+          tables.map(
+            (table) =>
+              Number(table.number) ||
+              0
+          )
+
+
+        const startNumber =
+          existingNumbers.length > 0
+            ? Math.max(
+                ...existingNumbers
+              ) + 1
+            : 1
+
+
+        const requests = []
+
+
+        for (
+          let i = 0;
+          i < count;
+          i += 1
+        ) {
+
+          const number =
+            startNumber + i
+
+
+          requests.push(
+            createTable(
+              restaurantId,
+              {
+                number,
+
+                name:
+                  `${number}`,
+
+                status:
+                  'available',
+              }
+            )
+          )
+
+        }
+
+
+        await Promise.all(
+          requests
+        )
+
+
+        // نجيب data الجديدة بلا page loading
+
+        await loadTables({
+          showPageLoading: false,
+        })
+
+
+        setBulkOpen(false)
+
+        setBulkCount('')
+
+      } catch (err) {
+
+        console.error(
+          'Bulk add tables error:',
+          err
+        )
+
+
+        setBulkError(
+          err?.response?.data?.message ||
           err?.message ||
           t.saveTableError ||
           'Failed to save table.'
-      )
-    } finally {
-      setBulkSaving(false)
+        )
+
+      } finally {
+
+        setBulkSaving(false)
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // EDIT
   // =====================================================
 
-  const handleEdit = (table) => {
-    setEditing(table)
+  const handleEdit =
+    (table) => {
 
-    setForm({
-      number: table.number || '',
-      name: table.name || '',
-      status:
-        table.status || 'available',
-    })
+      setEditing(table)
 
-    dispatch(setTablesError(''))
 
-    setOpen(true)
-  }
+      setForm({
+        number:
+          table.number ||
+          '',
+
+        name:
+          table.name ||
+          '',
+
+        status:
+          table.status ||
+          'available',
+      })
+
+
+      setError('')
+
+      setOpen(true)
+
+    }
+
 
   // =====================================================
   // SAVE EDIT
   // =====================================================
 
-  const handleSave = async () => {
-    if (!restaurantId) {
-      dispatch(
-        setTablesError(
+  const handleSave =
+    async () => {
+
+      if (!restaurantId) {
+
+        setError(
           t.restaurantNotFound ||
-            'Restaurant not found.'
+          'Restaurant not found.'
         )
-      )
-      return
-    }
 
-    if (!form.number) {
-      dispatch(
-        setTablesError(
-          t.tableNumberRequired ||
-            'Table number is required.'
-        )
-      )
-      return
-    }
+        return
 
-    if (!editing?.id) {
-      dispatch(
-        setTablesError(
-          'Table not found.'
-        )
-      )
-      return
-    }
-
-    setDeletingAll(false)
-    setBulkError('')
-
-    dispatch(setTablesError(''))
-
-    try {
-      const payload = {
-        number: Number(
-          form.number
-        ),
-        name:
-          form.name ||
-          `${t.table || 'Table'} ${form.number}`,
-        status: form.status,
       }
 
-      const response =
-        await updateTable(
-          restaurantId,
-          editing.id,
-          payload
+
+      if (!form.number) {
+
+        setError(
+          t.tableNumberRequired ||
+          'Table number is required.'
         )
 
-      const updatedTable =
-        response.data?.table ||
-        response.data?.data ||
-        response.data
+        return
 
-      const updatedTables =
-        tables.map((table) =>
-          table.id === editing.id
-            ? updatedTable
-            : table
+      }
+
+
+      if (!editing?.id) {
+
+        setError(
+          'Table not found.'
         )
 
-      dispatch(
-        setTables(updatedTables)
-      )
+        return
 
-      setOpen(false)
-      setEditing(null)
+      }
 
-      setForm({
-        number: '',
-        name: '',
-        status: 'available',
-      })
-    } catch (err) {
-      console.error(
-        'Save table error:',
-        err
-      )
 
-      dispatch(
-        setTablesError(
+      setSaving(true)
+
+      setError('')
+
+
+      try {
+
+        const payload = {
+
+          number:
+            Number(form.number),
+
+          name:
+            form.name ||
+            `${t.table || 'Table'} ${form.number}`,
+
+          status:
+            form.status,
+
+        }
+
+
+        const response =
+          await updateTable(
+            restaurantId,
+            editing.id,
+            payload
+          )
+
+
+        const updatedTable =
+          response.data?.table ||
+          response.data?.data ||
+          response.data
+
+
+        setTables(
+          (current) => {
+
+            const updated =
+              current.map(
+                (table) =>
+                  table.id ===
+                  editing.id
+                    ? updatedTable
+                    : table
+              )
+
+
+            saveTablesToCache(
+              updated
+            )
+
+
+            return updated
+
+          }
+        )
+
+
+        setOpen(false)
+
+        setEditing(null)
+
+
+        setForm({
+          number: '',
+          name: '',
+          status:
+            'available',
+        })
+
+      } catch (err) {
+
+        console.error(
+          'Save table error:',
+          err
+        )
+
+
+        setError(
           err?.response?.data?.message ||
-            err?.message ||
-            t.saveTableError ||
-            'Failed to save table.'
+          err?.message ||
+          t.saveTableError ||
+          'Failed to save table.'
         )
-      )
+
+      } finally {
+
+        setSaving(false)
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // MENU URL
   // =====================================================
 
-  const getMenuUrl = (table) => {
-    if (
-      !restaurantSlug ||
-      !table?.qr_token
-    ) {
-      return ''
+  const getMenuUrl =
+    (table) => {
+
+      if (
+        !restaurantSlug ||
+        !table?.qr_token
+      ) {
+        return ''
+      }
+
+
+      return `https://menu-online.vercel.app/menu/${restaurantSlug}?table=${table.qr_token}`
+
     }
 
-    return `https://menu-online.vercel.app/menu/${restaurantSlug}?table=${table.qr_token}`
-  }
 
   // =====================================================
   // QR IMAGE
   // =====================================================
 
-  const getQrImageUrl = (table) => {
-    const menuUrl =
-      getMenuUrl(table)
+  const getQrImageUrl =
+    (table) => {
 
-    if (!menuUrl) return ''
+      const menuUrl =
+        getMenuUrl(table)
 
-    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(menuUrl)}`
-  }
+
+      if (!menuUrl) {
+        return ''
+      }
+
+
+      return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(menuUrl)}`
+
+    }
+
 
   // =====================================================
   // OPEN QR
   // =====================================================
 
-  const handleOpenQr = (table) => {
-    setQrTable(table)
-    setCopied(false)
-  }
+  const handleOpenQr =
+    (table) => {
+
+      setQrTable(table)
+
+      setCopied(false)
+
+    }
+
 
   // =====================================================
   // CLOSE QR
   // =====================================================
 
-  const handleCloseQr = () => {
-    setQrTable(null)
-    setCopied(false)
-  }
+  const handleCloseQr =
+    () => {
+
+      setQrTable(null)
+
+      setCopied(false)
+
+    }
+
 
   // =====================================================
   // COPY URL
   // =====================================================
 
-  const handleCopyMenuUrl = async (table) => {
-    const menuUrl =
-      getMenuUrl(table)
+  const handleCopyMenuUrl =
+    async (table) => {
 
-    if (!menuUrl) return
+      const menuUrl =
+        getMenuUrl(table)
 
-    try {
-      await navigator.clipboard.writeText(
-        menuUrl
-      )
 
-      setCopied(true)
+      if (!menuUrl) {
+        return
+      }
 
-      setTimeout(
-        () => setCopied(false),
-        2000
-      )
-    } catch (err) {
-      console.error(
-        'Copy menu URL error:',
-        err
-      )
+
+      try {
+
+        await navigator.clipboard.writeText(
+          menuUrl
+        )
+
+
+        setCopied(true)
+
+
+        setTimeout(
+          () =>
+            setCopied(false),
+          2000
+        )
+
+      } catch (err) {
+
+        console.error(
+          'Copy menu URL error:',
+          err
+        )
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // DOWNLOAD QR
   // =====================================================
 
-  const handleDownloadQr = async (table) => {
-    const qrImageUrl =
-      getQrImageUrl(table)
+  const handleDownloadQr =
+    async (table) => {
 
-    if (!qrImageUrl) return
+      const qrImageUrl =
+        getQrImageUrl(table)
 
-    try {
-      const response =
-        await fetch(qrImageUrl)
 
-      const blob =
-        await response.blob()
+      if (!qrImageUrl) {
+        return
+      }
 
-      const url =
-        window.URL.createObjectURL(
-          blob
+
+      try {
+
+        const response =
+          await fetch(
+            qrImageUrl
+          )
+
+
+        const blob =
+          await response.blob()
+
+
+        const url =
+          window.URL.createObjectURL(
+            blob
+          )
+
+
+        const link =
+          document.createElement(
+            'a'
+          )
+
+
+        link.href = url
+
+
+        link.download =
+          `table-${table.number}-qr.png`
+
+
+        document.body.appendChild(
+          link
         )
 
-      const link =
-        document.createElement('a')
 
-      link.href = url
+        link.click()
 
-      link.download =
-        `table-${table.number}-qr.png`
 
-      document.body.appendChild(link)
+        document.body.removeChild(
+          link
+        )
 
-      link.click()
 
-      document.body.removeChild(link)
+        window.URL.revokeObjectURL(
+          url
+        )
 
-      window.URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error(
-        'Download QR code error:',
-        err
-      )
+      } catch (err) {
+
+        console.error(
+          'Download QR code error:',
+          err
+        )
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // DELETE SINGLE TABLE
   // =====================================================
 
-  const handleDelete = async (table) => {
-    if (
-      !restaurantId ||
-      !table?.id
-    ) {
-      return
-    }
+  const handleDelete =
+    async (table) => {
 
-    const tableName =
-      table.name ||
-      `${t.table || 'Table'} ${table.number}`
+      if (
+        !restaurantId ||
+        !table?.id
+      ) {
+        return
+      }
 
-    const confirmed =
-      window.confirm(
-        `${t.deleteTableConfirm} "${tableName}"?`
-      )
 
-    if (!confirmed) return
+      const tableName =
+        table.name ||
+        `${t.table || 'Table'} ${table.number}`
 
-    dispatch(setTablesError(''))
 
-    try {
-      await deleteTable(
-        restaurantId,
-        table.id
-      )
-
-      const updatedTables =
-        tables.filter(
-          (item) =>
-            item.id !== table.id
+      const confirmed =
+        window.confirm(
+          `${t.deleteTableConfirm} "${tableName}"?`
         )
 
-      dispatch(
-        setTables(updatedTables)
-      )
-    } catch (err) {
-      console.error(
-        'Delete table error:',
-        err
-      )
 
-      dispatch(
-        setTablesError(
+      if (!confirmed) {
+        return
+      }
+
+
+      setError('')
+
+
+      try {
+
+        await deleteTable(
+          restaurantId,
+          table.id
+        )
+
+
+        setTables(
+          (current) => {
+
+            const updated =
+              current.filter(
+                (item) =>
+                  item.id !==
+                  table.id
+              )
+
+
+            saveTablesToCache(
+              updated
+            )
+
+
+            return updated
+
+          }
+        )
+
+      } catch (err) {
+
+        console.error(
+          'Delete table error:',
+          err
+        )
+
+
+        setError(
           err?.response?.data?.message ||
-            err?.message ||
-            t.deleteTableError ||
-            'Failed to delete table.'
+          err?.message ||
+          t.deleteTableError ||
+          'Failed to delete table.'
         )
-      )
+
+      }
+
     }
-  }
+
 
   // =====================================================
   // STATUS LABEL
   // =====================================================
 
-  const getStatusLabel = (status) => {
-    const labels = {
-      available: t.available,
-      occupied: t.occupied,
-      reserved: t.reserved,
+  const getStatusLabel =
+    (status) => {
+
+      const labels = {
+
+        available:
+          t.available,
+
+        occupied:
+          t.occupied,
+
+        reserved:
+          t.reserved,
+
+      }
+
+
+      return (
+        labels[status] ||
+        status
+      )
+
     }
 
-    return (
-      labels[status] ||
-      status
-    )
-  }
 
   // =====================================================
   // STATUS CLASS
   // =====================================================
 
-  const getStatusClass = (status) => {
-    if (status === 'available') {
-      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+  const getStatusClass =
+    (status) => {
+
+      if (
+        status ===
+        'available'
+      ) {
+
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+
+      }
+
+
+      if (
+        status ===
+        'occupied'
+      ) {
+
+        return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+
+      }
+
+
+      if (
+        status ===
+        'reserved'
+      ) {
+
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
+
+      }
+
+
+      return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+
     }
 
-    if (status === 'occupied') {
-      return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-    }
-
-    if (status === 'reserved') {
-      return 'bg-amber-500/10 text-amber-600 dark:text-amber-300'
-    }
-
-    return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
-  }
 
   // =====================================================
   // UI
@@ -669,9 +1263,11 @@ const TablesPage = () => {
     <div className="text-slate-900 dark:text-slate-100">
 
       {/* HEADER */}
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
+
           <h1 className="text-2xl font-semibold">
             {t.tables}
           </h1>
@@ -679,21 +1275,29 @@ const TablesPage = () => {
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t.tablesDescription}
           </p>
+
         </div>
+
 
         <div className="flex gap-2">
 
           {/* REFRESH */}
+
           <button
             type="button"
-            onClick={handleRefresh}
-            disabled={loading}
+            onClick={
+              handleRefresh
+            }
+            disabled={
+              refreshing
+            }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
+
             <RefreshCw
               size={17}
               className={
-                loading
+                refreshing
                   ? 'animate-spin'
                   : ''
               }
@@ -702,16 +1306,25 @@ const TablesPage = () => {
             <span className="hidden sm:inline">
               {t.refresh}
             </span>
+
           </button>
 
+
           {/* DELETE ALL */}
+
           {tables.length > 0 && (
+
             <button
               type="button"
-              onClick={handleDeleteAll}
-              disabled={deletingAll}
+              onClick={
+                handleDeleteAll
+              }
+              disabled={
+                deletingAll
+              }
               className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
             >
+
               <Trash2
                 size={17}
                 className={
@@ -722,70 +1335,103 @@ const TablesPage = () => {
               />
 
               <span className="hidden sm:inline">
+
                 {deletingAll
                   ? t.deletingAll
                   : t.deleteAll}
+
               </span>
+
             </button>
+
           )}
 
+
           {/* ADD */}
+
           <button
             type="button"
-            onClick={handleOpenBulkAdd}
+            onClick={
+              handleOpenBulkAdd
+            }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
+
             <Plus size={18} />
+
             {t.addTable}
+
           </button>
 
         </div>
+
       </div>
 
+
       {/* ERROR */}
+
       {error && (
+
         <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+
           {error}
+
         </div>
+
       )}
 
+
       {/* LOADING */}
-      {loading ? (
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
+      {
+      // loading ? (
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+      //   <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
 
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-            {t.loading}
-          </p>
+      //     <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
-        </div>
+      //     <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+      //       {t.loading}
+      //     </p>
 
-      ) : tables.length === 0 ? (
+      //   </div>
+
+      // ) : 
+      tables.length === 0 ? (
 
         /* EMPTY */
+
         <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
+
             <QrCode size={30} />
+
           </div>
+
 
           <h2 className="mt-5 text-xl font-semibold">
             {t.noTables}
           </h2>
 
+
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             {t.noTablesDescription}
           </p>
 
+
           <button
             type="button"
-            onClick={handleOpenBulkAdd}
+            onClick={
+              handleOpenBulkAdd
+            }
             className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-600"
           >
+
             <Plus size={18} />
+
             {t.addTable}
+
           </button>
 
         </div>
@@ -793,125 +1439,163 @@ const TablesPage = () => {
       ) : (
 
         /* TABLES */
+
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 
-          {tables.map((table) => (
+          {tables.map(
+            (table) => (
 
-            <div
-              key={table.id}
-              className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
-            >
-
-              {/* TOP */}
-              <div className="flex items-start justify-between gap-3">
-
-                <div className="flex items-center gap-3">
-
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
-                    <span className="text-lg font-bold">
-                      {table.number}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-                      {table.name ||
-                        `${t.table} ${table.number}`}
-                    </h2>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {t.tableNumber}: {table.number}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(table.status)}`}
-                >
-                  {getStatusLabel(
-                    table.status
-                  )}
-                </span>
-
-              </div>
-
-              {/* QR */}
-              <button
-                type="button"
-                onClick={() =>
-                  handleOpenQr(table)
-                }
-                className="mt-6 w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800 dark:hover:bg-slate-900"
+              <div
+                key={table.id}
+                className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
               >
 
-                <div className="flex items-center gap-3">
+                {/* TOP */}
 
-                  <QrCode
-                    size={22}
-                    className="shrink-0 text-slate-500"
-                  />
+                <div className="flex items-start justify-between gap-3">
 
-                  <div className="min-w-0">
+                  <div className="flex items-center gap-3">
 
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {t.qrToken}
-                    </p>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
 
-                    <p className="mt-1 truncate font-mono text-xs text-slate-700 dark:text-slate-300">
-                      {table.qr_token || '—'}
-                    </p>
+                      <span className="text-lg font-bold">
+                        {table.number}
+                      </span>
+
+                    </div>
+
+
+                    <div className="min-w-0">
+
+                      <h2 className="font-semibold text-slate-900 dark:text-slate-100">
+
+                        {table.name ||
+                          `${t.table} ${table.number}`}
+
+                      </h2>
+
+
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+
+                        {t.tableNumber}: {table.number}
+
+                      </p>
+
+                    </div>
 
                   </div>
 
+
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(table.status)}`}
+                  >
+
+                    {getStatusLabel(
+                      table.status
+                    )}
+
+                  </span>
+
                 </div>
 
-              </button>
 
-              {/* ACTIONS */}
-              <div className="mt-5 flex gap-2">
+                {/* QR */}
 
                 <button
                   type="button"
                   onClick={() =>
-                    handleEdit(table)
+                    handleOpenQr(
+                      table
+                    )
                   }
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="mt-6 w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800 dark:hover:bg-slate-900"
                 >
-                  <Pencil size={16} />
-                  {t.editTable}
+
+                  <div className="flex items-center gap-3">
+
+                    <QrCode
+                      size={22}
+                      className="shrink-0 text-slate-500"
+                    />
+
+
+                    <div className="min-w-0">
+
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {t.qrToken}
+                      </p>
+
+
+                      <p className="mt-1 truncate font-mono text-xs text-slate-700 dark:text-slate-300">
+                        {table.qr_token ||
+                          '—'}
+                      </p>
+
+                    </div>
+
+                  </div>
+
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleDelete(table)
-                  }
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
-                  aria-label={
-                    t.deleteTable
-                  }
-                >
-                  <Trash2 size={17} />
-                </button>
+
+                {/* ACTIONS */}
+
+                <div className="mt-5 flex gap-2">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleEdit(
+                        table
+                      )
+                    }
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+
+                    <Pencil size={16} />
+
+                    {t.editTable}
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDelete(
+                        table
+                      )
+                    }
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                    aria-label={
+                      t.deleteTable
+                    }
+                  >
+
+                    <Trash2
+                      size={17}
+                    />
+
+                  </button>
+
+                </div>
 
               </div>
 
-            </div>
-
-          ))}
+            )
+          )}
 
         </div>
 
       )}
+
 
       {/* =================================================
           BULK ADD MODAL
       ================================================= */}
 
       {bulkOpen && (
+
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
 
           <div className="w-full max-w-md rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
@@ -930,35 +1614,51 @@ const TablesPage = () => {
 
               </div>
 
+
               <button
                 type="button"
                 onClick={() =>
-                  setBulkOpen(false)
+                  setBulkOpen(
+                    false
+                  )
                 }
                 className="text-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                aria-label={t.close}
+                aria-label={
+                  t.close
+                }
               >
                 ✕
               </button>
 
             </div>
 
+
             {bulkError && (
+
               <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+
                 {bulkError}
+
               </div>
+
             )}
+
 
             <div className="mt-6">
 
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+
                 {t.tableCount}
+
               </label>
+
 
               <input
                 type="number"
                 min="1"
-                value={bulkCount}
+                value={
+                  bulkCount
+                }
                 onChange={(e) =>
                   setBulkCount(
                     e.target.value
@@ -972,28 +1672,42 @@ const TablesPage = () => {
 
             </div>
 
+
             <div className="mt-7 flex justify-end gap-3">
 
               <button
                 type="button"
                 onClick={() =>
-                  setBulkOpen(false)
+                  setBulkOpen(
+                    false
+                  )
                 }
-                disabled={bulkSaving}
+                disabled={
+                  bulkSaving
+                }
                 className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
+
                 {t.cancel}
+
               </button>
+
 
               <button
                 type="button"
-                disabled={bulkSaving}
-                onClick={handleBulkSave}
+                disabled={
+                  bulkSaving
+                }
+                onClick={
+                  handleBulkSave
+                }
                 className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
+
                 {bulkSaving
                   ? t.saving
                   : t.addTable}
+
               </button>
 
             </div>
@@ -1001,13 +1715,16 @@ const TablesPage = () => {
           </div>
 
         </div>
+
       )}
+
 
       {/* =================================================
           EDIT MODAL
       ================================================= */}
 
       {open && (
+
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
 
           <div className="w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
@@ -1026,32 +1743,40 @@ const TablesPage = () => {
 
               </div>
 
+
               <button
                 type="button"
                 onClick={() =>
                   setOpen(false)
                 }
                 className="text-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                aria-label={t.close}
+                aria-label={
+                  t.close
+                }
               >
                 ✕
               </button>
 
             </div>
 
+
             <div className="mt-6 space-y-5">
 
               {/* NUMBER */}
+
               <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.tableNumber}
                 </label>
 
+
                 <input
                   type="number"
                   min="1"
-                  value={form.number}
+                  value={
+                    form.number
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -1065,16 +1790,21 @@ const TablesPage = () => {
 
               </div>
 
+
               {/* NAME */}
+
               <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.tableName}
                 </label>
 
+
                 <input
                   type="text"
-                  value={form.name}
+                  value={
+                    form.name
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -1088,15 +1818,20 @@ const TablesPage = () => {
 
               </div>
 
+
               {/* STATUS */}
+
               <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.status}
                 </label>
 
+
                 <select
-                  value={form.status}
+                  value={
+                    form.status
+                  }
                   onChange={(e) =>
                     setForm({
                       ...form,
@@ -1125,6 +1860,7 @@ const TablesPage = () => {
 
             </div>
 
+
             <div className="mt-7 flex justify-end gap-3">
 
               <button
@@ -1132,21 +1868,32 @@ const TablesPage = () => {
                 onClick={() =>
                   setOpen(false)
                 }
-                disabled={loading}
+                disabled={
+                  saving
+                }
                 className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
+
                 {t.cancel}
+
               </button>
+
 
               <button
                 type="button"
-                disabled={loading}
-                onClick={handleSave}
+                disabled={
+                  saving
+                }
+                onClick={
+                  handleSave
+                }
                 className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading
+
+                {saving
                   ? t.saving
                   : t.saveChanges}
+
               </button>
 
             </div>
@@ -1154,13 +1901,16 @@ const TablesPage = () => {
           </div>
 
         </div>
+
       )}
+
 
       {/* =================================================
           QR MODAL
       ================================================= */}
 
       {qrTable && (
+
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
 
           <div className="w-full max-w-sm rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
@@ -1170,9 +1920,12 @@ const TablesPage = () => {
               <div>
 
                 <h2 className="text-xl font-semibold">
+
                   {qrTable.name ||
                     `${t.table} ${qrTable.number}`}
+
                 </h2>
+
 
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   {t.viewQrCode}
@@ -1180,18 +1933,25 @@ const TablesPage = () => {
 
               </div>
 
+
               <button
                 type="button"
-                onClick={handleCloseQr}
+                onClick={
+                  handleCloseQr
+                }
                 className="text-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                aria-label={t.close}
+                aria-label={
+                  t.close
+                }
               >
                 ✕
               </button>
 
             </div>
 
+
             {/* QR IMAGE */}
+
             <div className="mt-6 flex justify-center">
 
               {getQrImageUrl(
@@ -1199,9 +1959,11 @@ const TablesPage = () => {
               ) ? (
 
                 <img
-                  src={getQrImageUrl(
-                    qrTable
-                  )}
+                  src={
+                    getQrImageUrl(
+                      qrTable
+                    )
+                  }
                   alt={`QR - ${
                     qrTable.name ||
                     qrTable.number
@@ -1219,24 +1981,33 @@ const TablesPage = () => {
 
             </div>
 
+
             {/* URL */}
+
             <div className="mt-5">
 
               <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 {t.menuUrl}
               </label>
 
+
               <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
 
                 <p className="min-w-0 flex-1 truncate font-mono text-xs text-slate-700 dark:text-slate-300">
-                  {getMenuUrl(qrTable)}
+
+                  {getMenuUrl(
+                    qrTable
+                  )}
+
                 </p>
 
               </div>
 
             </div>
 
+
             {/* QR ACTIONS */}
+
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
 
               <button
@@ -1248,10 +2019,13 @@ const TablesPage = () => {
                 }
                 className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
+
                 {copied
                   ? t.copied
                   : t.copyMenuUrl}
+
               </button>
+
 
               <button
                 type="button"
@@ -1262,7 +2036,9 @@ const TablesPage = () => {
                 }
                 className="flex-1 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
               >
+
                 {t.downloadQRCode}
+
               </button>
 
             </div>
@@ -1270,10 +2046,14 @@ const TablesPage = () => {
           </div>
 
         </div>
-      )}
+
+      )
+      }
 
     </div>
   )
 }
 
+
 export default TablesPage
+ 

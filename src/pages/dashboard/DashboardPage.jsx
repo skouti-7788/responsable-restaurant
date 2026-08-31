@@ -4,7 +4,7 @@ import {
   useState,
 } from 'react'
 
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   Activity,
@@ -22,6 +22,7 @@ import {
 import translations from '../../i18n/translations'
 
 const DashboardPage = () => {
+  const dispatch = useDispatch()
   const { language } =
     useSelector(
       (state) => state.ui
@@ -85,6 +86,7 @@ const DashboardPage = () => {
             await fetchDashboardData({
               language,
               translations: t,
+              dispatch,
             })
 
           setDashboard(data)
