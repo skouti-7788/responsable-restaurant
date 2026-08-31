@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient'
+import axiosClient from '../api/axiosClient'
 
 // Get current restaurant
 export const getRestaurants = () =>
