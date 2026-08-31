@@ -180,37 +180,50 @@ const CategoriesPage = () => {
   // REFRESH
   // =====================================================
 
-   // =====================================================
-// REFRESH
-// =====================================================
+  const handleRefresh = async () => {
 
-const handleRefresh = async () => {
+    // Prevent multiple requests
+    if (loading) {
+      return
+    }
 
+    // Clear previous error
     dispatch(
       clearCategoryError()
     )
 
+    // Start loading
     dispatch(
       fetchCategoriesStart()
     )
 
     try {
 
+      // Always make a NEW API request
       const result =
         await loadCategoriesData()
 
-      setRestaurantId(
-        result.restaurant.id
-      )
+      // Update restaurant ID
+      if (
+        result?.restaurant?.id
+      ) {
 
+        setRestaurantId(
+          result.restaurant.id
+        )
+
+      }
+
+      // Update Redux
       dispatch(
         fetchCategoriesSuccess(
-          result.categories
+          result?.categories || []
         )
       )
 
+      // Update cache
       saveCategoriesToCache(
-        result.categories
+        result?.categories || []
       )
 
     } catch (error) {
@@ -233,6 +246,7 @@ const handleRefresh = async () => {
       )
 
     }
+
   }
 
   // =====================================================
@@ -589,7 +603,9 @@ const handleRefresh = async () => {
             onClick={
               handleRefresh
             }
-            
+            disabled={
+              loading
+            }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
 
