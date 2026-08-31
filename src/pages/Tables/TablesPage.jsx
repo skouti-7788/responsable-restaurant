@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Plus,
   Pencil,
@@ -8,64 +8,39 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
-import axiosClient from '../../api/axiosClient'
+import {
+  getRestaurants,
+  getTables,
+  createTable,
+  updateTable,
+  deleteTable,
+  deleteAllTables,
+} from '../../api/dataTables'
+
+import {
+  setTables,
+  setRestaurantInfo,
+  setTablesLoading,
+  setTablesError,
+  clearTables,
+} from '../../store/tableSlice'
+
 import translations from '../../i18n/translations'
 
 const TablesPage = () => {
+  const dispatch = useDispatch()
+
   const { language } = useSelector((state) => state.ui)
+
+  const {
+    tables,
+    restaurantId,
+    restaurantSlug,
+    loading,
+    error,
+  } = useSelector((state) => state.tables)
+
   const t = translations[language] || translations.en || {}
-
-  // =====================================================
-  // CACHE KEYS
-  // =====================================================
-
-  const TABLES_CACHE_KEY = 'restaurant_tables_cache'
-  const RESTAURANT_CACHE_KEY = 'restaurant_current_cache'
-
-  // =====================================================
-  // STATE
-  // =====================================================
-
-  const [tables, setTables] = useState(() => {
-    try {
-      const cached = localStorage.getItem(TABLES_CACHE_KEY)
-      return cached ? JSON.parse(cached) : []
-    } catch {
-      return []
-    }
-  })
-
-  const [restaurantId, setRestaurantId] = useState(() => {
-    try {
-      const cached = localStorage.getItem(RESTAURANT_CACHE_KEY)
-      const restaurant = cached ? JSON.parse(cached) : null
-      return restaurant?.id || null
-    } catch {
-      return null
-    }
-  })
-
-  const [restaurantSlug, setRestaurantSlug] = useState(() => {
-    try {
-      const cached = localStorage.getItem(RESTAURANT_CACHE_KEY)
-      const restaurant = cached ? JSON.parse(cached) : null
-      return restaurant?.slug || null
-    } catch {
-      return null
-    }
-  })
-
-  const [loading, setLoading] = useState(() => {
-    try {
-      const cached = localStorage.getItem(TABLES_CACHE_KEY)
-      return !cached
-    } catch {
-      return true
-    }
-  })
-
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
 
   // =====================================================
   // EDIT MODAL
@@ -102,44 +77,11 @@ const TablesPage = () => {
   const [bulkError, setBulkError] = useState('')
 
   // =====================================================
-  // SAVE TABLES TO CACHE
-  // =====================================================
-
-  const saveTablesToCache = (data) => {
-    try {
-      localStorage.setItem(
-        TABLES_CACHE_KEY,
-        JSON.stringify(data)
-      )
-    } catch (err) {
-      console.error('Save tables cache error:', err)
-    }
-  }
-
-  // =====================================================
-  // SAVE RESTAURANT TO CACHE
-  // =====================================================
-
-  const saveRestaurantToCache = (restaurant) => {
-    try {
-      localStorage.setItem(
-        RESTAURANT_CACHE_KEY,
-        JSON.stringify({
-          id: restaurant?.id || null,
-          slug: restaurant?.slug || null,
-        })
-      )
-    } catch (err) {
-      console.error('Save restaurant cache error:', err)
-    }
-  }
-
-  // =====================================================
-  // LOAD TABLES FROM API
+  // LOAD TABLES
   // =====================================================
 
   const loadTables = useCallback(async () => {
-    setError('')
+    dispatch(setTablesError(''))
 
     try {
       // -------------------------------------------------
@@ -147,7 +89,7 @@ const TablesPage = () => {
       // -------------------------------------------------
 
       const restaurantsResponse =
-        await axiosClient.get('/restaurants')
+        await getRestaurants()
 
       const restaurantsData =
         restaurantsResponse.data?.data ||
@@ -158,32 +100,26 @@ const TablesPage = () => {
         restaurantsData[0] || null
 
       if (!restaurant?.id) {
-        setTables([])
-        setRestaurantId(null)
-        setRestaurantSlug(null)
-
-        localStorage.removeItem(TABLES_CACHE_KEY)
-        localStorage.removeItem(RESTAURANT_CACHE_KEY)
-
+        dispatch(clearTables())
         return
       }
 
       const id = restaurant.id
       const slug = restaurant.slug || null
 
-      setRestaurantId(id)
-      setRestaurantSlug(slug)
-
-      saveRestaurantToCache(restaurant)
+      dispatch(
+        setRestaurantInfo({
+          id,
+          slug,
+        })
+      )
 
       // -------------------------------------------------
       // GET TABLES
       // -------------------------------------------------
 
       const response =
-        await axiosClient.get(
-          `/restaurants/${id}/tables`
-        )
+        await getTables(id)
 
       const data =
         response.data?.data ||
@@ -191,29 +127,34 @@ const TablesPage = () => {
         []
 
       const normalizedTables =
-        Array.isArray(data) ? data : []
+        Array.isArray(data)
+          ? data
+          : []
 
-      setTables(normalizedTables)
-
-      // -------------------------------------------------
-      // CACHE
-      // -------------------------------------------------
-
-      saveTablesToCache(normalizedTables)
+      dispatch(
+        setTables(normalizedTables)
+      )
     } catch (err) {
-      console.error('Load tables error:', err)
+      console.error(
+        'Load tables error:',
+        err
+      )
 
-      // إذا API فشل، نخليو البيانات الموجودة في cache
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        t.loadTablesError ||
-        'Failed to load tables.'
+      dispatch(
+        setTablesError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t.loadTablesError ||
+            'Failed to load tables.'
+        )
       )
     } finally {
-      setLoading(false)
+      dispatch(setTablesLoading(false))
     }
-  }, [t.loadTablesError])
+  }, [
+    dispatch,
+    t.loadTablesError,
+  ])
 
   // =====================================================
   // INITIAL LOAD
@@ -225,6 +166,8 @@ const TablesPage = () => {
     const run = async () => {
       if (cancelled) return
 
+      dispatch(setTablesLoading(true))
+
       await loadTables()
     }
 
@@ -233,14 +176,14 @@ const TablesPage = () => {
     return () => {
       cancelled = true
     }
-  }, [loadTables])
+  }, [dispatch, loadTables])
 
   // =====================================================
   // REFRESH
   // =====================================================
 
   const handleRefresh = async () => {
-    setLoading(true)
+    dispatch(setTablesLoading(true))
     await loadTables()
   }
 
@@ -249,35 +192,42 @@ const TablesPage = () => {
   // =====================================================
 
   const handleDeleteAll = async () => {
-    if (!restaurantId || tables.length === 0) return
+    if (
+      !restaurantId ||
+      tables.length === 0
+    ) {
+      return
+    }
 
-    const confirmed = window.confirm(
-      `${t.deleteAllTablesConfirm} (${tables.length})?`
-    )
+    const confirmed =
+      window.confirm(
+        `${t.deleteAllTablesConfirm} (${tables.length})?`
+      )
 
     if (!confirmed) return
 
     setDeletingAll(true)
-    setError('')
+    dispatch(setTablesError(''))
 
     try {
-      await axiosClient.delete(
-        `/restaurants/${restaurantId}/tables/all`
+      await deleteAllTables(
+        restaurantId
       )
 
-      setTables([])
-      saveTablesToCache([])
+      dispatch(setTables([]))
     } catch (err) {
       console.error(
         'Delete all tables error:',
         err
       )
 
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        t.deleteAllTablesError ||
-        'Failed to delete all tables.'
+      dispatch(
+        setTablesError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t.deleteAllTablesError ||
+            'Failed to delete all tables.'
+        )
       )
     } finally {
       setDeletingAll(false)
@@ -302,7 +252,7 @@ const TablesPage = () => {
     if (!restaurantId) {
       setBulkError(
         t.restaurantNotFound ||
-        'Restaurant not found.'
+          'Restaurant not found.'
       )
       return
     }
@@ -312,7 +262,7 @@ const TablesPage = () => {
     if (!count || count < 1) {
       setBulkError(
         t.tableCountRequired ||
-        'Table count is required.'
+          'Table count is required.'
       )
       return
     }
@@ -329,7 +279,9 @@ const TablesPage = () => {
 
       const startNumber =
         existingNumbers.length > 0
-          ? Math.max(...existingNumbers) + 1
+          ? Math.max(
+              ...existingNumbers
+            ) + 1
           : 1
 
       const requests = []
@@ -343,8 +295,8 @@ const TablesPage = () => {
           startNumber + i
 
         requests.push(
-          axiosClient.post(
-            `/restaurants/${restaurantId}/tables`,
+          createTable(
+            restaurantId,
             {
               number,
               name: `${number}`,
@@ -369,9 +321,9 @@ const TablesPage = () => {
 
       setBulkError(
         err?.response?.data?.message ||
-        err?.message ||
-        t.saveTableError ||
-        'Failed to save table.'
+          err?.message ||
+          t.saveTableError ||
+          'Failed to save table.'
       )
     } finally {
       setBulkSaving(false)
@@ -388,10 +340,12 @@ const TablesPage = () => {
     setForm({
       number: table.number || '',
       name: table.name || '',
-      status: table.status || 'available',
+      status:
+        table.status || 'available',
     })
 
-    setError('')
+    dispatch(setTablesError(''))
+
     setOpen(true)
   }
 
@@ -401,32 +355,44 @@ const TablesPage = () => {
 
   const handleSave = async () => {
     if (!restaurantId) {
-      setError(
-        t.restaurantNotFound ||
-        'Restaurant not found.'
+      dispatch(
+        setTablesError(
+          t.restaurantNotFound ||
+            'Restaurant not found.'
+        )
       )
       return
     }
 
     if (!form.number) {
-      setError(
-        t.tableNumberRequired ||
-        'Table number is required.'
+      dispatch(
+        setTablesError(
+          t.tableNumberRequired ||
+            'Table number is required.'
+        )
       )
       return
     }
 
     if (!editing?.id) {
-      setError('Table not found.')
+      dispatch(
+        setTablesError(
+          'Table not found.'
+        )
+      )
       return
     }
 
-    setSaving(true)
-    setError('')
+    setDeletingAll(false)
+    setBulkError('')
+
+    dispatch(setTablesError(''))
 
     try {
       const payload = {
-        number: Number(form.number),
+        number: Number(
+          form.number
+        ),
         name:
           form.name ||
           `${t.table || 'Table'} ${form.number}`,
@@ -434,8 +400,9 @@ const TablesPage = () => {
       }
 
       const response =
-        await axiosClient.put(
-          `/restaurants/${restaurantId}/tables/${editing.id}`,
+        await updateTable(
+          restaurantId,
+          editing.id,
           payload
         )
 
@@ -444,18 +411,16 @@ const TablesPage = () => {
         response.data?.data ||
         response.data
 
-      setTables((current) => {
-        const updated =
-          current.map((table) =>
-            table.id === editing.id
-              ? updatedTable
-              : table
-          )
+      const updatedTables =
+        tables.map((table) =>
+          table.id === editing.id
+            ? updatedTable
+            : table
+        )
 
-        saveTablesToCache(updated)
-
-        return updated
-      })
+      dispatch(
+        setTables(updatedTables)
+      )
 
       setOpen(false)
       setEditing(null)
@@ -471,14 +436,14 @@ const TablesPage = () => {
         err
       )
 
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        t.saveTableError ||
-        'Failed to save table.'
+      dispatch(
+        setTablesError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t.saveTableError ||
+            'Failed to save table.'
+        )
       )
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -575,12 +540,15 @@ const TablesPage = () => {
         await response.blob()
 
       const url =
-        window.URL.createObjectURL(blob)
+        window.URL.createObjectURL(
+          blob
+        )
 
       const link =
         document.createElement('a')
 
       link.href = url
+
       link.download =
         `table-${table.number}-qr.png`
 
@@ -622,35 +590,36 @@ const TablesPage = () => {
 
     if (!confirmed) return
 
-    setError('')
+    dispatch(setTablesError(''))
 
     try {
-      await axiosClient.delete(
-        `/restaurants/${restaurantId}/tables/${table.id}`
+      await deleteTable(
+        restaurantId,
+        table.id
       )
 
-      setTables((current) => {
-        const updated =
-          current.filter(
-            (item) =>
-              item.id !== table.id
-          )
+      const updatedTables =
+        tables.filter(
+          (item) =>
+            item.id !== table.id
+        )
 
-        saveTablesToCache(updated)
-
-        return updated
-      })
+      dispatch(
+        setTables(updatedTables)
+      )
     } catch (err) {
       console.error(
         'Delete table error:',
         err
       )
 
-      setError(
-        err?.response?.data?.message ||
-        err?.message ||
-        t.deleteTableError ||
-        'Failed to delete table.'
+      dispatch(
+        setTablesError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t.deleteTableError ||
+            'Failed to delete table.'
+        )
       )
     }
   }
@@ -862,7 +831,9 @@ const TablesPage = () => {
                 <span
                   className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(table.status)}`}
                 >
-                  {getStatusLabel(table.status)}
+                  {getStatusLabel(
+                    table.status
+                  )}
                 </span>
 
               </div>
@@ -919,7 +890,9 @@ const TablesPage = () => {
                     handleDelete(table)
                   }
                   className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
-                  aria-label={t.deleteTable}
+                  aria-label={
+                    t.deleteTable
+                  }
                 >
                   <Trash2 size={17} />
                 </button>
@@ -1159,7 +1132,7 @@ const TablesPage = () => {
                 onClick={() =>
                   setOpen(false)
                 }
-                disabled={saving}
+                disabled={loading}
                 className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 {t.cancel}
@@ -1167,11 +1140,11 @@ const TablesPage = () => {
 
               <button
                 type="button"
-                disabled={saving}
+                disabled={loading}
                 onClick={handleSave}
                 className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {saving
+                {loading
                   ? t.saving
                   : t.saveChanges}
               </button>
@@ -1221,10 +1194,14 @@ const TablesPage = () => {
             {/* QR IMAGE */}
             <div className="mt-6 flex justify-center">
 
-              {getQrImageUrl(qrTable) ? (
+              {getQrImageUrl(
+                qrTable
+              ) ? (
 
                 <img
-                  src={getQrImageUrl(qrTable)}
+                  src={getQrImageUrl(
+                    qrTable
+                  )}
                   alt={`QR - ${
                     qrTable.name ||
                     qrTable.number
@@ -1300,4 +1277,3 @@ const TablesPage = () => {
 }
 
 export default TablesPage
-

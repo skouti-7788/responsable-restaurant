@@ -145,14 +145,10 @@ const CategoriesPage = () => {
   })
 
   // =====================================================
-  // LOAD CACHE + API
+  // LOAD CACHE ONLY
   // =====================================================
 
   useEffect(() => {
-
-    // ---------------------------------------------------
-    // SHOW CACHE IMMEDIATELY
-    // ---------------------------------------------------
 
     const cachedCategories =
       getCachedCategories()
@@ -160,74 +156,13 @@ const CategoriesPage = () => {
     if (
       cachedCategories.length > 0
     ) {
+
       dispatch(
         fetchCategoriesSuccess(
           cachedCategories
         )
       )
-    }
 
-    // ---------------------------------------------------
-    // LOAD API
-    // ---------------------------------------------------
-
-    let cancelled = false
-
-    const load = async () => {
-
-      dispatch(
-        fetchCategoriesStart()
-      )
-
-      try {
-
-        const result =
-          await loadCategoriesData()
-
-        if (cancelled) {
-          return
-        }
-
-        setRestaurantId(
-          result.restaurant.id
-        )
-
-        dispatch(
-          fetchCategoriesSuccess(
-            result.categories
-          )
-        )
-
-      } catch (error) {
-
-        if (cancelled) {
-          return
-        }
-
-        console.error(
-          'Load categories error:',
-          error
-        )
-
-        dispatch(
-          fetchCategoriesFailure(
-            error?.response
-              ?.data
-              ?.message ||
-            error?.message ||
-            t.loadCategoriesError ||
-            'Failed to load categories.'
-          )
-        )
-
-      }
-
-    }
-
-    load()
-
-    return () => {
-      cancelled = true
     }
 
   }, [
@@ -245,47 +180,60 @@ const CategoriesPage = () => {
   // REFRESH
   // =====================================================
 
-  const handleRefresh =
-    async () => {
+   // =====================================================
+// REFRESH
+// =====================================================
 
-      dispatch(
-        fetchCategoriesStart()
+const handleRefresh = async () => {
+
+    dispatch(
+      clearCategoryError()
+    )
+
+    dispatch(
+      fetchCategoriesStart()
+    )
+
+    try {
+
+      const result =
+        await loadCategoriesData()
+
+      setRestaurantId(
+        result.restaurant.id
       )
 
-      try {
-
-        const result =
-          await loadCategoriesData()
-
-        setRestaurantId(
-          result.restaurant.id
+      dispatch(
+        fetchCategoriesSuccess(
+          result.categories
         )
+      )
 
-        dispatch(
-          fetchCategoriesSuccess(
-            result.categories
-          )
+      saveCategoriesToCache(
+        result.categories
+      )
+
+    } catch (error) {
+
+      console.error(
+        'Refresh categories error:',
+        error?.response?.data ||
+        error
+      )
+
+      dispatch(
+        fetchCategoriesFailure(
+          error?.response
+            ?.data
+            ?.message ||
+          error?.message ||
+          t.loadCategoriesError ||
+          'Failed to load categories.'
         )
+      )
 
-      } catch (error) {
-
-        console.error(
-          'Refresh categories error:',
-          error
-        )
-
-        dispatch(
-          fetchCategoriesFailure(
-            error?.response
-              ?.data
-              ?.message ||
-            error?.message ||
-            t.loadCategoriesError ||
-            'Failed to load categories.'
-          )
-        )
-      }
     }
+  }
 
   // =====================================================
   // OPEN MODAL
@@ -399,6 +347,7 @@ const CategoriesPage = () => {
           const updatedCategory =
             await updateCategoryApi({
               restaurantId,
+
               categoryId:
                 editing.id,
 
@@ -415,7 +364,6 @@ const CategoriesPage = () => {
             )
           )
 
-          // Update cache from Redux-like current data
           const currentCategories =
             categories.map(
               (category) =>
@@ -462,6 +410,7 @@ const CategoriesPage = () => {
           saveCategoriesToCache(
             updatedCategories
           )
+
         }
 
         // =================================================
@@ -481,8 +430,7 @@ const CategoriesPage = () => {
 
         console.error(
           'Save category error:',
-          error?.response
-            ?.data ||
+          error?.response?.data ||
           error
         )
 
@@ -502,7 +450,9 @@ const CategoriesPage = () => {
         dispatch(
           setCategorySaving(false)
         )
+
       }
+
     }
 
   // =====================================================
@@ -577,8 +527,7 @@ const CategoriesPage = () => {
 
         console.error(
           'Delete category error:',
-          error?.response
-            ?.data ||
+          error?.response?.data ||
           error
         )
 
@@ -600,7 +549,9 @@ const CategoriesPage = () => {
             null
           )
         )
+
       }
+
     }
 
   // =====================================================
@@ -638,9 +589,7 @@ const CategoriesPage = () => {
             onClick={
               handleRefresh
             }
-            disabled={
-              loading
-            }
+            
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
 
@@ -697,6 +646,7 @@ const CategoriesPage = () => {
           {error}
 
         </div>
+
       )}
 
       {/* =================================================

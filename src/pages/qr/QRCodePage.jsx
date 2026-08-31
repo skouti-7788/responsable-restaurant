@@ -1,61 +1,4 @@
-// import { useSelector } from 'react-redux'
-// import { useMemo } from 'react'
-// import { QRCodeCanvas } from 'qrcode.react'
-// import translations from '../../i18n/translations'
-// import Button from '../../components/ui/Button'
-
-// const QRCodePage = () => {
-//   const { language } = useSelector((state) => state.ui)
-//   const t = translations[language]
-//   const menuUrl = useMemo(() => window.location.origin + '/menu', [])
-
-//   const copyMenu = async () => {
-//     await navigator.clipboard.writeText(menuUrl)
-//   }
-
-//   const downloadQRCode = () => {
-//     const canvas = document.getElementById('restaurant-qr')
-//     if (!canvas) return
-//     const link = document.createElement('a')
-//     link.download = 'restaurant-menu-qr.png'
-//     link.href = canvas.toDataURL('image/png')
-//     link.click()
-//   }
-
-//   return (
-//     <div className="space-y-8">
-//       <div>
-//         <h1 className="text-2xl font-semibold text-slate-100">{t.qrCode}</h1>
-//         <p className="mt-2 max-w-2xl text-sm text-slate-400">Share your digital menu with customers through a simple QR code experience.</p>
-//       </div>
-
-//       <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
-//         <div className="rounded-[2rem] border border-slate-800 bg-slate-950/95 p-8 text-center shadow-card">
-//           <div className="mx-auto mb-6 inline-flex h-72 w-72 items-center justify-center rounded-3xl bg-slate-900">
-//             <QRCodeCanvas id="restaurant-qr" value={menuUrl} size={240} bgColor="#0f172a" fgColor="#38bdf8" />
-//           </div>
-//           <p className="text-sm text-slate-400">{menuUrl}</p>
-//           <div className="mt-6 flex flex-col gap-3">
-//             <Button onClick={downloadQRCode}>{t.downloadQRCode}</Button>
-//             <Button variant="secondary" onClick={copyMenu}>{t.copyMenuUrl}</Button>
-//           </div>
-//         </div>
-
-//         <div className="rounded-[2rem] border border-slate-800 bg-slate-900/95 p-8 shadow-card">
-//           <h2 className="text-xl font-semibold text-slate-100">How it works</h2>
-//           <ul className="mt-6 space-y-4 text-slate-400">
-//             <li>• Create a menu link and QR code for dine-in and delivery customers.</li>
-//             <li>• Scan the code to open your restaurant menu instantly.</li>
-//             <li>• Use the dashboard to update menu items and availability in real time.</li>
-//           </ul>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default QRCodePage
- import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { QRCodeCanvas } from 'qrcode.react'
 
@@ -139,9 +82,7 @@ const QRCodePage = () => {
     link.download = 'restaurant-menu-qr.png'
     link.href = canvas.toDataURL('image/png')
     link.click()
-  }
-  // console.log('RESTAURANT:', restaurant)
-  // console.log('MENU URL:', menuUrl)
+  } 
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
