@@ -15,7 +15,7 @@ import {
   updateTable,
   deleteTable,
   deleteAllTables,
-} from '../../api/dataTables'
+} from '../../data/dataTables'
 
 import {
   setTables,
