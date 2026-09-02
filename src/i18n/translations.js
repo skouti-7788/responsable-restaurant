@@ -34,7 +34,7 @@ const translations = {
 
     menuViews: 'Menu views',
     popularMeals: 'Popular meals',
-    recentActivity: 'Recent activity',
+    recentActivit: 'Recent activity',
 
     saveChanges: 'Save changes',
 
@@ -214,8 +214,13 @@ const translations = {
     total: 'Total',
     restaurant: 'Restaurant',
     managerDashboard: 'Manager Dashboard',
-
-
+    weeklyPerformance: 'Weekly performance',
+    live: 'Live', 
+    recentActivity: 'Recent activity',
+    updatesStream: 'Updates stream',
+    accepting: 'Accepting...',
+    cancelling: 'Cancelling...', 
+    deleting: 'Deleting...', 
   },
 
   // =========================================================
@@ -267,8 +272,7 @@ const translations = {
 
     menuViews: 'Vues du menu',
     popularMeals: 'Plats populaires',
-    recentActivity: 'Activité récente',
-
+ 
     saveChanges: 'Enregistrer',
 
     addCategory: 'Ajouter une catégorie',
@@ -434,8 +438,14 @@ const translations = {
     unitPrice: 'Prix unitaire',
     total: 'Total',
     restaurant: 'Restaurant',
-    managerDashboard: 'Tableau de bord du restaurant'
-
+    managerDashboard: 'Tableau de bord du restaurant',
+    weeklyPerformance: 'Performance hebdomadaire',
+    live: 'En direct',
+    recentActivity: 'Activité récente',
+    updatesStream: 'Flux des mises à jour',
+    accepting: 'Acceptation...', 
+    cancelling: 'Annulation...', 
+    deleting: 'Suppression...',
   },
 
   // =========================================================
@@ -487,8 +497,7 @@ const translations = {
 
     menuViews: 'مشاهدات القائمة',
     popularMeals: 'الأطباق الشعبية',
-    recentActivity: 'النشاط الأخير',
-
+ 
     saveChanges: 'حفظ التغييرات',
 
     addCategory: 'إضافة فئة',
@@ -659,8 +668,14 @@ const translations = {
     unitPrice: 'سعر الوحدة',
     total: 'المجموع',
     restaurant: 'المطعم',
-    managerDashboard: 'لوحة تحكم المطعم'
-      
+    managerDashboard: 'لوحة تحكم المطعم',
+    weeklyPerformance: 'الأداء الأسبوعي',
+    live: 'مباشر',
+    recentActivity: 'النشاط الأخير',
+    updatesStream: 'سجل التحديثات',
+    accepting: 'جاري القبول...', 
+    cancelling: 'جاري الإلغاء...', 
+    deleting: 'جاري الحذف...',
     
      
    },

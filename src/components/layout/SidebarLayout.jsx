@@ -4,14 +4,14 @@ import Navbar from './Navbar'
 
 const SidebarLayout = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 lg:flex">
+    <div className="min-h-screen min-w-0 bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 lg:flex">
 
       <Sidebar />
 
-      <div className="flex-1 lg:pl-85">
+      <div className="min-w-0 flex-1">
         <Navbar />
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8">
+        <main className="min-w-0 max-w-full px-4 py-6">
           <Outlet />
         </main>
       </div>
