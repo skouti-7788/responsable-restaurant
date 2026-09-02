@@ -459,6 +459,7 @@ const TablesPage = () => {
     }, [
       saveTablesToCache,
       saveRestaurantToCache,
+      setLoading,
       t.loadTablesError,
     ])
 

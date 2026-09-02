@@ -1,6 +1,7 @@
 const Button = ({
   children,
-  // variant = 'primary',
+  variant = 'primary',
+  className = '',
   ...props
 }) => {
   const base =
@@ -9,20 +10,17 @@ const Button = ({
   const variants = {
     primary:
       'bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
-
-    // secondary:
-    //   'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
-
-    // ghost:
-    //   'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
-
-    // danger:
-    //   'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+    secondary:
+      'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+    ghost:
+      'bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
+    danger:
+      'bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400',
   }
 
   return (
     <button
-      className={`${base} ${variants.primary}`}
+      className={`${base} ${variants[variant] ?? variants.primary} ${className}`}
       {...props}
     >
       {children}

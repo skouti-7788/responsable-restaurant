@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
@@ -28,10 +29,13 @@ const DashboardPage = () => {
       (state) => state.ui
     )
 
-  const t =
-    translations[language] ||
-    translations.en ||
-    {}
+  const t = useMemo(
+    () =>
+      translations[language] ||
+      translations.en ||
+      {},
+    [language]
+  )
 
   // =====================================================
   // DASHBOARD CACHE
@@ -116,10 +120,9 @@ const DashboardPage = () => {
         }
       },
       [
+        dispatch,
         language,
-        t.loadDashboardError,
-        t.newOrderReceived,
-        t.restaurantNotFound,
+        t,
       ]
     )
 
