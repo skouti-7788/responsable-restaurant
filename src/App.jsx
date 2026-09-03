@@ -13,8 +13,26 @@ import OrdersPage from './pages/orders/OrdersPage'
 import QRCodePage from './pages/qr/QRCodePage'
 import NotFoundPage from './pages/NotFoundPage'
 import TablesPage from './pages/Tables/TablesPage'
+import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 function App() {
- 
+    const {
+        language,
+        // theme,
+      } = useSelector(
+        (state) => state.ui
+      )
+  
+     
+   useEffect(() => {
+      document.documentElement.dir =
+        language === 'ar'
+          ? 'rtl'
+          : 'ltr'
+  
+      document.documentElement.lang =
+        language
+    }, [language])
   return (
     
     <BrowserRouter>

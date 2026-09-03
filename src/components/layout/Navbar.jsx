@@ -19,10 +19,10 @@ import {
   clearNotafication,
 } from '../../store/orderSlice'
 
-import { useEffect } from 'react'
+// import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const Navbar = () => {
+const Navbar = ( ) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const {
@@ -44,7 +44,7 @@ const Navbar = () => {
     translations[language] ||
     translations.en ||
     {}
-
+  
   // =====================================================
   // LANGUAGES
   // =====================================================
@@ -79,15 +79,15 @@ const Navbar = () => {
   // LANGUAGE DIRECTION
   // =====================================================
 
-  useEffect(() => {
-    document.documentElement.dir =
-      language === 'ar'
-        ? 'rtl'
-        : 'ltr'
+  // useEffect(() => {
+  //   document.documentElement.dir =
+  //     language === 'ar'
+  //       ? 'rtl'
+  //       : 'ltr'
 
-    document.documentElement.lang =
-      language
-  }, [language])
+  //   document.documentElement.lang =
+  //     language
+  // }, [language])
 
   // =====================================================
   // OPEN NOTIFICATIONS
@@ -105,7 +105,7 @@ const Navbar = () => {
   // =====================================================
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 transition-colors dark:border-slate-800 dark:bg-slate-950">
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white lg:mx-10  px-8 py-4 transition-colors dark:border-slate-800 dark:bg-slate-950">
 
       {/* Dashboard */}
       <div>

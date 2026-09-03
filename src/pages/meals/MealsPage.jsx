@@ -813,7 +813,7 @@ const MealsPage = () => {
             meal.image_url ||
             meal.image ||
             ''
-
+          console.log(image)
           return (
             <div
               key={meal.id}
