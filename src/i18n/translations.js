@@ -21,6 +21,20 @@ const translations = {
     orders: 'Orders',
     tables: 'Tables',
     qrCode: 'QR Code',
+    appearance: 'Appearance',
+    logo: 'Logo',
+    headerImage: 'Header image',
+    backgroundImage: 'Background image',
+    primaryColor: 'Primary color',
+    secondaryColor: 'Secondary color',
+    textColor: 'Text color',
+    backgroundColor: 'Background color',
+    font: 'Font',
+    remove: 'Remove',
+    replace: 'Replace',
+    upload: 'Upload',
+    changesSavedSuccessfully: 'Changes saved successfully',
+    errorSavingChanges: 'Error saving changes',
 
     logout: 'Logout',
 
@@ -37,6 +51,7 @@ const translations = {
     recentActivit: 'Recent activity',
 
     saveChanges: 'Save changes',
+    livePreview: 'Live preview',
 
     addCategory: 'Add category',
     editCategory: 'Edit category',
@@ -245,6 +260,20 @@ const translations = {
     orders: 'Commandes',
     tables: 'Tables',
     qrCode: 'QR Code',
+    appearance: 'Apparence',
+    logo: 'Logo',
+    headerImage: 'Image d’en-tête',
+    backgroundImage: 'Image de fond',
+    primaryColor: 'Couleur principale',
+    secondaryColor: 'Couleur secondaire',
+    textColor: 'Couleur du texte',
+    backgroundColor: 'Couleur de fond',
+    font: 'Police',
+    remove: 'Supprimer',
+    replace: 'Remplacer',
+    upload: 'Télécharger',
+    changesSavedSuccessfully: 'Modifications enregistrées avec succès',
+    errorSavingChanges: 'Erreur lors de l’enregistrement des modifications',
     qrCodeDescription:
       'Partagez votre menu numérique avec vos clients grâce à un simple QR code.',
 
@@ -274,6 +303,7 @@ const translations = {
     popularMeals: 'Plats populaires',
  
     saveChanges: 'Enregistrer',
+    livePreview: 'Aperçu en direct',
 
     addCategory: 'Ajouter une catégorie',
     editCategory: 'Modifier la catégorie',
@@ -470,6 +500,20 @@ const translations = {
     orders: 'الطلبات',
     tables: 'الطاولات',
     qrCode: 'رمز الاستجابة السريعة',
+    appearance: 'المظهر',
+    logo: 'الشعار',
+    headerImage: 'صورة العنوان',
+    backgroundImage: 'صورة الخلفية',
+    primaryColor: 'اللون الأساسي',
+    secondaryColor: 'اللون الثانوي',
+    textColor: 'لون النص',
+    backgroundColor: 'لون الخلفية',
+    font: 'الخط',
+    remove: 'إزالة',
+    replace: 'استبدال',
+    upload: 'رفع',
+    changesSavedSuccessfully: 'تم حفظ التغييرات بنجاح',
+    errorSavingChanges: 'خطأ أثناء حفظ التغييرات',
     qrCodeDescription:
     'شارك قائمتك الرقمية مع العملاء من خلال تجربة بسيطة باستخدام رمز QR.',
 
@@ -499,6 +543,7 @@ const translations = {
     popularMeals: 'الأطباق الشعبية',
  
     saveChanges: 'حفظ التغييرات',
+    livePreview: 'معاينة مباشرة',
 
     addCategory: 'إضافة فئة',
     editCategory: 'تعديل الفئة',

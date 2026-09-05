@@ -7,6 +7,7 @@ import {
   TableProperties,
   QrCode,
   UserCircle,
+  Palette,
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -49,8 +50,13 @@ const Sidebar = () => {
       icon: TableProperties,
     },
     {
+      to: '/appearance',
+      label: t.appearance,
+      icon: Palette,
+    },
+    {
       to: '/qr-code',
-      label: t.qrCodes,
+      label: t.qrCode,
       icon: QrCode,
     },
   ]

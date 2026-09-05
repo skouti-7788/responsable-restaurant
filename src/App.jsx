@@ -13,6 +13,7 @@ import OrdersPage from './pages/orders/OrdersPage'
 import QRCodePage from './pages/qr/QRCodePage'
 import NotFoundPage from './pages/NotFoundPage'
 import TablesPage from './pages/Tables/TablesPage'
+import AppearancePage from './pages/Appearance/AppearancePage'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 function App() {
@@ -54,6 +55,7 @@ function App() {
           <Route path="meals" element={<MealsPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="tables" element={<TablesPage />} /> 
+          <Route path="appearance" element={<AppearancePage />} />
           <Route path="qr-code" element={<QRCodePage />} />
         </Route>
 
