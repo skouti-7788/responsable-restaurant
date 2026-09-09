@@ -7,27 +7,25 @@ import {
   TableProperties,
   QrCode,
   UserCircle,
+  Users,
   Palette,
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import translations from '../../i18n/translations'
+import hasPermission from '../../utils/permissions'
 
 const Sidebar = () => {
   const language = useSelector((state) => state.ui.language)
+  const user = useSelector((state) => state.auth.user)
 
   const t = translations[language] || translations.en
 
-  const links = [
+  const allLinks = [
     {
       to: '/',
       label: t.dashboard,
       icon: LayoutDashboard,
-    },
-    {
-      to: '/profile',
-      label: t.profile,
-      icon: UserCircle,
     },
     {
       to: '/categories',
@@ -49,17 +47,48 @@ const Sidebar = () => {
       label: t.tables,
       icon: TableProperties,
     },
+    
     {
       to: '/appearance',
       label: t.appearance,
       icon: Palette,
+    },  
+    {
+      to: '/profile',
+      label: t.profile,
+      icon: UserCircle,
     },
     {
       to: '/qr-code',
       label: t.qrCode,
       icon: QrCode,
     },
+   
   ]
+
+  // Role-based filtering
+  // Role-based filtering with permissions
+  const mapToPermission = {
+    '/': 'dashboard.view',
+    '/profile': 'profile.view',
+    '/categories': 'categories.view',
+    '/meals': 'meals.view',
+    '/orders': 'orders.view',
+    '/tables': 'tables.view',
+    '/appearance': 'appearance.view',
+    '/qr-code': 'qrcode.view',
+  }
+
+  const links = (user?.role === 'owner')
+    ? [
+        ...allLinks,
+        { to: '/staff', label: t.staff || 'Staff', icon: Users },
+      ]
+    : allLinks.filter((l) => {
+        const perm = mapToPermission[l.to]
+        if (!perm) return true
+        return hasPermission(user, perm)
+      })
   useEffect(() => {
       document.documentElement.dir =
         language === 'ar'

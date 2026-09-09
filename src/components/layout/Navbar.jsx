@@ -68,27 +68,14 @@ const Navbar = ( ) => {
   // LOGOUT
   // =====================================================
 
-  const onLgout = () => {
-    dispatch(logout())
+const onLgout = () => {
+  dispatch(logout())
 
-    document.documentElement.dir =
-      'ltr'
-  }
-
-  // =====================================================
-  // LANGUAGE DIRECTION
-  // =====================================================
-
-  // useEffect(() => {
-  //   document.documentElement.dir =
-  //     language === 'ar'
-  //       ? 'rtl'
-  //       : 'ltr'
-
-  //   document.documentElement.lang =
-  //     language
-  // }, [language])
-
+  document.documentElement.dir = 'ltr'
+  document.documentElement.classList.remove('dark')
+}
+ 
+ 
   // =====================================================
   // OPEN NOTIFICATIONS
   // =====================================================

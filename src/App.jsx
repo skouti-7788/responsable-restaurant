@@ -14,6 +14,7 @@ import QRCodePage from './pages/qr/QRCodePage'
 import NotFoundPage from './pages/NotFoundPage'
 import TablesPage from './pages/Tables/TablesPage'
 import AppearancePage from './pages/Appearance/AppearancePage'
+import StaffPage from './pages/staff/StaffPage'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 function App() {
@@ -50,13 +51,22 @@ function App() {
           }
         >
           <Route index element={<DashboardPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="categories" element={<CategoriesPage />} />
-          <Route path="meals" element={<MealsPage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="tables" element={<TablesPage />} /> 
-          <Route path="appearance" element={<AppearancePage />} />
-          <Route path="qr-code" element={<QRCodePage />} />
+          <Route path="profile" element={<ProtectedRoute requiredPermission="profile.view"><ProfilePage /></ProtectedRoute>} />
+          <Route path="categories" element={<ProtectedRoute requiredPermission="categories.view"><CategoriesPage /></ProtectedRoute>} />
+          <Route path="meals" element={<ProtectedRoute requiredPermission="meals.view"><MealsPage /></ProtectedRoute>} />
+          <Route path="orders" element={<ProtectedRoute requiredPermission="orders.view"><OrdersPage /></ProtectedRoute>} />
+            <Route path="tables" element={<ProtectedRoute requiredPermission="tables.view"><TablesPage /></ProtectedRoute>} />
+            <Route path="appearance" element={
+              <ProtectedRoute allowedRoles={[ 'owner' ]}>
+                <AppearancePage />
+              </ProtectedRoute>
+            } />
+            <Route path="staff" element={
+              <ProtectedRoute allowedRoles={[ 'owner' ]}>
+                <StaffPage />
+              </ProtectedRoute>
+            } />
+          <Route path="qr-code" element={<ProtectedRoute requiredPermission="qrcode.view"><QRCodePage /></ProtectedRoute>} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

@@ -31,7 +31,6 @@ const RegisterPage = () => {
       const payload = {
         ...form,
         password_confirmation: form.password,
-        role: 'restaurant_manager',
       }
       const response = await axiosClient.post('/auth/register', payload)
       dispatch(loginSuccess({ token: response.data.token, user: response.data.user }))

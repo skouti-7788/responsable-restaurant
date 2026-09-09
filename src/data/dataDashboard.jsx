@@ -225,29 +225,36 @@ export const fetchDashboardData = async ({
   translations = {},
   dispatch,
 } = {}) => {
+ 
 
   // ===================================================
-  // GET RESTAURANT
+  // GET CURRENT USER / RESTAURANT
   // ===================================================
 
-  const restaurantsResponse =
-    await axiosClient.get(
-      '/restaurants'
-    )
+  let currentUser = null
 
-  const restaurantsData =
-    restaurantsResponse.data?.data ||
-    restaurantsResponse.data ||
-    []
+  try {
+    const storedUser =
+      localStorage.getItem(
+        'restaurant_user'
+      )
 
-  const restaurant =
-    Array.isArray(
-      restaurantsData
-    )
-      ? restaurantsData[0]
+    currentUser = storedUser
+      ? JSON.parse(storedUser)
       : null
+  } catch (error) {
+    console.error(
+      'Read authenticated user error:',
+      error
+    )
+  }
 
-  if (!restaurant?.id) {
+  const restaurantId =
+    Number(
+      currentUser?.restaurant_id
+    ) || null
+
+  if (!restaurantId) {
     throw new Error(
       translations.restaurantNotFound ||
         'Restaurant not found.'
@@ -255,15 +262,18 @@ export const fetchDashboardData = async ({
   }
 
   const id =
-    restaurant.id
+    restaurantId
 
   // ===================================================
   // SAVE RESTAURANT CACHE
   // ===================================================
 
-  saveRestaurantToCache(
-    restaurant
-  )
+  saveRestaurantToCache({
+    id,
+    slug:
+      currentUser?.restaurant?.slug ||
+      null,
+  })
 
   // ===================================================
   // GET CATEGORIES / MEALS / ORDERS

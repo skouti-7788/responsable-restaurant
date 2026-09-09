@@ -19,14 +19,39 @@ const getEmptyCategories = () => {
 }
 
 // =====================================================
+// BUILD RESTAURANT-SCOPED CACHE KEY
+// =====================================================
+
+const getCategoriesCacheKey = (
+  restaurantId
+) => {
+  if (!restaurantId) {
+    return null
+  }
+
+  return `${CATEGORIES_CACHE_KEY}_${restaurantId}`
+}
+
+// =====================================================
 // GET CACHED CATEGORIES
 // =====================================================
 
-export const getCachedCategories = () => {
+export const getCachedCategories = (
+  restaurantId
+) => {
   try {
+    const cacheKey =
+      getCategoriesCacheKey(
+        restaurantId
+      )
+
+    if (!cacheKey) {
+      return getEmptyCategories()
+    }
+
     const cached =
       localStorage.getItem(
-        CATEGORIES_CACHE_KEY
+        cacheKey
       )
 
     if (!cached) {
@@ -65,7 +90,17 @@ export const getCachedRestaurant = () => {
       return null
     }
 
-    return JSON.parse(cached)
+    const parsed =
+      JSON.parse(cached)
+
+    if (
+      !parsed ||
+      !parsed.id
+    ) {
+      return null
+    }
+
+    return parsed
 
   } catch (error) {
     console.error(
@@ -82,17 +117,28 @@ export const getCachedRestaurant = () => {
 // =====================================================
 
 export const saveCategoriesToCache = (
+  restaurantId,
   categories
 ) => {
   try {
+    const cacheKey =
+      getCategoriesCacheKey(
+        restaurantId
+      )
+
+    if (!cacheKey) {
+      return
+    }
+
     localStorage.setItem(
-      CATEGORIES_CACHE_KEY,
+      cacheKey,
       JSON.stringify(
         Array.isArray(categories)
           ? categories
           : []
       )
     )
+
   } catch (error) {
     console.error(
       'Save categories cache error:',
@@ -121,6 +167,7 @@ export const saveRestaurantToCache = (
           null,
       })
     )
+
   } catch (error) {
     console.error(
       'Save restaurant cache error:',
@@ -130,17 +177,72 @@ export const saveRestaurantToCache = (
 }
 
 // =====================================================
-// CLEAR CACHE
+// CLEAR CATEGORY CACHE FOR ONE RESTAURANT
 // =====================================================
 
-export const clearCategoriesCache = () => {
+export const clearCategoriesCache = (
+  restaurantId
+) => {
   try {
+    const cacheKey =
+      getCategoriesCacheKey(
+        restaurantId
+      )
+
+    if (!cacheKey) {
+      return
+    }
+
     localStorage.removeItem(
-      CATEGORIES_CACHE_KEY
+      cacheKey
     )
+
   } catch (error) {
     console.error(
       'Clear categories cache error:',
+      error
+    )
+  }
+}
+
+// =====================================================
+// CLEAR ALL CATEGORY CACHES
+// =====================================================
+
+export const clearAllCategoriesCaches = () => {
+  try {
+    const keys = []
+
+    for (
+      let index = 0;
+      index < localStorage.length;
+      index++
+    ) {
+      const key =
+        localStorage.key(index)
+
+      if (
+        key &&
+        key.startsWith(
+          `${CATEGORIES_CACHE_KEY}_`
+        )
+      ) {
+        keys.push(key)
+      }
+    }
+
+    keys.forEach((key) => {
+      localStorage.removeItem(key)
+    })
+
+    // Remove old legacy cache too
+    localStorage.removeItem(
+      CATEGORIES_CACHE_KEY
+    )
+
+  } catch (error) {
+    console.error(
+      'Clear all categories caches error:',
       error
     )
   }
@@ -151,6 +253,7 @@ export const clearCategoriesCache = () => {
 // =====================================================
 
 export const fetchRestaurant = async () => {
+
   const response =
     await axiosClient.get(
       '/restaurants'
@@ -167,7 +270,8 @@ export const fetchRestaurant = async () => {
       : []
 
   const restaurant =
-    restaurants[0] || null
+    restaurants[0] ||
+    null
 
   if (!restaurant?.id) {
     throw new Error(
@@ -183,12 +287,13 @@ export const fetchRestaurant = async () => {
 }
 
 // =====================================================
-// GET CATEGORIES
+// GET CATEGORIES FROM API
 // =====================================================
 
 export const fetchCategories = async (
   restaurantId
 ) => {
+
   if (!restaurantId) {
     throw new Error(
       'Restaurant ID is required.'
@@ -226,6 +331,7 @@ export const loadCategoriesData =
       )
 
     saveCategoriesToCache(
+      restaurant.id,
       categories
     )
 
@@ -259,7 +365,8 @@ export const createCategory = async ({
       description?.trim() ||
       '',
 
-    status: 'active',
+    status:
+      'active',
   }
 
   const response =
@@ -305,7 +412,8 @@ export const updateCategoryApi = async ({
       description?.trim() ||
       '',
 
-    status: 'active',
+    status:
+      'active',
   }
 
   const response =

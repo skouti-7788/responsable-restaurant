@@ -4,135 +4,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   getRestaurantProfile,
   updateRestaurantProfile,
+  getCachedProfile,
+  saveCachedProfile,
 } from '../../data/dataProfile'
 
-import {
-  updateProfile,
-} from '../../store/restaurantSlice'
+import { updateProfile } from '../../store/restaurantSlice'
 
 import translations from '../../i18n/translations'
 
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
-
-// =====================================================
-// CACHE KEY
-// =====================================================
-
-const PROFILE_CACHE_KEY =
-  'restaurant_profile_cache'
-
-// =====================================================
-// READ CACHE
-// =====================================================
-
-const readProfileCache = () => {
-  try {
-    const cached =
-      localStorage.getItem(
-        PROFILE_CACHE_KEY
-      )
-
-    if (!cached) {
-      return null
-    }
-
-    return JSON.parse(cached)
-  } catch (error) {
-    console.error(
-      'Failed to read profile cache:',
-      error
-    )
-
-    return null
-  }
-}
-
-// =====================================================
-// SAVE CACHE
-// =====================================================
-
-const saveProfileCache = (data) => {
-  try {
-    localStorage.setItem(
-      PROFILE_CACHE_KEY,
-      JSON.stringify(data)
-    )
-  } catch (error) {
-    console.error(
-      'Failed to save profile cache:',
-      error
-    )
-  }
-}
-
-// =====================================================
-// NORMALIZE PROFILE
-// =====================================================
-
-const normalizeProfile = (
-  restaurant
-) => {
-  if (!restaurant) {
-    return null
-  }
-
-  return {
-    id: restaurant.id || null,
-
-    name:
-      restaurant.name || '',
-
-    email:
-      restaurant.email || '',
-
-    address:
-      restaurant.address || '',
-
-    phone:
-      restaurant.phone || '',
-
-    openingHours:
-      Array.isArray(
-        restaurant.opening_hours
-      )
-        ? restaurant.opening_hours
-            .map(
-              (item) =>
-                `${item.day}: ${item.from}-${item.to}`
-            )
-            .join(', ')
-        : restaurant.openingHours || '',
-
-    logo:
-      restaurant.logo_url ||
-      restaurant.logo ||
-      '',
-
-    socials: {
-      facebook:
-        restaurant.social_links
-          ?.facebook ||
-        restaurant.socials
-          ?.facebook ||
-        '',
-
-      instagram:
-        restaurant.social_links
-          ?.instagram ||
-        restaurant.socials
-          ?.instagram ||
-        '',
-
-      twitter:
-        restaurant.social_links
-          ?.twitter ||
-        restaurant.socials
-          ?.twitter ||
-        '',
-    },
-  }
-}
 
 // =====================================================
 // EMPTY FORM
@@ -145,12 +26,49 @@ const emptyProfile = {
   address: '',
   phone: '',
   openingHours: '',
-  logo: '',
   socials: {
     facebook: '',
-    instagram: '',
-    twitter: '',
   },
+}
+
+// =====================================================
+// NORMALIZE PROFILE
+// =====================================================
+
+const normalizeProfile = (restaurant) => {
+  if (!restaurant) {
+    return null
+  }
+
+  return {
+    id: restaurant.id || null,
+
+    name: restaurant.name || '',
+
+    email: restaurant.email || '',
+
+    address: restaurant.address || '',
+
+    phone: restaurant.phone || '',
+
+    openingHours: Array.isArray(
+      restaurant.opening_hours
+    )
+      ? restaurant.opening_hours
+          .map(
+            (item) =>
+              `${item.day}: ${item.from}-${item.to}`
+          )
+          .join(', ')
+      : restaurant.openingHours || '',
+
+    socials: {
+      facebook:
+        restaurant.social_links?.facebook ||
+        restaurant.socials?.facebook ||
+        '',
+    },
+  }
 }
 
 // =====================================================
@@ -164,20 +82,17 @@ const ProfilePage = () => {
   // LANGUAGE
   // ===================================================
 
-  const { language } =
-    useSelector(
-      (state) => state.ui
-    )
+  const { language } = useSelector(
+    (state) => state.ui
+  )
 
   // ===================================================
   // REDUX PROFILE
   // ===================================================
 
-  const { profile } =
-    useSelector(
-      (state) =>
-        state.restaurant
-    )
+  const { profile } = useSelector(
+    (state) => state.restaurant
+  )
 
   // ===================================================
   // TRANSLATIONS
@@ -190,113 +105,133 @@ const ProfilePage = () => {
 
   // ===================================================
   // INITIAL PROFILE
-  //
-  // localStorage أولاً
-  // Redux ثانياً
-  // empty ثالثاً
   // ===================================================
 
-  const [form, setForm] =
-    useState(() => {
-      const cached =
-        readProfileCache()
+  const [form, setForm] = useState(() => {
+    const cached = getCachedProfile()
 
-      if (cached) {
-        return cached
+    if (cached) {
+      return {
+        ...emptyProfile,
+        ...cached,
+        socials: {
+          ...emptyProfile.socials,
+          ...(cached.socials || {}),
+        },
       }
+    }
 
-      if (profile) {
-        return profile
+    if (profile) {
+      return {
+        ...emptyProfile,
+        ...profile,
+        socials: {
+          ...emptyProfile.socials,
+          ...(profile.socials || {}),
+        },
       }
+    }
 
-      return emptyProfile
-    })
+    return emptyProfile
+  })
 
   // ===================================================
   // LOAD PROFILE
   // ===================================================
 
   useEffect(() => {
-    const cached =
-      readProfileCache()
-
-    // -------------------------------------------------
-    // CACHE موجود
-    // -------------------------------------------------
-
-    if (cached?.id) {
-      dispatch(
-        updateProfile(
-          cached
-        )
-      )
-
-      return
-    }
-
-    // -------------------------------------------------
-    // API فقط إذا ما كاينش cache
-    // -------------------------------------------------
-
     let cancelled = false
 
-    const loadProfile =
-      async () => {
-        try {
-          const restaurant =
-            await getRestaurantProfile()
+    const loadProfile = async () => {
+      try {
+        // -------------------------------------------------
+        // CACHE
+        // -------------------------------------------------
 
-          if (
-            cancelled ||
-            !restaurant
-          ) {
+        const cached = getCachedProfile()
+
+        if (cached?.id) {
+          if (cancelled) {
             return
           }
 
-          const normalized =
-            normalizeProfile(
-              restaurant
-            )
-
-          if (!normalized) {
-            return
+          const normalized = {
+            ...emptyProfile,
+            ...cached,
+            socials: {
+              ...emptyProfile.socials,
+              ...(cached.socials || {}),
+            },
           }
-
-          // ------------------------------------------------
-          // SAVE CACHE
-          // ------------------------------------------------
-
-          saveProfileCache(
-            normalized
-          )
-
-          // ------------------------------------------------
-          // UPDATE REDUX
-          // ------------------------------------------------
 
           dispatch(
-            updateProfile(
-              normalized
-            )
+            updateProfile(normalized)
           )
 
-          // ------------------------------------------------
-          // UPDATE FORM
-          //
-          // داخل async callback
-          // وليس مباشرة داخل effect
-          // ------------------------------------------------
+          return
+        }
 
-          setForm(
+        // -------------------------------------------------
+        // API
+        // -------------------------------------------------
+
+        const restaurant =
+          await getRestaurantProfile()
+
+        if (
+          cancelled ||
+          !restaurant
+        ) {
+          return
+        }
+
+        // -------------------------------------------------
+        // NORMALIZE
+        // -------------------------------------------------
+
+        const normalized =
+          normalizeProfile(
+            restaurant
+          )
+
+        if (!normalized) {
+          return
+        }
+
+        // -------------------------------------------------
+        // SAVE CACHE
+        // -------------------------------------------------
+
+        saveCachedProfile(
+          normalized
+        )
+
+        // -------------------------------------------------
+        // UPDATE REDUX
+        // -------------------------------------------------
+
+        dispatch(
+          updateProfile(
             normalized
           )
-        } catch (error) {
+        )
+
+        // -------------------------------------------------
+        // UPDATE FORM
+        // -------------------------------------------------
+
+        setForm(
+          normalized
+        )
+      } catch (error) {
+        if (!cancelled) {
           console.error(
             'Failed to load profile:',
             error
           )
         }
       }
+    }
 
     loadProfile()
 
@@ -322,218 +257,205 @@ const ProfilePage = () => {
   }
 
   // ===================================================
+  // HANDLE FACEBOOK CHANGE
+  // ===================================================
+
+  const updateFacebook = (value) => {
+    setForm(
+      (current) => ({
+        ...current,
+        socials: {
+          ...(current.socials || {}),
+          facebook: value,
+        },
+      })
+    )
+  }
+
+  // ===================================================
   // HANDLE SUBMIT
   // ===================================================
 
-  const handleSubmit =
-    async (e) => {
-      e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
-      const restaurantId =
-        form?.id ||
-        profile?.id ||
-        readProfileCache()
-          ?.id
+    const restaurantId =
+      form?.id ||
+      profile?.id ||
+      getCachedProfile()?.id
 
-      if (!restaurantId) {
-        console.error(
-          'Restaurant ID not found'
-        )
+    if (!restaurantId) {
+      console.error(
+        'Restaurant ID not found'
+      )
 
-        return
-      }
+      return
+    }
 
-      try {
-        const formData =
-          new FormData()
+    try {
+      // -------------------------------------------------
+      // FORM DATA
+      // -------------------------------------------------
 
-        // ------------------------------------------------
-        // METHOD
-        // ------------------------------------------------
+      const formData =
+        new FormData()
 
-        formData.append(
-          '_method',
-          'PUT'
-        )
+      // -------------------------------------------------
+      // METHOD SPOOFING
+      // -------------------------------------------------
 
-        // ------------------------------------------------
-        // BASIC DATA
-        // ------------------------------------------------
+      formData.append(
+        '_method',
+        'PUT'
+      )
 
-        formData.append(
-          'name',
-          form.name || ''
-        )
+      // -------------------------------------------------
+      // BASIC DATA
+      // -------------------------------------------------
 
-        formData.append(
-          'email',
-          form.email || ''
-        )
+      formData.append(
+        'name',
+        form.name || ''
+      )
 
-        formData.append(
-          'phone',
-          form.phone || ''
-        )
+      formData.append(
+        'email',
+        form.email || ''
+      )
 
-        formData.append(
-          'address',
-          form.address || ''
-        )
+      formData.append(
+        'phone',
+        form.phone || ''
+      )
 
-        // ------------------------------------------------
-        // OPENING HOURS
-        // ------------------------------------------------
+      formData.append(
+        'address',
+        form.address || ''
+      )
 
-        const openingHours =
-          form.openingHours
-            ? form.openingHours
-                .split(',')
-                .map(
-                  (entry) => {
-                    const [
-                      day,
-                      hours,
-                    ] =
-                      entry.split(
-                        ':'
-                      )
+      // -------------------------------------------------
+      // OPENING HOURS
+      // -------------------------------------------------
 
-                    const [
-                      from,
-                      to,
-                    ] =
-                      (
-                        hours ||
-                        ''
-                      ).split(
-                        '-'
-                      )
+      const openingHours =
+        form.openingHours
+          ? form.openingHours
+              .split(',')
+              .map((entry) => {
+                const [
+                  day,
+                  hours,
+                ] = entry.split(':')
 
-                    return {
-                      day:
-                        day?.trim() ||
-                        '',
+                const [
+                  from,
+                  to,
+                ] = (
+                  hours || ''
+                ).split('-')
 
-                      from:
-                        from?.trim() ||
-                        '',
+                return {
+                  day:
+                    day?.trim() || '',
 
-                      to:
-                        to?.trim() ||
-                        '',
-                    }
-                  }
-                )
-            : []
+                  from:
+                    from?.trim() || '',
 
-        openingHours.forEach(
-          (
-            entry,
-            index
-          ) => {
-            formData.append(
-              `opening_hours[${index}][day]`,
-              entry.day
-            )
+                  to:
+                    to?.trim() || '',
+                }
+              })
+              .filter(
+                (entry) =>
+                  entry.day ||
+                  entry.from ||
+                  entry.to
+              )
+          : []
 
-            formData.append(
-              `opening_hours[${index}][from]`,
-              entry.from
-            )
-
-            formData.append(
-              `opening_hours[${index}][to]`,
-              entry.to
-            )
-          }
-        )
-
-        // ------------------------------------------------
-        // SOCIAL LINKS
-        // ------------------------------------------------
-
-        Object.entries(
-          form.socials || {}
-        ).forEach(
-          (
-            [key, value]
-          ) => {
-            formData.append(
-              `social_links[${key}]`,
-              value || ''
-            )
-          }
-        )
-
-        // ------------------------------------------------
-        // COVER IMAGE
-        // ------------------------------------------------
-
-        if (
-          form.coverFile
-        ) {
+      openingHours.forEach(
+        (entry, index) => {
           formData.append(
-            'cover_image',
-            form.coverFile
+            `opening_hours[${index}][day]`,
+            entry.day
+          )
+
+          formData.append(
+            `opening_hours[${index}][from]`,
+            entry.from
+          )
+
+          formData.append(
+            `opening_hours[${index}][to]`,
+            entry.to
           )
         }
+      )
 
-        // ------------------------------------------------
-        // UPDATE API
-        // ------------------------------------------------
+      // -------------------------------------------------
+      // FACEBOOK
+      // -------------------------------------------------
 
-        const response =
-          await updateRestaurantProfile(
-            restaurantId,
-            formData
-          )
+      formData.append(
+        'social_links[facebook]',
+        form.socials?.facebook || ''
+      )
 
-        // ------------------------------------------------
-        // NORMALIZE RESPONSE
-        // ------------------------------------------------
+      // -------------------------------------------------
+      // UPDATE API
+      // -------------------------------------------------
 
-        const normalized =
-          normalizeProfile(
-            response
-          ) || {
-            ...form,
-            id: restaurantId,
-          }
-
-        // ------------------------------------------------
-        // UPDATE REDUX
-        // ------------------------------------------------
-
-        dispatch(
-          updateProfile(
-            normalized
-          )
+      const response =
+        await updateRestaurantProfile(
+          restaurantId,
+          formData
         )
 
-        // ------------------------------------------------
-        // UPDATE LOCAL STORAGE
-        // ------------------------------------------------
+      // -------------------------------------------------
+      // NORMALIZE RESPONSE
+      // -------------------------------------------------
 
-        saveProfileCache(
+      const normalized =
+        normalizeProfile(
+          response
+        ) || {
+          ...form,
+          id: restaurantId,
+        }
+
+      // -------------------------------------------------
+      // UPDATE REDUX
+      // -------------------------------------------------
+
+      dispatch(
+        updateProfile(
           normalized
         )
+      )
 
-        // ------------------------------------------------
-        // UPDATE FORM
-        // ------------------------------------------------
+      // -------------------------------------------------
+      // UPDATE CACHE
+      // -------------------------------------------------
 
-        setForm(
-          normalized
-        )
-      } catch (error) {
-        console.error(
-          'Update profile error:',
-          error?.response
-            ?.data ||
-            error
-        )
-      }
+      saveCachedProfile(
+        normalized
+      )
+
+      // -------------------------------------------------
+      // UPDATE FORM
+      // -------------------------------------------------
+
+      setForm(
+        normalized
+      )
+    } catch (error) {
+      console.error(
+        'Update profile error:',
+        error?.response?.data ||
+          error
+      )
     }
+  }
 
   // ===================================================
   // UI
@@ -542,16 +464,19 @@ const ProfilePage = () => {
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* Profile Card */}
+      {/* =================================================
+          PROFILE CARD
+      ================================================= */}
 
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
 
-        {/* Header */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
           <div>
-
             <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
               {t.profile}
             </h1>
@@ -559,148 +484,29 @@ const ProfilePage = () => {
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {t.manageRestaurantDetails}
             </p>
-
           </div>
 
         </div>
 
-        {/* Form */}
+        {/* =================================================
+            FORM
+        ================================================= */}
 
         <form
           onSubmit={handleSubmit}
           className="grid gap-5 lg:grid-cols-2"
         >
 
-          {/* Restaurant Name */}
+          {/* Restaurant Name */} <Input label={t.restaurantName} placeholder={t.restaurantNamePlaceholder} value={form?.name ?? ''} onChange={(e) => updateForm( 'name', e.target.value ) } /> 
+          {/* Email */} <Input label={t.email} placeholder={t.emailPlaceholder} type="email" value={form?.email ?? ''} onChange={(e) => updateForm( 'email', e.target.value ) } /> 
+          {/* Phone */} <Input label={t.phone} placeholder={t.phonePlaceholder} value={form?.phone ?? ''} onChange={(e) => updateForm( 'phone', e.target.value ) } /> 
+          {/* Address */} <Input label={t.address} placeholder={t.addressPlaceholder} value={form?.address ?? ''} onChange={(e) => updateForm( 'address', e.target.value ) } /> 
+          {/* Opening Hours */} <Input label={t.openingHours} placeholder={t.openingHoursPlaceholder} value={form?.openingHours ?? ''} onChange={(e) => updateForm( 'openingHours', e.target.value ) } /> 
+          {/* Facebook */} <Input label="Facebook" placeholder={t.facebookPlaceholder} value={form?.socials?.facebook ?? ''} onChange={(e) => updateFacebook( e.target.value ) } />
 
-          <Input
-            label={
-              t.restaurantName
-            }
-            value={
-              form?.name ?? ''
-            }
-            onChange={(e) =>
-              updateForm(
-                'name',
-                e.target.value
-              )
-            }
-          />
-
-          {/* Email */}
-
-          <Input
-            label={t.email}
-            value={
-              form?.email ?? ''
-            }
-            onChange={(e) =>
-              updateForm(
-                'email',
-                e.target.value
-              )
-            }
-            type="email"
-          />
-
-          {/* Phone */}
-
-          <Input
-            label={t.phone}
-            value={
-              form?.phone ?? ''
-            }
-            onChange={(e) =>
-              updateForm(
-                'phone',
-                e.target.value
-              )
-            }
-          />
-
-          {/* Address */}
-
-          <Input
-            label={t.address}
-            value={
-              form?.address ?? ''
-            }
-            onChange={(e) =>
-              updateForm(
-                'address',
-                e.target.value
-              )
-            }
-          />
-
-          {/* Opening Hours */}
-
-          <Input
-            label={
-              t.openingHours
-            }
-            value={
-              form?.openingHours ??
-              ''
-            }
-            onChange={(e) =>
-              updateForm(
-                'openingHours',
-                e.target.value
-              )
-            }
-          />
-
-          {/* Facebook */}
-
-          <Input
-            label="Facebook"
-            value={
-              form?.socials
-                ?.facebook ?? ''
-            }
-            onChange={(e) =>
-              setForm(
-                (current) => ({
-                  ...current,
-                  socials: {
-                    ...(current.socials ||
-                      {}),
-                    facebook:
-                      e.target
-                        .value,
-                  },
-                })
-              )
-            }
-          />
-
-          {/* Instagram */}
-
-          <Input
-            label="Instagram"
-            value={
-              form?.socials
-                ?.instagram ?? ''
-            }
-            onChange={(e) =>
-              setForm(
-                (current) => ({
-                  ...current,
-                  socials: {
-                    ...(current.socials ||
-                      {}),
-                    instagram:
-                      e.target
-                        .value,
-                  },
-                })
-              )
-            }
-          />
-
-          {/* Save */}
+          {/* =================================================
+              SAVE
+          ================================================= */}
 
           <div className="col-span-full flex justify-end border-t border-slate-200 pt-5 dark:border-slate-800">
 
@@ -719,3 +525,4 @@ const ProfilePage = () => {
 }
 
 export default ProfilePage
+ 

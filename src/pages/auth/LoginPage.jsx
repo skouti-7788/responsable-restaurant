@@ -46,7 +46,7 @@ const LoginPage = () => {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <Input
-            label='Email'
+             label='Email'
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="manager@example.com"

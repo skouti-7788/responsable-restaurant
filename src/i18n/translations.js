@@ -5,7 +5,7 @@ const translations = {
   en: {
     login: 'Login',
     register: 'Register new restaurant',
-
+    loadingPreview: 'Loading preview...',
     email: 'Email',
     password: 'Password',
 
@@ -236,7 +236,129 @@ const translations = {
     accepting: 'Accepting...',
     cancelling: 'Cancelling...', 
     deleting: 'Deleting...', 
-  },
+    colors: 'Colors',
+    staff: 'Staff',
+    staffDescription:
+      'Manage your restaurant staff and their permissions.',
+
+    addStaff: 'Add staff',
+    addStaffDescription:
+      'Create a staff account for your restaurant.',
+
+    creatingStaff: 'Creating...',
+    staffList: 'Staff list',
+    noStaff: 'No staff members yet.',
+
+    role: 'Role',
+    permissions: 'Permissions',
+    managePermissions: 'Manage permissions',
+    savePermissions: 'Save permissions',
+
+    selectAll: 'Select all',
+    unselectAll: 'Unselect all',
+
+    delete: 'Delete',
+
+    staffNameRequired:
+      'Staff name is required.',
+
+    staffEmailRequired:
+      'Staff email is required.',
+
+    staffPasswordRequired:
+      'Staff password is required.',
+
+    staffPasswordMin:
+      'Password must contain at least 8 characters.',
+
+    deleteStaffConfirm:
+      'Are you sure you want to delete this staff member?',
+
+    loadStaffError:
+      'Unable to load staff.',
+
+    createStaffError:
+      'Unable to create staff.',
+
+    deleteStaffError:
+      'Unable to delete staff.',
+
+    loadPermissionsError:
+      'Unable to load permissions.',
+
+    savePermissionsError:
+      'Unable to save permissions.',
+
+    // Permissions
+    permissionDashboardView:
+      'View dashboard',
+
+    permissionOrdersView:
+      'View orders',
+    permissionOrdersAdd:
+      'Add orders',
+    permissionOrdersUpdate:
+      'Update orders',
+    permissionOrdersDelete:
+      'Delete orders',
+
+    permissionMealsView:
+      'View meals',
+    permissionMealsAdd:
+      'Add meals',
+    permissionMealsUpdate:
+      'Update meals',
+    permissionMealsDelete:
+      'Delete meals',
+
+    permissionCategoriesView:
+      'View categories',
+    permissionCategoriesAdd:
+      'Add categories',
+    permissionCategoriesUpdate:
+      'Update categories',
+    permissionCategoriesDelete:
+      'Delete categories',
+
+    permissionTablesView:
+      'View tables',
+    permissionTablesAdd:
+      'Add tables',
+    permissionTablesUpdate:
+      'Update tables',
+    permissionTablesDelete:
+      'Delete tables',
+
+    permissionAppearanceView:
+      'View appearance',
+    permissionAppearanceUpdate:
+      'Update appearance',
+    permissionAppearanceDelete:
+      'Delete appearance',
+
+    permissionStaffView:
+      'View staff',
+    permissionStaffAdd:
+      'Add staff',
+    permissionStaffUpdate:
+      'Update staff',
+    permissionStaffDelete:
+      'Delete staff',
+
+    permissionQrCodeView:
+      'View QR code',
+
+    permissionProfileView:
+      'View profile',
+    permissionProfileUpdate:
+      'Update profile', 
+    restaurantNamePlaceholder: 'Enter your restaurant name', 
+    emailPlaceholder: 'Enter your restaurant email', 
+    phonePlaceholder: 'Enter your phone number', 
+    addressPlaceholder: 'Enter your restaurant address',
+    openingHoursPlaceholder: 'Example: Monday: 08:00-18:00, Tuesday: 08:00-18:00', 
+    facebookPlaceholder: 'Enter your Facebook URL',
+   },
 
   // =========================================================
   // FRANÇAIS
@@ -476,15 +598,140 @@ const translations = {
     accepting: 'Acceptation...', 
     cancelling: 'Annulation...', 
     deleting: 'Suppression...',
+    loadingPreview: 'Chargement de l’aperçu...',
+    colors: 'Couleurs', 
+    staff: 'Personnel',
+    staffDescription:
+      'Gérez le personnel de votre restaurant et ses permissions.',
+
+    addStaff: 'Ajouter un membre',
+    addStaffDescription:
+      'Créez un compte pour un membre du personnel.',
+
+    creatingStaff: 'Création...',
+    staffList: 'Liste du personnel',
+    noStaff: 'Aucun membre du personnel.',
+
+    role: 'Rôle',
+    permissions: 'Permissions',
+    managePermissions: 'Gérer les permissions',
+    savePermissions: 'Enregistrer les permissions',
+
+    selectAll: 'Tout sélectionner',
+    unselectAll: 'Tout désélectionner',
+
+    delete: 'Supprimer',
+
+    staffNameRequired:
+      'Le nom du membre est obligatoire.',
+
+    staffEmailRequired:
+      'L’adresse e-mail est obligatoire.',
+
+    staffPasswordRequired:
+      'Le mot de passe est obligatoire.',
+
+    staffPasswordMin:
+      'Le mot de passe doit contenir au moins 8 caractères.',
+
+    deleteStaffConfirm:
+      'Êtes-vous sûr de vouloir supprimer ce membre du personnel ?',
+
+    loadStaffError:
+      'Impossible de charger le personnel.',
+
+    createStaffError:
+      'Impossible de créer le membre du personnel.',
+
+    deleteStaffError:
+      'Impossible de supprimer le membre du personnel.',
+
+    loadPermissionsError:
+      'Impossible de charger les permissions.',
+
+    savePermissionsError:
+      'Impossible d’enregistrer les permissions.',
+
+    // Permissions
+    permissionDashboardView:
+      'Voir le tableau de bord',
+
+    permissionOrdersView:
+      'Voir les commandes',
+    permissionOrdersAdd:
+      'Ajouter des commandes',
+    permissionOrdersUpdate:
+      'Modifier les commandes',
+    permissionOrdersDelete:
+      'Supprimer les commandes',
+
+    permissionMealsView:
+      'Voir les plats',
+    permissionMealsAdd:
+      'Ajouter des plats',
+    permissionMealsUpdate:
+      'Modifier les plats',
+    permissionMealsDelete:
+      'Supprimer les plats',
+
+    permissionCategoriesView:
+      'Voir les catégories',
+    permissionCategoriesAdd:
+      'Ajouter des catégories',
+    permissionCategoriesUpdate:
+      'Modifier les catégories',
+    permissionCategoriesDelete:
+      'Supprimer les catégories',
+
+    permissionTablesView:
+      'Voir les tables',
+    permissionTablesAdd:
+      'Ajouter des tables',
+    permissionTablesUpdate:
+      'Modifier les tables',
+    permissionTablesDelete:
+      'Supprimer les tables',
+
+    permissionAppearanceView:
+      'Voir l’apparence',
+    permissionAppearanceUpdate:
+      'Modifier l’apparence',
+    permissionAppearanceDelete:
+      'Supprimer l’apparence',
+
+    permissionStaffView:
+      'Voir le personnel',
+    permissionStaffAdd:
+      'Ajouter du personnel',
+    permissionStaffUpdate:
+      'Modifier le personnel',
+    permissionStaffDelete:
+      'Supprimer du personnel',
+
+    permissionQrCodeView:
+      'Voir le QR code',
+
+    permissionProfileView:
+      'Voir le profil',
+    permissionProfileUpdate:
+      'Modifier le profil',
+    
+    restaurantNamePlaceholder: 'Entrez le nom de votre restaurant', 
+    emailPlaceholder: 'Entrez l’adresse e-mail de votre restaurant',
+    phonePlaceholder: 'Entrez le numéro de téléphone', 
+    addressPlaceholder: 'Entrez l’adresse de votre restaurant', 
+    openingHoursPlaceholder: 'Exemple : Lundi : 08:00-18:00, Mardi : 08:00-18:00', 
+    facebookPlaceholder: 'Entrez le lien Facebook',
   },
 
   // =========================================================
   // العربية
   // =========================================================
   ar: {
+    colors: 'الألوان',
     login: 'تسجيل الدخول',
     register: 'تسجيل المطعم',
-
+    loadingPreview: 'جاري تحميل المعاينة...',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
 
@@ -720,8 +967,129 @@ const translations = {
     updatesStream: 'سجل التحديثات',
     accepting: 'جاري القبول...', 
     cancelling: 'جاري الإلغاء...', 
-    deleting: 'جاري الحذف...',
+    deleting: 'جاري الحذف...', 
+    staff: 'الموظفون',
+    staffDescription:
+      'إدارة موظفي المطعم والصلاحيات الخاصة بهم.',
+
+    addStaff: 'إضافة موظف',
+    addStaffDescription:
+      'إنشاء حساب لموظف في مطعمك.',
+
+    creatingStaff: 'جاري إنشاء الموظف...',
+    staffList: 'قائمة الموظفين',
+    noStaff: 'لا يوجد موظفون بعد.',
+
+    role: 'الدور',
+    permissions: 'الصلاحيات',
+    managePermissions: 'إدارة الصلاحيات',
+    savePermissions: 'حفظ الصلاحيات',
+
+    selectAll: 'تحديد الكل',
+    unselectAll: 'إلغاء تحديد الكل',
+
+    delete: 'حذف',
+
+    staffNameRequired:
+      'اسم الموظف مطلوب.',
+
+    staffEmailRequired:
+      'البريد الإلكتروني للموظف مطلوب.',
+
+    staffPasswordRequired:
+      'كلمة مرور الموظف مطلوبة.',
+
+    staffPasswordMin:
+      'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.',
+
+    deleteStaffConfirm:
+      'هل أنت متأكد أنك تريد حذف هذا الموظف؟',
+
+    loadStaffError:
+      'فشل تحميل الموظفين.',
+
+    createStaffError:
+      'فشل إنشاء الموظف.',
+
+    deleteStaffError:
+      'فشل حذف الموظف.',
+
+    loadPermissionsError:
+      'فشل تحميل الصلاحيات.',
+
+    savePermissionsError:
+      'فشل حفظ الصلاحيات.',
+
+    // Permissions
+    permissionDashboardView:
+      'عرض لوحة التحكم',
+
+    permissionOrdersView:
+      'عرض الطلبات',
+    permissionOrdersAdd:
+      'إضافة الطلبات',
+    permissionOrdersUpdate:
+      'تعديل الطلبات',
+    permissionOrdersDelete:
+      'حذف الطلبات',
+
+    permissionMealsView:
+      'عرض الأطباق',
+    permissionMealsAdd:
+      'إضافة الأطباق',
+    permissionMealsUpdate:
+      'تعديل الأطباق',
+    permissionMealsDelete:
+      'حذف الأطباق',
+
+    permissionCategoriesView:
+      'عرض الفئات',
+    permissionCategoriesAdd:
+      'إضافة الفئات',
+    permissionCategoriesUpdate:
+      'تعديل الفئات',
+    permissionCategoriesDelete:
+      'حذف الفئات',
+
+    permissionTablesView:
+      'عرض الطاولات',
+    permissionTablesAdd:
+      'إضافة الطاولات',
+    permissionTablesUpdate:
+      'تعديل الطاولات',
+    permissionTablesDelete:
+      'حذف الطاولات',
+
+    permissionAppearanceView:
+      'عرض المظهر',
+    permissionAppearanceUpdate:
+      'تعديل المظهر',
+    permissionAppearanceDelete:
+      'حذف المظهر',
+
+    permissionStaffView:
+      'عرض الموظفين',
+    permissionStaffAdd:
+      'إضافة الموظفين',
+    permissionStaffUpdate:
+      'تعديل الموظفين',
+    permissionStaffDelete:
+      'حذف الموظفين',
+
+    permissionQrCodeView:
+      'عرض رمز QR',
+
+    permissionProfileView:
+      'عرض الملف الشخصي',
+    permissionProfileUpdate:
+      'تعديل الملف الشخصي',
     
+    restaurantNamePlaceholder: 'أدخل اسم المطعم', 
+    emailPlaceholder: 'أدخل البريد الإلكتروني للمطعم', 
+    phonePlaceholder: 'أدخل رقم الهاتف', 
+    addressPlaceholder: 'أدخل عنوان المطعم', 
+    openingHoursPlaceholder: 'مثال: الإثنين: 08:00-18:00، الثلاثاء: 08:00-18:00', 
+    facebookPlaceholder: 'أدخل رابط Facebook',
      
    },
 }
