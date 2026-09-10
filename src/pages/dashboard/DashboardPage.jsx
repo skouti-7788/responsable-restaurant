@@ -19,6 +19,10 @@ import {
   fetchDashboardData,
   getDashboardCache,
 } from '../../data/dataDashboard'
+import {
+  getCurrentRestaurantId,
+  getRestaurantCacheKey,
+} from '../../utils/restaurantCache'
 
 import translations from '../../i18n/translations'
 
@@ -57,9 +61,13 @@ const DashboardPage = () => {
     setLoading,
   ] = useState(() => {
     try {
-      return !localStorage.getItem(
-        'restaurant_dashboard_cache'
+      const restaurantId = getCurrentRestaurantId()
+      const cacheKey = getRestaurantCacheKey(
+        'restaurant_dashboard_cache',
+        restaurantId
       )
+
+      return !cacheKey || !localStorage.getItem(cacheKey)
     } catch {
       return true
     }

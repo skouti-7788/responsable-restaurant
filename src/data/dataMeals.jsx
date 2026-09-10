@@ -1,18 +1,32 @@
     import axiosClient from '../api/axiosClient'
+    import { getCurrentRestaurantId } from '../utils/restaurantCache'
 
     // =====================================================
     // RESTAURANT API
     // =====================================================
 
-    export const getRestaurant = async () => {
-    const response = await axiosClient.get('/restaurants')
+    export const getRestaurant = async (
+      restaurantId = null
+    ) => {
+      const id =
+        restaurantId ??
+        getCurrentRestaurantId()
 
-    const data =
-    response.data?.data ||
-    response.data ||
-    []
+      if (!id) {
+        return null
+      }
 
-    return data[0] || null
+      const response = await axiosClient.get(
+        `/restaurants/${id}`
+      )
+
+      const data =
+        response.data?.data ||
+        response.data?.restaurant ||
+        response.data ||
+        null
+
+      return data || null
     }
 
     // =====================================================

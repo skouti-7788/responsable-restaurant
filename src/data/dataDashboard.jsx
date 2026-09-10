@@ -1,5 +1,11 @@
 import axiosClient from '../api/axiosClient'
 import { setNotafication } from '../store/orderSlice'
+import {
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  getRestaurantCacheKey,
+  setRestaurantCache,
+} from '../utils/restaurantCache'
 
 // =====================================================
 // CACHE KEYS
@@ -7,9 +13,6 @@ import { setNotafication } from '../store/orderSlice'
 
 const DASHBOARD_CACHE_KEY =
   'restaurant_dashboard_cache'
-
-const RESTAURANT_CACHE_KEY =
-  'restaurant_current_cache'
 
 // =====================================================
 // INITIAL DASHBOARD
@@ -28,11 +31,24 @@ const getEmptyDashboard = () => ({
 // GET DASHBOARD CACHE
 // =====================================================
 
-export const getDashboardCache = () => {
+export const getDashboardCache = (
+  restaurantId = null
+) => {
+  const id = restaurantId ?? getCurrentRestaurantId()
+  const cacheKey = getRestaurantCacheKey(
+    DASHBOARD_CACHE_KEY,
+    id
+  )
+
+  if (!cacheKey) {
+    return getEmptyDashboard()
+  }
+
   try {
     const cached =
-      localStorage.getItem(
-        DASHBOARD_CACHE_KEY
+      getRestaurantCache(
+        DASHBOARD_CACHE_KEY,
+        id
       )
 
     if (!cached) {
@@ -41,7 +57,7 @@ export const getDashboardCache = () => {
 
     return {
       ...getEmptyDashboard(),
-      ...JSON.parse(cached),
+      ...cached,
     }
   } catch (error) {
     console.error(
@@ -57,70 +73,41 @@ export const getDashboardCache = () => {
 // SAVE DASHBOARD CACHE
 // =====================================================
 
-const saveDashboardToCache = (data) => {
-  try {
-    localStorage.setItem(
-      DASHBOARD_CACHE_KEY,
-      JSON.stringify(data)
-    )
-  } catch (error) {
-    console.error(
-      'Save dashboard cache error:',
-      error
-    )
-  }
-}
-
-// =====================================================
-// SAVE RESTAURANT CACHE
-// =====================================================
-
-const saveRestaurantToCache = (
-  restaurant
+const saveDashboardToCache = (
+  data,
+  restaurantId = null
 ) => {
-  try {
-    localStorage.setItem(
-      RESTAURANT_CACHE_KEY,
-      JSON.stringify({
-        id: restaurant?.id || null,
-        slug:
-          restaurant?.slug || null,
-      })
-    )
-  } catch (error) {
-    console.error(
-      'Save restaurant cache error:',
-      error
-    )
+  const id = restaurantId ?? getCurrentRestaurantId()
+
+  if (!id) {
+    return
   }
+
+  setRestaurantCache(
+    DASHBOARD_CACHE_KEY,
+    id,
+    data
+  )
 }
 
 // =====================================================
 // GET MENU VIEWS FROM CACHE
 // =====================================================
 
-const getCachedMenuViews = () => {
-  try {
-    const cached =
-      localStorage.getItem(
-        DASHBOARD_CACHE_KEY
-      )
+const getCachedMenuViews = (
+  restaurantId = null
+) => {
+  const id = restaurantId ?? getCurrentRestaurantId()
+  const cached = getRestaurantCache(
+    DASHBOARD_CACHE_KEY,
+    id
+  )
 
-    if (!cached) {
-      return 0
-    }
-
-    const dashboard =
-      JSON.parse(cached)
-
-    return (
-      Number(
-        dashboard?.menuViews
-      ) || 0
-    )
-  } catch {
+  if (!cached) {
     return 0
   }
+
+  return Number(cached?.menuViews) || 0
 }
 
 // =====================================================
@@ -263,17 +250,6 @@ export const fetchDashboardData = async ({
 
   const id =
     restaurantId
-
-  // ===================================================
-  // SAVE RESTAURANT CACHE
-  // ===================================================
-
-  saveRestaurantToCache({
-    id,
-    slug:
-      currentUser?.restaurant?.slug ||
-      null,
-  })
 
   // ===================================================
   // GET CATEGORIES / MEALS / ORDERS
@@ -530,7 +506,8 @@ export const fetchDashboardData = async ({
   // ===================================================
 
   saveDashboardToCache(
-    newDashboard
+    newDashboard,
+    id
   )
 
   // ===================================================

@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+import { clearRestaurantCaches } from '../utils/restaurantCache'
+
 const token = localStorage.getItem('restaurant_token')
 const user = localStorage.getItem('restaurant_user')
 const initialState = {
@@ -34,6 +36,8 @@ const authSlice = createSlice({
       state.error = null
       localStorage.removeItem('restaurant_token')
       localStorage.removeItem('restaurant_user')
+      clearRestaurantCaches()
+      localStorage.removeItem('restaurant_current_cache')
     },
   },
 })

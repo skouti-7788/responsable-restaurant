@@ -17,13 +17,17 @@ import {
 } from 'lucide-react'
 
 import {
-  getRestaurants,
   getRestaurantOrders,
   getRestaurantMeals,
   getRestaurantTables,
   updateOrderStatus,
   deleteOrder,
 } from '../../data/dataOrders'
+import {
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  setRestaurantCache,
+} from '../../utils/restaurantCache'
 
 import {
   fetchOrdersSuccess,
@@ -50,9 +54,6 @@ import bidiFactory from 'bidi-js'
 
 const ORDERS_CACHE_KEY =
   'restaurant_orders_cache'
-
-const RESTAURANTS_CACHE_KEY =
-  'restaurant_restaurants_cache'
 
 const MEALS_CACHE_KEY =
   'restaurant_meals_cache'
@@ -127,28 +128,16 @@ const bidi = bidiFactory()
 
 const readCache = (
   key,
-  fallback
+  fallback,
+  restaurantId = getCurrentRestaurantId()
 ) => {
-  try {
-    const cached =
-      localStorage.getItem(key)
-
-    if (!cached) {
-      return fallback
-    }
-
-    const parsed =
-      JSON.parse(cached)
-
-    return parsed ?? fallback
-  } catch (error) {
-    console.error(
-      `Cache read error: ${key}`,
-      error
+  const cached =
+    getRestaurantCache(
+      key,
+      restaurantId
     )
 
-    return fallback
-  }
+  return cached ?? fallback
 }
 
 
@@ -158,19 +147,14 @@ const readCache = (
 
 const saveCache = (
   key,
-  data
+  data,
+  restaurantId = getCurrentRestaurantId()
 ) => {
-  try {
-    localStorage.setItem(
-      key,
-      JSON.stringify(data)
-    )
-  } catch (error) {
-    console.error(
-      `Cache save error: ${key}`,
-      error
-    )
-  }
+  setRestaurantCache(
+    key,
+    restaurantId,
+    data
+  )
 }
 
 
@@ -350,28 +334,28 @@ const OrdersPage = () => {
   // INITIAL CACHE
   // ===================================================
 
+  const currentRestaurantId =
+    getCurrentRestaurantId()
+
   const cachedOrders =
     readCache(
       ORDERS_CACHE_KEY,
-      []
-    )
-
-  const cachedRestaurants =
-    readCache(
-      RESTAURANTS_CACHE_KEY,
-      []
+      [],
+      currentRestaurantId
     )
 
   const cachedMeals =
     readCache(
       MEALS_CACHE_KEY,
-      []
+      [],
+      currentRestaurantId
     )
 
   const cachedTables =
     readCache(
       TABLES_CACHE_KEY,
-      []
+      [],
+      currentRestaurantId
     )
 
 
@@ -379,12 +363,7 @@ const OrdersPage = () => {
   // STATE
   // ===================================================
 
-  const [
-    restaurants,
-    setRestaurants,
-  ] = useState(
-    cachedRestaurants
-  )
+  const [restaurants] = useState([])
 
   const [
     meals,
@@ -499,88 +478,76 @@ const OrdersPage = () => {
           // =============================================
 
           if (useCache) {
-            const restaurantsCache =
-              readCache(
-                RESTAURANTS_CACHE_KEY,
-                []
-              )
-
             const mealsCache =
               readCache(
                 MEALS_CACHE_KEY,
-                []
+                [],
+                currentRestaurantId
               )
 
             const tablesCache =
               readCache(
                 TABLES_CACHE_KEY,
-                []
+                [],
+                currentRestaurantId
               )
 
-            if (
-              restaurantsCache.length
-            ) {
-              setRestaurants(
-                restaurantsCache
-              )
+            if (mealsCache.length) {
+              setMeals(mealsCache)
             }
 
-            if (
-              mealsCache.length
-            ) {
-              setMeals(
-                mealsCache
-              )
-            }
-
-            if (
-              tablesCache.length
-            ) {
-              setTables(
-                tablesCache
-              )
+            if (tablesCache.length) {
+              setTables(tablesCache)
             }
           }
 
+          const authenticatedRestaurantId =
+            getCurrentRestaurantId()
 
-          // =============================================
-          // GET RESTAURANTS
-          // =============================================
+          if (!authenticatedRestaurantId) {
+            setMeals([])
+            setTables([])
+            saveCache(
+              MEALS_CACHE_KEY,
+              [],
+              authenticatedRestaurantId
+            )
+            saveCache(
+              TABLES_CACHE_KEY,
+              [],
+              authenticatedRestaurantId
+            )
+            return null
+          }
 
-          const restaurantsData =
-            await getRestaurants()
-
-          setRestaurants(
-            restaurantsData
-          )
-
-          saveCache(
-            RESTAURANTS_CACHE_KEY,
-            restaurantsData
-          )
+          const currentUser =
+            JSON.parse(
+              localStorage.getItem(
+                'restaurant_user'
+              ) || 'null'
+            )
 
           const restaurant =
-            restaurantsData[0]
-
-
-          // =============================================
-          // NO RESTAURANT
-          // =============================================
+            currentUser?.restaurant || {
+              id: authenticatedRestaurantId,
+              slug:
+                currentUser?.restaurant?.slug ||
+                null,
+            }
 
           if (!restaurant?.id) {
             setMeals([])
             setTables([])
-
             saveCache(
               MEALS_CACHE_KEY,
-              []
+              [],
+              authenticatedRestaurantId
             )
-
             saveCache(
               TABLES_CACHE_KEY,
-              []
+              [],
+              authenticatedRestaurantId
             )
-
             return null
           }
 
@@ -612,12 +579,14 @@ const OrdersPage = () => {
 
           saveCache(
             MEALS_CACHE_KEY,
-            mealsData
+            mealsData,
+            restaurant.id
           )
 
           saveCache(
             TABLES_CACHE_KEY,
-            tablesData
+            tablesData,
+            restaurant.id
           )
 
           return restaurant
@@ -674,7 +643,8 @@ const OrdersPage = () => {
 
             saveCache(
               ORDERS_CACHE_KEY,
-              []
+              [],
+              restaurant?.id || getCurrentRestaurantId()
             )
 
             return
@@ -708,7 +678,8 @@ const OrdersPage = () => {
 
           saveCache(
             ORDERS_CACHE_KEY,
-            freshOrders
+            freshOrders,
+            restaurant.id
           )
 
           setError('')
@@ -727,7 +698,8 @@ const OrdersPage = () => {
           const oldOrders =
             readCache(
               ORDERS_CACHE_KEY,
-              []
+              [],
+              getCurrentRestaurantId()
             )
 
           if (
@@ -780,7 +752,8 @@ const OrdersPage = () => {
         const ordersCache =
           readCache(
             ORDERS_CACHE_KEY,
-            []
+            [],
+            getCurrentRestaurantId()
           )
 
         if (

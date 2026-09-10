@@ -1,4 +1,11 @@
 import axiosClient from '../api/axiosClient'
+import {
+  clearLegacyRestaurantCaches,
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  removeRestaurantCache,
+  setRestaurantCache,
+} from '../utils/restaurantCache'
 
 // =====================================================
 // CACHE KEYS
@@ -22,57 +29,26 @@ const getEmptyCategories = () => {
 // BUILD RESTAURANT-SCOPED CACHE KEY
 // =====================================================
 
-const getCategoriesCacheKey = (
-  restaurantId
-) => {
-  if (!restaurantId) {
-    return null
-  }
-
-  return `${CATEGORIES_CACHE_KEY}_${restaurantId}`
-}
-
 // =====================================================
 // GET CACHED CATEGORIES
 // =====================================================
 
 export const getCachedCategories = (
-  restaurantId
+  restaurantId = null
 ) => {
-  try {
-    const cacheKey =
-      getCategoriesCacheKey(
-        restaurantId
-      )
+  const id =
+    restaurantId ??
+    getCurrentRestaurantId()
 
-    if (!cacheKey) {
-      return getEmptyCategories()
-    }
-
-    const cached =
-      localStorage.getItem(
-        cacheKey
-      )
-
-    if (!cached) {
-      return getEmptyCategories()
-    }
-
-    const parsed =
-      JSON.parse(cached)
-
-    return Array.isArray(parsed)
-      ? parsed
-      : getEmptyCategories()
-
-  } catch (error) {
-    console.error(
-      'Read categories cache error:',
-      error
+  const cached =
+    getRestaurantCache(
+      CATEGORIES_CACHE_KEY,
+      id
     )
 
-    return getEmptyCategories()
-  }
+  return Array.isArray(cached)
+    ? cached
+    : getEmptyCategories()
 }
 
 // =====================================================
@@ -80,28 +56,36 @@ export const getCachedCategories = (
 // =====================================================
 
 export const getCachedRestaurant = () => {
+  const restaurantId = getCurrentRestaurantId()
+
+  if (!restaurantId) {
+    return null
+  }
+
   try {
-    const cached =
+    const storedUser =
       localStorage.getItem(
-        RESTAURANT_CACHE_KEY
+        'restaurant_user'
       )
 
-    if (!cached) {
+    if (!storedUser) {
       return null
     }
 
-    const parsed =
-      JSON.parse(cached)
+    const user = JSON.parse(storedUser)
+    const restaurant =
+      user?.restaurant || null
 
-    if (
-      !parsed ||
-      !parsed.id
-    ) {
+    if (!restaurant?.id && !user?.restaurant_id) {
       return null
     }
 
-    return parsed
-
+    return {
+      id: Number(
+        restaurant?.id ?? user?.restaurant_id
+      ),
+      slug: restaurant?.slug || null,
+    }
   } catch (error) {
     console.error(
       'Read restaurant cache error:',
@@ -120,31 +104,15 @@ export const saveCategoriesToCache = (
   restaurantId,
   categories
 ) => {
-  try {
-    const cacheKey =
-      getCategoriesCacheKey(
-        restaurantId
-      )
+  const id = restaurantId ?? getCurrentRestaurantId()
 
-    if (!cacheKey) {
-      return
-    }
-
-    localStorage.setItem(
-      cacheKey,
-      JSON.stringify(
-        Array.isArray(categories)
-          ? categories
-          : []
-      )
-    )
-
-  } catch (error) {
-    console.error(
-      'Save categories cache error:',
-      error
-    )
-  }
+  setRestaurantCache(
+    CATEGORIES_CACHE_KEY,
+    id,
+    Array.isArray(categories)
+      ? categories
+      : []
+  )
 }
 
 // =====================================================
@@ -154,25 +122,12 @@ export const saveCategoriesToCache = (
 export const saveRestaurantToCache = (
   restaurant
 ) => {
-  try {
-    localStorage.setItem(
-      RESTAURANT_CACHE_KEY,
-      JSON.stringify({
-        id:
-          restaurant?.id ||
-          null,
+  const id =
+    restaurant?.id ??
+    getCurrentRestaurantId()
 
-        slug:
-          restaurant?.slug ||
-          null,
-      })
-    )
-
-  } catch (error) {
-    console.error(
-      'Save restaurant cache error:',
-      error
-    )
+  if (!id) {
+    return
   }
 }
 
@@ -183,26 +138,10 @@ export const saveRestaurantToCache = (
 export const clearCategoriesCache = (
   restaurantId
 ) => {
-  try {
-    const cacheKey =
-      getCategoriesCacheKey(
-        restaurantId
-      )
-
-    if (!cacheKey) {
-      return
-    }
-
-    localStorage.removeItem(
-      cacheKey
-    )
-
-  } catch (error) {
-    console.error(
-      'Clear categories cache error:',
-      error
-    )
-  }
+  removeRestaurantCache(
+    CATEGORIES_CACHE_KEY,
+    restaurantId
+  )
 }
 
 // =====================================================
@@ -211,7 +150,7 @@ export const clearCategoriesCache = (
 
 export const clearAllCategoriesCaches = () => {
   try {
-    const keys = []
+    clearLegacyRestaurantCaches()
 
     for (
       let index = 0;
@@ -227,19 +166,9 @@ export const clearAllCategoriesCaches = () => {
           `${CATEGORIES_CACHE_KEY}_`
         )
       ) {
-        keys.push(key)
+        localStorage.removeItem(key)
       }
     }
-
-    keys.forEach((key) => {
-      localStorage.removeItem(key)
-    })
-
-    // Remove old legacy cache too
-    localStorage.removeItem(
-      CATEGORIES_CACHE_KEY
-    )
-
   } catch (error) {
     console.error(
       'Clear all categories caches error:',
@@ -253,6 +182,27 @@ export const clearAllCategoriesCaches = () => {
 // =====================================================
 
 export const fetchRestaurant = async () => {
+  const currentRestaurantId = getCurrentRestaurantId()
+
+  if (currentRestaurantId) {
+    const response = await axiosClient.get(
+      `/restaurants/${currentRestaurantId}`
+    )
+
+    const restaurant =
+      response.data?.data ||
+      response.data?.restaurant ||
+      response.data ||
+      null
+
+    if (!restaurant?.id) {
+      throw new Error(
+        'Restaurant not found.'
+      )
+    }
+
+    return restaurant
+  }
 
   const response =
     await axiosClient.get(
@@ -278,10 +228,6 @@ export const fetchRestaurant = async () => {
       'Restaurant not found.'
     )
   }
-
-  saveRestaurantToCache(
-    restaurant
-  )
 
   return restaurant
 }

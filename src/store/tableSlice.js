@@ -1,47 +1,30 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+import {
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  setRestaurantCache,
+  clearRestaurantCachesById,
+} from '../utils/restaurantCache'
+
 const TABLES_CACHE_KEY = 'restaurant_tables_cache'
-const RESTAURANT_CACHE_KEY = 'restaurant_current_cache'
 
 const getCachedTables = () => {
-  try {
-    const cached =
-      localStorage.getItem(TABLES_CACHE_KEY)
+  const restaurantId = getCurrentRestaurantId()
 
-    return cached
-      ? JSON.parse(cached)
-      : []
-  } catch {
+  if (!restaurantId) {
     return []
   }
+
+  return getRestaurantCache(TABLES_CACHE_KEY, restaurantId) ?? []
 }
-
-const getCachedRestaurant = () => {
-  try {
-    const cached =
-      localStorage.getItem(
-        RESTAURANT_CACHE_KEY
-      )
-
-    return cached
-      ? JSON.parse(cached)
-      : null
-  } catch {
-    return null
-  }
-}
-
-const cachedRestaurant =
-  getCachedRestaurant()
 
 const initialState = {
   tables: getCachedTables(),
 
-  restaurantId:
-    cachedRestaurant?.id || null,
+  restaurantId: getCurrentRestaurantId(),
 
-  restaurantSlug:
-    cachedRestaurant?.slug || null,
+  restaurantSlug: null,
 
   loading: false,
 
@@ -57,17 +40,19 @@ const tableSlice = createSlice({
     setTables(state, action) {
       state.tables = action.payload
 
-      try {
-        localStorage.setItem(
-          TABLES_CACHE_KEY,
-          JSON.stringify(action.payload)
-        )
-      } catch (err) {
-        console.error(
-          'Save tables cache error:',
-          err
-        )
+      const activeRestaurantId =
+        state.restaurantId ||
+        getCurrentRestaurantId()
+
+      if (!activeRestaurantId) {
+        return
       }
+
+      setRestaurantCache(
+        TABLES_CACHE_KEY,
+        activeRestaurantId,
+        action.payload
+      )
     },
 
     setRestaurantInfo(state, action) {
@@ -76,24 +61,6 @@ const tableSlice = createSlice({
 
       state.restaurantSlug =
         action.payload?.slug || null
-
-      try {
-        localStorage.setItem(
-          RESTAURANT_CACHE_KEY,
-          JSON.stringify({
-            id:
-              action.payload?.id || null,
-
-            slug:
-              action.payload?.slug || null,
-          })
-        )
-      } catch (err) {
-        console.error(
-          'Save restaurant cache error:',
-          err
-        )
-      }
     },
 
     setTablesLoading(state, action) {
@@ -105,26 +72,17 @@ const tableSlice = createSlice({
     },
 
     clearTables(state) {
+      const restaurantIdToClear = state.restaurantId
+
       state.tables = []
       state.restaurantId = null
       state.restaurantSlug = null
       state.loading = false
       state.error = ''
 
-      try {
-        localStorage.removeItem(
-          TABLES_CACHE_KEY
-        )
-
-        localStorage.removeItem(
-          RESTAURANT_CACHE_KEY
-        )
-      } catch (err) {
-        console.error(
-          'Clear tables cache error:',
-          err
-        )
-      }
+      clearRestaurantCachesById(
+        restaurantIdToClear
+      )
     },
   },
 })

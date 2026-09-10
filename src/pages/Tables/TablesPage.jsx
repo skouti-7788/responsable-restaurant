@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 
 import {
-  getRestaurants,
   getTables,
   createTable,
   updateTable,
@@ -26,6 +25,11 @@ import {
 } from '../../data/dataTables'
 
 import translations from '../../i18n/translations'
+import {
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  setRestaurantCache,
+} from '../../utils/restaurantCache'
 
 
 const TablesPage = () => {
@@ -41,79 +45,19 @@ const TablesPage = () => {
     {}
 
 
-  // =====================================================
-  // CACHE KEYS
-  // =====================================================
-
   const TABLES_CACHE_KEY =
     'restaurant_tables_cache'
 
-  const RESTAURANT_CACHE_KEY =
-    'restaurant_current_cache'
-
-
-  // =====================================================
-  // GET CACHED TABLES
-  // =====================================================
-
-  const getCachedTables = () => {
-
-    try {
-
-      const cached =
-        localStorage.getItem(
-          TABLES_CACHE_KEY
-        )
-
-      return cached
-        ? JSON.parse(cached)
-        : []
-
-    } catch {
-
-      return []
-
-    }
-
-  }
-
-
-  // =====================================================
-  // GET CACHED RESTAURANT
-  // =====================================================
-
-  const getCachedRestaurant = () => {
-
-    try {
-
-      const cached =
-        localStorage.getItem(
-          RESTAURANT_CACHE_KEY
-        )
-
-      return cached
-        ? JSON.parse(cached)
-        : null
-
-    } catch {
-
-      return null
-
-    }
-
-  }
-
-
-  // =====================================================
-  // STATE
-  // =====================================================
-
-  const cachedRestaurant =
-    getCachedRestaurant()
+  const currentRestaurantId =
+    getCurrentRestaurantId()
 
   const cachedTables =
-    getCachedTables()
-
+    currentRestaurantId
+      ? getRestaurantCache(
+          TABLES_CACHE_KEY,
+          currentRestaurantId
+        ) ?? []
+      : []
 
   const [
     tables,
@@ -127,8 +71,7 @@ const TablesPage = () => {
     restaurantId,
     setRestaurantId,
   ] = useState(
-    cachedRestaurant?.id ||
-    null
+    currentRestaurantId
   )
 
 
@@ -136,7 +79,6 @@ const TablesPage = () => {
     restaurantSlug,
     setRestaurantSlug,
   ] = useState(
-    cachedRestaurant?.slug ||
     null
   )
 
@@ -261,58 +203,20 @@ const TablesPage = () => {
 
   const saveTablesToCache =
     useCallback((data) => {
+      const activeRestaurantId =
+        restaurantId ||
+        getCurrentRestaurantId()
 
-      try {
-
-        localStorage.setItem(
-          TABLES_CACHE_KEY,
-          JSON.stringify(data)
-        )
-
-      } catch (err) {
-
-        console.error(
-          'Save tables cache error:',
-          err
-        )
-
+      if (!activeRestaurantId) {
+        return
       }
 
-    }, [])
-
-
-  // =====================================================
-  // SAVE RESTAURANT CACHE
-  // =====================================================
-
-  const saveRestaurantToCache =
-    useCallback((restaurant) => {
-
-      try {
-
-        localStorage.setItem(
-          RESTAURANT_CACHE_KEY,
-          JSON.stringify({
-            id:
-              restaurant?.id ||
-              null,
-
-            slug:
-              restaurant?.slug ||
-              null,
-          })
-        )
-
-      } catch (err) {
-
-        console.error(
-          'Save restaurant cache error:',
-          err
-        )
-
-      }
-
-    }, [])
+      setRestaurantCache(
+        TABLES_CACHE_KEY,
+        activeRestaurantId,
+        Array.isArray(data) ? data : []
+      )
+    }, [restaurantId])
 
 
   // =====================================================
@@ -332,69 +236,44 @@ const TablesPage = () => {
 
       try {
 
-        // -------------------------------------------------
-        // GET RESTAURANT
-        // -------------------------------------------------
+        const id =
+          restaurantId ||
+          getCurrentRestaurantId()
 
-        const restaurantsResponse =
-          await getRestaurants()
-
-
-        const restaurantsData =
-          restaurantsResponse.data?.data ||
-          restaurantsResponse.data ||
-          []
-
-
-        const restaurant =
-          restaurantsData[0] ||
-          null
-
-
-        // -------------------------------------------------
-        // NO RESTAURANT
-        // -------------------------------------------------
-
-        if (!restaurant?.id) {
-
+        if (!id) {
           setTables([])
-
           setRestaurantId(null)
-
           setRestaurantSlug(null)
-
-          localStorage.removeItem(
-            TABLES_CACHE_KEY
-          )
-
-          localStorage.removeItem(
-            RESTAURANT_CACHE_KEY
-          )
-
           return
-
         }
 
+        const currentUser =
+          JSON.parse(
+            localStorage.getItem(
+              'restaurant_user'
+            ) || 'null'
+          )
 
-        // -------------------------------------------------
-        // RESTAURANT INFO
-        // -------------------------------------------------
+        const restaurant =
+          currentUser?.restaurant || {
+            id,
+            slug:
+              currentUser?.restaurant?.slug || null,
+          }
 
-        const id =
-          restaurant.id
+        if (!restaurant?.id) {
+          setTables([])
+          setRestaurantId(null)
+          setRestaurantSlug(null)
+          return
+        }
 
         const slug =
           restaurant.slug ||
           null
 
-
         setRestaurantId(id)
-
         setRestaurantSlug(slug)
-
-        saveRestaurantToCache(
-          restaurant
-        )
 
 
         // -------------------------------------------------
@@ -458,7 +337,6 @@ const TablesPage = () => {
 
     }, [
       saveTablesToCache,
-      saveRestaurantToCache,
       setLoading,
       t.loadTablesError,
     ])

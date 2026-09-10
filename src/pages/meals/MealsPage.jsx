@@ -23,12 +23,16 @@ import {
   updateMeal,
   deleteMeal,
 } from '../../data/dataMeals'
+import {
+  getCurrentRestaurantId,
+  getRestaurantCache,
+  setRestaurantCache,
+} from '../../utils/restaurantCache'
 
 import translations from '../../i18n/translations'
 
 const MEALS_CACHE_KEY = 'restaurant_meals_cache'
 const CATEGORIES_CACHE_KEY = 'restaurant_categories_cache'
-const RESTAURANT_CACHE_KEY = 'restaurant_current_cache'
 
 const emptyForm = {
   name: '',
@@ -49,57 +53,23 @@ const MealsPage = () => {
     translations.en ||
     {}
 
-  // =====================================================
-  // CACHE HELPERS
-  // =====================================================
-
-  const getCachedRestaurant = () => {
-    try {
-      const cached = localStorage.getItem(
-        RESTAURANT_CACHE_KEY
-      )
-
-      return cached
-        ? JSON.parse(cached)
-        : null
-    } catch {
-      return null
-    }
-  }
-
-  const getCachedArray = (key) => {
-    try {
-      const cached =
-        localStorage.getItem(key)
-
-      const parsed = cached
-        ? JSON.parse(cached)
-        : []
-
-      return Array.isArray(parsed)
-        ? parsed
-        : []
-    } catch {
-      return []
-    }
-  }
-
-  // =====================================================
-  // INITIAL CACHE
-  // =====================================================
-
-  const cachedRestaurant =
-    getCachedRestaurant()
+  const currentRestaurantId = getCurrentRestaurantId()
 
   const cachedMeals =
-    getCachedArray(
-      MEALS_CACHE_KEY
-    )
+    currentRestaurantId
+      ? getRestaurantCache(
+          MEALS_CACHE_KEY,
+          currentRestaurantId
+        ) ?? []
+      : []
 
   const cachedCategories =
-    getCachedArray(
-      CATEGORIES_CACHE_KEY
-    )
+    currentRestaurantId
+      ? getRestaurantCache(
+          CATEGORIES_CACHE_KEY,
+          currentRestaurantId
+        ) ?? []
+      : []
 
   // =====================================================
   // STATE
@@ -112,9 +82,7 @@ const MealsPage = () => {
     useState(cachedCategories)
 
   const [restaurantId, setRestaurantId] =
-    useState(
-      cachedRestaurant?.id || null
-    )
+    useState(currentRestaurantId)
 
   // Loading ديال أول دخول فقط
   // إلا كان cache موجود مايبانش loading
@@ -162,18 +130,20 @@ const MealsPage = () => {
 
   const saveMealsToCache =
     useCallback((data) => {
-      try {
-        localStorage.setItem(
-          MEALS_CACHE_KEY,
-          JSON.stringify(data)
-        )
-      } catch (err) {
-        console.error(
-          'Save meals cache error:',
-          err
-        )
+      const activeRestaurantId =
+        restaurantId ||
+        getCurrentRestaurantId()
+
+      if (!activeRestaurantId) {
+        return
       }
-    }, [])
+
+      setRestaurantCache(
+        MEALS_CACHE_KEY,
+        activeRestaurantId,
+        Array.isArray(data) ? data : []
+      )
+    }, [restaurantId])
 
   // =====================================================
   // CACHE - CATEGORIES
@@ -181,45 +151,20 @@ const MealsPage = () => {
 
   const saveCategoriesToCache =
     useCallback((data) => {
-      try {
-        localStorage.setItem(
-          CATEGORIES_CACHE_KEY,
-          JSON.stringify(data)
-        )
-      } catch (err) {
-        console.error(
-          'Save categories cache error:',
-          err
-        )
+      const activeRestaurantId =
+        restaurantId ||
+        getCurrentRestaurantId()
+
+      if (!activeRestaurantId) {
+        return
       }
-    }, [])
 
-  // =====================================================
-  // CACHE - RESTAURANT
-  // =====================================================
-
-  const saveRestaurantToCache =
-    useCallback((restaurant) => {
-      try {
-        localStorage.setItem(
-          RESTAURANT_CACHE_KEY,
-          JSON.stringify({
-            id:
-              restaurant?.id ||
-              null,
-
-            slug:
-              restaurant?.slug ||
-              null,
-          })
-        )
-      } catch (err) {
-        console.error(
-          'Save restaurant cache error:',
-          err
-        )
-      }
-    }, [])
+      setRestaurantCache(
+        CATEGORIES_CACHE_KEY,
+        activeRestaurantId,
+        Array.isArray(data) ? data : []
+      )
+    }, [restaurantId])
 
   // =====================================================
   // LOAD DATA
@@ -237,12 +182,21 @@ const MealsPage = () => {
         setError('')
 
         try {
-          // -------------------------------------------------
-          // RESTAURANT
-          // -------------------------------------------------
+          const id =
+            restaurantId ||
+            getCurrentRestaurantId()
+
+          if (!id) {
+            setError(
+              t.restaurantNotFound ||
+                'Restaurant not found.'
+            )
+
+            return
+          }
 
           const restaurant =
-            await getRestaurant()
+            await getRestaurant(id)
 
           if (!restaurant?.id) {
             setError(
@@ -253,14 +207,7 @@ const MealsPage = () => {
             return
           }
 
-          const id =
-            restaurant.id
-
           setRestaurantId(id)
-
-          saveRestaurantToCache(
-            restaurant
-          )
 
           // -------------------------------------------------
           // CATEGORIES
@@ -334,7 +281,7 @@ const MealsPage = () => {
         meals.length,
         saveMealsToCache,
         saveCategoriesToCache,
-        saveRestaurantToCache,
+        restaurantId,
         t.restaurantNotFound,
         t.loadMealsError,
       ]

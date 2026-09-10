@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+import { clearRestaurantCaches } from '../utils/restaurantCache'
+
 const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL ||
                 'https://backend-menu-5.onrender.com/api' 
                 //  'http://127.0.0.1:8001/api'
@@ -39,6 +41,8 @@ axiosClient.interceptors.response.use(
     if (error?.response?.status === 401) {
       localStorage.removeItem('restaurant_token')
       localStorage.removeItem('restaurant_user')
+      clearRestaurantCaches()
+      localStorage.removeItem('restaurant_current_cache')
       window.location.href = '/login'
     }
 
