@@ -14,6 +14,8 @@ import {
   Trash2,
   RefreshCw,
   Utensils,
+  Search,
+  X,
 } from 'lucide-react'
 
 import {
@@ -761,7 +763,31 @@ const MealsPage = () => {
         t.unavailable,
       ]
     )
+  // =====================================================
+  // SHERCH && FILTER BY STATUS
+  // =====================================================
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+ 
+  const filteredMeals = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase()
 
+    return meals.filter((meal) => {
+      // STATUS FILTER
+      const matchesStatus =
+        statusFilter === 'all' ||
+        meal.status === statusFilter
+
+      // SEARCH FILTER
+      const matchesSearch =
+        !search ||
+        String(meal.name || '')
+          .toLowerCase()
+          .includes(search)
+
+      return matchesStatus && matchesSearch
+    })
+  }, [meals, statusFilter, searchTerm])
   // =====================================================
   // STATUS CLASS
   // =====================================================
@@ -791,7 +817,7 @@ const MealsPage = () => {
 
   const mealCards =
     useMemo(() => {
-      return meals.map(
+      return filteredMeals.map(
         (meal) => {
           const category =
             categories.find(
@@ -955,7 +981,7 @@ const MealsPage = () => {
         }
       )
     }, [
-      meals,
+      filteredMeals,
       categories,
       t.noImage,
       t.selectCategory,
@@ -1037,11 +1063,11 @@ const MealsPage = () => {
        }
  
      }
+  
   // =====================================================
   // UI
   // =====================================================
  
-
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
@@ -1062,6 +1088,31 @@ const MealsPage = () => {
         </div>
 
         <div className="flex gap-2">
+          {/* SELECT STATUS */}
+           <select
+              value={
+                statusFilter
+              }
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value
+                )
+              }
+              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+            > 
+              <option value="all">
+                {t.statusAll}
+              </option>
+
+              <option value="active">
+                {t.active}
+              </option>
+
+              <option value="inactive">
+                {t.inactive}
+              </option>  
+            </select>
+
            {/*  DELETE ALL */}
 
           <button
@@ -1127,7 +1178,55 @@ const MealsPage = () => {
 
         </div>
       </div>
-
+        {/*   SEARCH */}
+      
+        <div className="mb-6">
+  
+          <div className="relative">
+  
+            <Search 
+              size={18}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+  
+            <input
+              type="text"
+              value={
+                searchTerm
+              }
+              onChange={(e) =>
+                setSearchTerm(
+                  e.target.value
+                )
+              }
+              placeholder={
+               t.sherchMealsPlaceholder ||
+                'Search meals...'
+              }
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
+            />
+  
+  
+            {searchTerm && (
+  
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchTerm('')
+                }
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
+                aria-label="Clear search"
+              >
+  
+                <X size={17} />
+  
+              </button>
+  
+            )}
+  
+          </div>
+  
+        </div>
       {/* ERROR */}
 
       {error && (

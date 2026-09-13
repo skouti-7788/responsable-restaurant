@@ -2355,8 +2355,7 @@ const OrdersPage = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
 
             {language === 'ar'
-              ? `${filteredOrders.length} طلب`
-              : language === 'fr'
+              ? `${filteredOrders.length} طلب`: language === 'fr'
                 ? `${filteredOrders.length} commande${filteredOrders.length !== 1 ? 's' : ''}`
                 : `${filteredOrders.length} order${filteredOrders.length !== 1 ? 's' : ''}`}
 

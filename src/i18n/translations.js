@@ -363,7 +363,10 @@ const translations = {
     deletingMeal: 'Deleting meal ...',
     deleteMeal: 'Delete meal',
     currencySymbol: 'DH',
-           
+    statusAll: 'All statuses',
+    sherchMealsPlaceholder:'Search by meal...'
+                 
+        
     },
 
   // =========================================================
@@ -733,6 +736,9 @@ const translations = {
     deletingMeal: 'Suppression du plat ...',
     deleteMeal: 'Supprimer le plat',
     currencySymbol: 'DH',
+    statusAll: 'Tous les statuts',
+    sherchMealsPlaceholder:'Rechercher par article...',
+
   },
 
   // =========================================================
@@ -1106,7 +1112,9 @@ const translations = {
     deletingMeal : 'جاري حذف الطبق ...',
     deleteMeal: 'حذف الطبق',
     currencySymbol: 'د.م',
-           
+    statusAll: 'جميع الحالات',
+    sherchMealsPlaceholder:'ابحث عن الوجبة...',
+
    },
 }
 
