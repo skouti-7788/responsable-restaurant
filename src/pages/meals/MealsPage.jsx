@@ -916,7 +916,7 @@ const MealsPage = () => {
 
                 <div className="mt-5 flex items-center justify-between gap-3">
 
-                  <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  <span className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                     {Number(
                       meal.price ||
                         0
@@ -1088,6 +1088,33 @@ const MealsPage = () => {
         </div>
 
         <div className="flex gap-2">
+           {/* REFRESH */}
+          
+          <button
+            type="button"
+            onClick={
+              handleRefresh
+            }
+            disabled={
+              refreshing
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            <RefreshCw
+              size={17}
+              className={
+                refreshing
+                  ? 'animate-spin'
+                  : ''
+              }
+            />
+
+            <span className="hidden sm:inline">
+              {t.refresh ||
+                'Refresh'}
+            </span>
+          </button>
+
           {/* SELECT STATUS */}
            <select
               value={
@@ -1134,32 +1161,7 @@ const MealsPage = () => {
             </span>
           </button>
           
-          {/* REFRESH */}
-          
-          <button
-            type="button"
-            onClick={
-              handleRefresh
-            }
-            disabled={
-              refreshing
-            }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <RefreshCw
-              size={17}
-              className={
-                refreshing
-                  ? 'animate-spin'
-                  : ''
-              }
-            />
-
-            <span className="hidden sm:inline">
-              {t.refresh ||
-                'Refresh'}
-            </span>
-          </button>
+         
 
           {/* ADD */}
 

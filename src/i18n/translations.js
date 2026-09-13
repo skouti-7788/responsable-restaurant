@@ -1114,6 +1114,7 @@ const translations = {
     currencySymbol: 'د.م',
     statusAll: 'جميع الحالات',
     sherchMealsPlaceholder:'ابحث عن الوجبة...',
+     
 
    },
 }

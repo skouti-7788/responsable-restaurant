@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from 'react'
 
 import {
@@ -482,25 +483,25 @@ const TablesPage = () => {
           // DEBUG
           // =================================================
 
-          console.log(
-            'Restaurant:',
-            restaurant
-          )
+          // console.log(
+          //   'Restaurant:',
+          //   restaurant
+          // )
 
-          console.log(
-            'Restaurant ID:',
-            id
-          )
+          // console.log(
+          //   'Restaurant ID:',
+          //   id
+          // )
 
-          console.log(
-            'Restaurant Slug:',
-            slug
-          )
+          // console.log(
+          //   'Restaurant Slug:',
+          //   slug
+          // )
 
-          console.log(
-            'Tables:',
-            normalizedTables
-          )
+          // console.log(
+          //   'Tables:',
+          //   normalizedTables
+          // )
 
         } catch (err) {
 
@@ -1422,8 +1423,30 @@ const TablesPage = () => {
       return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
 
     }
-
-
+  //====================================================
+  //  FULTER BY STATUS
+  //====================================================
+    const [statusFilter,setStatusFilter] = useState('all')
+    const filteredTables = useMemo(() => {
+        // const search = searchTerm.trim().toLowerCase()
+    
+        return tables.filter((table) => {
+          // STATUS FILTER
+          const matchesStatus =
+            statusFilter === 'all' ||
+            table.status === statusFilter
+    
+          // // SEARCH FILTER
+          // const matchesSearch =
+          //   !search ||
+          //   String(meal.name || '')
+          //     .toLowerCase()
+          //     .includes(search)
+    
+          return matchesStatus
+          //  && matchesSearch
+        })
+      }, [tables, statusFilter])
   // =====================================================
   // UI
   // =====================================================
@@ -1447,7 +1470,7 @@ const TablesPage = () => {
 
         </div>
 
-
+        {/* REFRESH */}
         <div className="flex gap-2">
 
           <button
@@ -1474,8 +1497,32 @@ const TablesPage = () => {
             </span>
 
           </button>
+            {/* SELECT STATUS */}
+            <select
+                value={
+                  statusFilter
+                }
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value
+                  )
+                }
+                className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              > 
+                <option value="all">
+                  {t.statusAll}
+                </option>
 
+                <option value="available">
+                  {t.available}
+                </option>available reserved
 
+                <option value="reserved">
+                  {t.reserved}
+                </option>  
+              </select>
+
+          {/*  DELETE ALL */}
           {tables.length > 0 && (
 
             <button
@@ -1506,7 +1553,7 @@ const TablesPage = () => {
 
           )}
 
-
+          {/* ADD  */}
           <button
             type="button"
             onClick={handleOpenBulkAdd}
@@ -1587,7 +1634,7 @@ const TablesPage = () => {
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 
-          {tables.map(
+          {filteredTables.map(
             (table) => (
 
               <div

@@ -1824,21 +1824,21 @@ const OrdersPage = () => {
             drawText(
               doc,
               String(quantity),
-              135,
+              132,
               y
             )
 
             drawText(
               doc,
-              `$${unitPrice.toFixed(2)}`,
-              100,
+              `${unitPrice.toFixed(2)}${t.currencySymbol || '$'}`,
+              86,
               y
             )
 
             drawText(
               doc,
-              `$${totalPrice.toFixed(2)}`,
-              60,
+              `${totalPrice.toFixed(2)}${t.currencySymbol || '$'}`,
+              50,
               y
             )
 
@@ -1863,14 +1863,14 @@ const OrdersPage = () => {
 
             drawText(
               doc,
-              `$${unitPrice.toFixed(2)}`,
+              ` ${unitPrice.toFixed(2)}${t.currencySymbol || '$'}`,
               125,
               y
             )
 
             drawText(
               doc,
-              `$${totalPrice.toFixed(2)}`,
+              ` ${totalPrice.toFixed(2)}${t.currencySymbol || '$'}`,
               165,
               y
             )
@@ -1922,7 +1922,7 @@ const OrdersPage = () => {
 
         drawText(
           doc,
-          `$${orderTotal.toFixed(2)}`,
+          `${orderTotal.toFixed(2)}${t.currencySymbol || '$'}`,
           190,
           y,
           {
@@ -1941,7 +1941,7 @@ const OrdersPage = () => {
 
         drawText(
           doc,
-          `$${orderTotal.toFixed(2)}`,
+          ` ${orderTotal.toFixed(2)}${t.currencySymbol || '$'}`,
           190,
           y,
           {
@@ -2061,15 +2061,11 @@ const OrdersPage = () => {
                   e.target.value
                 )
               }
-              className="h-11 min-w-[180px] appearance-none rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11 min-w-[130px]   rounded-2xl border border-slate-200 bg-white px-4 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
             >
 
               <option value="all">
-                {language === 'ar'
-                  ? 'كل الحالات'
-                  : language === 'fr'
-                    ? 'Tous les statuts'
-                    : 'All statuses'}
+                {t.statusAll}
               </option>
 
               <option value="pending">
@@ -2646,15 +2642,9 @@ const OrdersPage = () => {
 
                         </p>
 
-                        <p className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100">
-
-                          $
-
-                          {Number(
-                            order.total ||
-                            0
-                          ).toFixed(2)}
-
+                        <p className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100"> 
+                          {Number( order.total || 0 ).toFixed(2)} 
+                          <span> {t.currencySymbol || '$'} </span> 
                         </p>
 
                       </div>
@@ -3172,13 +3162,13 @@ const OrdersPage = () => {
 
                             <p className="text-sm text-slate-500 dark:text-slate-400">
 
-                              ${unitPrice.toFixed(2)}
+                               {t.currencySymbol || '$'}{unitPrice.toFixed(2)}
 
                             </p>
 
                             <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">
 
-                              ${itemTotal.toFixed(2)}
+                              {t.currencySymbol || '$'}  {itemTotal.toFixed(2)}
 
                             </p>
 
@@ -3211,7 +3201,7 @@ const OrdersPage = () => {
 
                 <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
 
-                  $
+                   {t.currencySymbol || '$'}
                   {Number(
                     selectedOrder.total ||
                     0
