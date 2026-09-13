@@ -1122,8 +1122,12 @@ const StaffPage = () => {
 
           {loading ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-              {t.loading ||
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+               <p className='mt-4 text-sm text-slate-500 dark:text-slate-400'>
+                 {t.loading ||
                 'Loading...'}
+               </p>
+             
             </div>
           ) : staff.length ===
             0 ? (

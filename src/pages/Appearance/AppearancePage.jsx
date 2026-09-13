@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+
+import {
+  useDispatch,
+  useSelector,
+} from 'react-redux'
+
 import {
   AlertCircle,
   CheckCircle2,
@@ -10,15 +20,21 @@ import {
 } from 'lucide-react'
 
 import axiosClient from '../../api/axiosClient'
+
 import Button from '../../components/ui/Button'
+
 import translations from '../../i18n/translations'
+
 import {
   DEFAULT_APPEARANCE,
+  getCachedAppearance,
   getRestaurantAppearance,
   saveRestaurantAppearance,
 } from '../../data/dataAppearance'
-import { setRestaurant } from '../../store/restaurantSlice'
 
+import {
+  setRestaurant,
+} from '../../store/restaurantSlice'
 
 // =========================================================
 // FONTS
@@ -35,7 +51,6 @@ const FONT_OPTIONS = [
   'Merriweather',
 ]
 
-
 // =========================================================
 // PUBLIC MENU
 // =========================================================
@@ -44,7 +59,6 @@ const PUBLIC_MENU_ORIGIN = (
   import.meta.env.VITE_PUBLIC_MENU_URL ||
   'https://menu-online.vercel.app'
 ).replace(/\/+$/, '')
-
 
 // =========================================================
 // IMAGE LIMITS
@@ -56,25 +70,27 @@ const IMAGE_LIMITS = {
   background_image: 4 * 1024 * 1024,
 }
 
-
 // =========================================================
 // IMAGE -> DATA URL
 // =========================================================
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
-    const reader = new FileReader()
+    const reader =
+      new FileReader()
 
-    reader.onload = () => resolve(reader.result)
+    reader.onload = () =>
+      resolve(reader.result)
 
     reader.onerror = () =>
       reject(
-        new Error('Could not read image file.')
+        new Error(
+          'Could not read image file.'
+        )
       )
 
     reader.readAsDataURL(file)
   })
-
 
 // =========================================================
 // IMAGE UPLOADER
@@ -91,17 +107,20 @@ const ImageUploader = ({
   replaceText,
   removeText,
 }) => {
-  const inputRef = useRef(null)
+  const inputRef =
+    useRef(null)
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70">
 
       <div className="mb-4 flex items-center justify-between gap-3">
+
         <div>
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
             {label}
           </p>
         </div>
+
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -149,6 +168,7 @@ const ImageUploader = ({
               disabled={loading}
             >
               <Trash2 className="mr-2 h-4 w-4" />
+
               {removeText}
             </Button>
           )}
@@ -175,7 +195,6 @@ const ImageUploader = ({
   )
 }
 
-
 // =========================================================
 // STATIC IFRAME
 // =========================================================
@@ -187,7 +206,8 @@ const MenuPreviewFrame = ({
 }) => {
   return (
     <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-800 dark:bg-slate-950">
-   <iframe
+
+      <iframe
         ref={iframeRef}
         title="Public menu preview"
         src={menuUrl}
@@ -201,21 +221,23 @@ const MenuPreviewFrame = ({
   )
 }
 
-
 // =========================================================
 // APPEARANCE PAGE
 // =========================================================
 
 const AppearancePage = () => {
-
-  const dispatch = useDispatch()
+  const dispatch =
+    useDispatch()
 
   const { language } =
-    useSelector((state) => state.ui)
+    useSelector(
+      (state) => state.ui
+    )
 
   const restaurant =
     useSelector(
-      (state) => state.restaurant.profile
+      (state) =>
+        state.restaurant.profile
     )
 
   const t =
@@ -223,15 +245,25 @@ const AppearancePage = () => {
     translations.en ||
     {}
 
+  // =======================================================
+  // CACHE
+  // =======================================================
+
+  const cachedAppearance =
+    useMemo(
+      () => getCachedAppearance(),
+      []
+    )
 
   // =======================================================
   // FORM
   // =======================================================
 
-  const [form, setForm] = useState({
-    ...DEFAULT_APPEARANCE,
-  })
-
+  const [form, setForm] =
+    useState(() => ({
+      ...DEFAULT_APPEARANCE,
+      ...(cachedAppearance || {}),
+    }))
 
   // =======================================================
   // FILES
@@ -244,7 +276,6 @@ const AppearancePage = () => {
       background_image: null,
     })
 
-
   // =======================================================
   // REMOVE FLAGS
   // =======================================================
@@ -256,7 +287,6 @@ const AppearancePage = () => {
       background_image: false,
     })
 
-
   // =======================================================
   // STATES
   // =======================================================
@@ -264,8 +294,10 @@ const AppearancePage = () => {
   const [saving, setSaving] =
     useState(false)
 
+  // IMPORTANT:
+  // If cache exists, do not show full-page loading.
   const [loading, setLoading] =
-    useState(true)
+    useState(!cachedAppearance)
 
   const [previewLoading, setPreviewLoading] =
     useState(true)
@@ -279,12 +311,12 @@ const AppearancePage = () => {
   const [errors, setErrors] =
     useState({})
 
-
   // =======================================================
   // IFRAME
   // =======================================================
 
-  const iframeRef = useRef(null)
+  const iframeRef =
+    useRef(null)
 
   const iframeLoadedRef =
     useRef(false)
@@ -292,135 +324,144 @@ const AppearancePage = () => {
   const previewTimerRef =
     useRef(null)
 
-
   // =======================================================
   // MENU URL
   //
   // IMPORTANT:
-  // This value only changes when restaurant slug changes.
-  //
   // form changes DO NOT change iframe src.
   // =======================================================
 
-  const menuPreviewUrl = useMemo(() => {
+  const menuPreviewUrl =
+    useMemo(() => {
+      if (!restaurant?.slug) {
+        return `${PUBLIC_MENU_ORIGIN}/menu?preview=true`
+      }
 
-    if (!restaurant?.slug) {
-      return `${PUBLIC_MENU_ORIGIN}/menu?preview=true`
-    }
-
-    return `${PUBLIC_MENU_ORIGIN}/menu/${restaurant.slug}?preview=true`
-
-  }, [restaurant?.slug])
-
+      return `${PUBLIC_MENU_ORIGIN}/menu/${restaurant.slug}?preview=true`
+    }, [restaurant?.slug])
 
   // =======================================================
   // LOAD RESTAURANT
   // =======================================================
 
   useEffect(() => {
-
-    const loadRestaurant = async () => {
-
-      try {
-
-        const response =
-          await axiosClient.get(
-            '/restaurants'
-          )
-
-        const restaurants =
-          response.data?.data ||
-          response.data ||
-          []
-
-        if (
-          Array.isArray(restaurants) &&
-          restaurants.length > 0
-        ) {
-
-          dispatch(
-            setRestaurant(
-              restaurants[0]
+    const loadRestaurant =
+      async () => {
+        try {
+          const response =
+            await axiosClient.get(
+              '/restaurants'
             )
+
+          const restaurants =
+            response.data?.data ||
+            response.data ||
+            []
+
+          if (
+            Array.isArray(
+              restaurants
+            ) &&
+            restaurants.length > 0
+          ) {
+            dispatch(
+              setRestaurant(
+                restaurants[0]
+              )
+            )
+          }
+        } catch (error) {
+          console.error(
+            'Failed to load restaurant:',
+            error
           )
-
         }
-
-      } catch (error) {
-
-        console.error(
-          'Failed to load restaurant:',
-          error
-        )
-
       }
-
-    }
-
 
     if (!restaurant) {
       loadRestaurant()
     }
-
-  }, [dispatch, restaurant])
-
+  }, [
+    dispatch,
+    restaurant,
+  ])
 
   // =======================================================
   // LOAD APPEARANCE
+  //
+  // If cache exists:
+  // - page displays cache immediately
+  // - API refreshes in background
+  //
+  // If no cache:
+  // - full loading is displayed
   // =======================================================
 
   useEffect(() => {
+    let mounted = true
 
-    const loadAppearance = async () => {
+    const loadAppearance =
+      async () => {
+        try {
+          const response =
+            await getRestaurantAppearance()
 
-      try {
+          if (!mounted) {
+            return
+          }
 
-        setLoading(true)
+          const freshAppearance = {
+            ...DEFAULT_APPEARANCE,
+            ...response,
+          }
 
-        const response =
-          await getRestaurantAppearance()
+          setForm(
+            freshAppearance
+          )
 
-        setForm({
-          ...DEFAULT_APPEARANCE,
-          ...response,
-        })
+        } catch (error) {
+          if (!mounted) {
+            return
+          }
 
-      } catch (error) {
+          console.error(
+            'Failed to load appearance:',
+            error
+          )
 
-        setStatus({
-          type: 'error',
+          // Only show error if there is no cached data
+          if (!cachedAppearance) {
+            setStatus({
+              type: 'error',
+              message:
+                error?.message ||
+                t.errorSavingChanges ||
+                'Unable to load appearance.',
+            })
+          }
 
-          message:
-            error?.message ||
-            t.errorSavingChanges ||
-            'Unable to load appearance.',
-        })
-
-      } finally {
-
-        setLoading(false)
-
+        } finally {
+          if (mounted) {
+            setLoading(false)
+          }
+        }
       }
-
-    }
-
 
     loadAppearance()
 
-  }, [t.errorSavingChanges])
-
+    return () => {
+      mounted = false
+    }
+  }, [
+    cachedAppearance,
+    t.errorSavingChanges,
+  ])
 
   // =======================================================
   // SEND PREVIEW
-  //
-  // IMPORTANT:
-  // This does NOT reload iframe.
-  //
-  // It only sends data to the existing iframe.
   // =======================================================
 
   const sendPreview = () => {
-
     const iframe =
       iframeRef.current
 
@@ -431,7 +472,6 @@ const AppearancePage = () => {
     ) {
       return
     }
-
 
     iframe.contentWindow.postMessage(
       {
@@ -449,34 +489,26 @@ const AppearancePage = () => {
 
       PUBLIC_MENU_ORIGIN
     )
-
   }
-
 
   // =======================================================
   // IFRAME LOAD
-  //
-  // This runs ONLY when iframe itself loads.
-  //
-  // It does NOT run when form changes.
   // =======================================================
 
-  const handlePreviewLoad = () => {
+  const handlePreviewLoad =
+    () => {
+      iframeLoadedRef.current =
+        true
 
-    iframeLoadedRef.current = true
+      setPreviewLoading(false)
 
-    setPreviewLoading(false)
-
-    sendPreview()
-
-  }
-
+      sendPreview()
+    }
 
   // =======================================================
   // LIVE PREVIEW UPDATE
   //
   // form changes:
-  //
   // color
   // font
   // logo
@@ -484,71 +516,55 @@ const AppearancePage = () => {
   // background
   //
   // => postMessage only
-  //
   // => NO iframe reload
   // =======================================================
 
   useEffect(() => {
-
     if (
       !iframeLoadedRef.current
     ) {
       return
     }
 
-
-    if (previewTimerRef.current) {
-
+    if (
+      previewTimerRef.current
+    ) {
       window.clearTimeout(
         previewTimerRef.current
       )
-
     }
-
 
     previewTimerRef.current =
       window.setTimeout(() => {
-
         sendPreview()
-
       }, 30)
 
-
     return () => {
-
-      if (previewTimerRef.current) {
-
+      if (
+        previewTimerRef.current
+      ) {
         window.clearTimeout(
           previewTimerRef.current
         )
-
       }
-
     }
-
   }, [form])
-
 
   // =======================================================
   // CLEANUP
   // =======================================================
 
   useEffect(() => {
-
     return () => {
-
-      if (previewTimerRef.current) {
-
+      if (
+        previewTimerRef.current
+      ) {
         window.clearTimeout(
           previewTimerRef.current
         )
-
       }
-
     }
-
   }, [])
-
 
   // =======================================================
   // APPEARANCE CHANGE
@@ -558,307 +574,291 @@ const AppearancePage = () => {
     field,
     value
   ) => {
-
     setForm((current) => ({
       ...current,
       [field]: value,
     }))
 
-
     setErrors((current) => ({
       ...current,
       [field]: '',
     }))
-
   }
-
 
   // =======================================================
   // IMAGE SELECT
   // =======================================================
 
-  const handleImageSelect = async (
-    field,
-    event
-  ) => {
+  const handleImageSelect =
+    async (
+      field,
+      event
+    ) => {
+      const file =
+        event.target.files?.[0]
 
-    const file =
-      event.target.files?.[0]
+      if (!file) {
+        return
+      }
 
-    if (!file) {
-      return
-    }
+      const maxSize =
+        IMAGE_LIMITS[field] ||
+        4 * 1024 * 1024
 
+      // ===================================================
+      // SIZE
+      // ===================================================
 
-    const maxSize =
-      IMAGE_LIMITS[field] ||
-      4 * 1024 * 1024
+      if (file.size > maxSize) {
+        setErrors((current) => ({
+          ...current,
 
+          [field]:
+            `This image is too large. Please use a file under ${Math.round(
+              maxSize /
+                1024 /
+                1024
+            )} MB.`,
+        }))
 
-    if (file.size > maxSize) {
+        event.target.value = ''
 
-      setErrors((current) => ({
-        ...current,
+        return
+      }
 
-        [field]:
-          `This image is too large. Please use a file under ${Math.round(
-            maxSize / 1024 / 1024
-          )} MB.`,
-      }))
+      // ===================================================
+      // TYPE
+      // ===================================================
 
-      event.target.value = ''
+      if (
+        !file.type.startsWith(
+          'image/'
+        )
+      ) {
+        setErrors((current) => ({
+          ...current,
 
-      return
-    }
+          [field]:
+            'Please select a valid image file.',
+        }))
 
+        event.target.value = ''
 
-    if (
-      !file.type.startsWith('image/')
-    ) {
+        return
+      }
 
-      setErrors((current) => ({
-        ...current,
+      // ===================================================
+      // READ FILE
+      // ===================================================
 
-        [field]:
-          'Please select a valid image file.',
-      }))
+      try {
+        const previewUrl =
+          await readFileAsDataUrl(
+            file
+          )
 
-      event.target.value = ''
-
-      return
-    }
-
-
-    try {
-
-      const previewUrl =
-        await readFileAsDataUrl(
-          file
+        // Store actual file
+        setImageFiles(
+          (current) => ({
+            ...current,
+            [field]: file,
+          })
         )
 
+        // Cancel remove
+        setRemoveFlags(
+          (current) => ({
+            ...current,
+            [field]: false,
+          })
+        )
 
-      setImageFiles((current) => ({
-        ...current,
+        // Preview
+        setForm(
+          (current) => ({
+            ...current,
+            [field]: previewUrl,
+          })
+        )
 
-        [field]: file,
-      }))
+        setErrors(
+          (current) => ({
+            ...current,
+            [field]: '',
+          })
+        )
 
+      } catch (error) {
+        setErrors(
+          (current) => ({
+            ...current,
 
-      setRemoveFlags((current) => ({
-        ...current,
+            [field]:
+              error?.message ||
+              'Unable to read the selected image.',
+          })
+        )
 
-        [field]: false,
-      }))
-
-
-      setForm((current) => ({
-        ...current,
-
-        [field]: previewUrl,
-      }))
-
-
-      setErrors((current) => ({
-        ...current,
-
-        [field]: '',
-      }))
-
-    } catch (error) {
-
-      setErrors((current) => ({
-        ...current,
-
-        [field]:
-          error?.message ||
-          'Unable to read the selected image.',
-      }))
-
-    } finally {
-
-      event.target.value = ''
-
+      } finally {
+        event.target.value = ''
+      }
     }
-
-  }
-
 
   // =======================================================
   // IMAGE REMOVE
   // =======================================================
 
-  const handleImageRemove = (
-    field
-  ) => {
+  const handleImageRemove =
+    (field) => {
+      setImageFiles(
+        (current) => ({
+          ...current,
+          [field]: null,
+        })
+      )
 
-    setImageFiles((current) => ({
-      ...current,
+      setRemoveFlags(
+        (current) => ({
+          ...current,
+          [field]: true,
+        })
+      )
 
-      [field]: null,
-    }))
+      setForm(
+        (current) => ({
+          ...current,
+          [field]: null,
+        })
+      )
 
-
-    setRemoveFlags((current) => ({
-      ...current,
-
-      [field]: true,
-    }))
-
-
-    setForm((current) => ({
-      ...current,
-
-      [field]: null,
-    }))
-
-
-    setErrors((current) => ({
-      ...current,
-
-      [field]: '',
-    }))
-
-  }
-
+      setErrors(
+        (current) => ({
+          ...current,
+          [field]: '',
+        })
+      )
+    }
 
   // =======================================================
   // SAVE
   // =======================================================
 
-  const handleSubmit = async (
-    event
-  ) => {
+  const handleSubmit =
+    async (event) => {
+      event.preventDefault()
 
-    event.preventDefault()
-
-    if (saving) {
-      return
-    }
-
-
-    setSaving(true)
-
-    setStatus({
-      type: '',
-      message: '',
-    })
-
-
-    try {
-
-      const payload = {
-
-        ...form,
-
-        logoFile:
-          imageFiles.logo,
-
-        header_imageFile:
-          imageFiles.header_image,
-
-        background_imageFile:
-          imageFiles.background_image,
-
-        remove_logo:
-          removeFlags.logo,
-
-        remove_header_image:
-          removeFlags.header_image,
-
-        remove_background_image:
-          removeFlags.background_image,
-
+      if (saving) {
+        return
       }
 
+      setSaving(true)
 
-      const updatedAppearance =
-        await saveRestaurantAppearance(
-          payload
+      setStatus({
+        type: '',
+        message: '',
+      })
+
+      try {
+        const payload = {
+          ...form,
+
+          logoFile:
+            imageFiles.logo,
+
+          header_imageFile:
+            imageFiles.header_image,
+
+          background_imageFile:
+            imageFiles.background_image,
+
+          remove_logo:
+            removeFlags.logo,
+
+          remove_header_image:
+            removeFlags.header_image,
+
+          remove_background_image:
+            removeFlags.background_image,
+        }
+
+        const updatedAppearance =
+          await saveRestaurantAppearance(
+            payload
+          )
+
+        const newAppearance = {
+          ...DEFAULT_APPEARANCE,
+          ...updatedAppearance,
+        }
+
+        setForm(
+          newAppearance
         )
 
+        setImageFiles({
+          logo: null,
+          header_image: null,
+          background_image: null,
+        })
 
-      const newAppearance = {
-        ...DEFAULT_APPEARANCE,
-        ...updatedAppearance,
+        setRemoveFlags({
+          logo: false,
+          header_image: false,
+          background_image: false,
+        })
+
+        setStatus({
+          type: 'success',
+
+          message:
+            t.changesSavedSuccessfully ||
+            'Changes saved successfully',
+        })
+
+      } catch (error) {
+        console.error(
+          'Failed to save appearance:',
+          error
+        )
+
+        setStatus({
+          type: 'error',
+
+          message:
+            error?.message ||
+            t.errorSavingChanges ||
+            'Error saving changes',
+        })
+
+      } finally {
+        setSaving(false)
       }
-
-
-      setForm(newAppearance)
-
-
-      setImageFiles({
-        logo: null,
-        header_image: null,
-        background_image: null,
-      })
-
-
-      setRemoveFlags({
-        logo: false,
-        header_image: false,
-        background_image: false,
-      })
-
-
-      setStatus({
-        type: 'success',
-
-        message:
-          t.changesSavedSuccessfully ||
-          'Changes saved successfully',
-      })
-
-
-    } catch (error) {
-
-      console.error(
-        'Failed to save appearance:',
-        error
-      )
-
-
-      setStatus({
-        type: 'error',
-
-        message:
-          error?.message ||
-          t.errorSavingChanges ||
-          'Error saving changes',
-      })
-
-    } finally {
-
-      setSaving(false)
-
     }
 
-  }
-
-
   // =======================================================
-  // LOADING
+  // INITIAL LOADING
+  //
+  // ONLY appears when there is no cache.
   // =======================================================
 
   if (loading) {
-
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-slate-950">
 
         <div className="flex flex-col items-center gap-3">
 
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-white" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Loading appearance...
+            {t.loading ||
+              'loading...'}
           </p>
 
         </div>
 
       </div>
     )
-
   }
-
 
   // =======================================================
   // RENDER
@@ -868,7 +868,6 @@ const AppearancePage = () => {
     <div className="min-h-screen bg-slate-100 px-4 py-6 dark:bg-slate-950 sm:px-6 lg:px-8">
 
       <div className="mx-auto max-w-7xl">
-
 
         {/* =================================================
             HEADER
@@ -881,7 +880,6 @@ const AppearancePage = () => {
             <Palette className="h-5 w-5" />
 
           </div>
-
 
           <div>
 
@@ -896,22 +894,22 @@ const AppearancePage = () => {
 
         </div>
 
-
         {/* =================================================
             STATUS
         ================================================= */}
 
         {status.message && (
-
           <div
             className={`mb-6 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm ${
-              status.type === 'success'
+              status.type ===
+              'success'
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/60 dark:text-red-300'
             }`}
           >
 
-            {status.type === 'success' ? (
+            {status.type ===
+            'success' ? (
               <CheckCircle2 className="h-4 w-4" />
             ) : (
               <AlertCircle className="h-4 w-4" />
@@ -922,9 +920,7 @@ const AppearancePage = () => {
             </span>
 
           </div>
-
         )}
-
 
         {/* =================================================
             CONTENT
@@ -932,16 +928,16 @@ const AppearancePage = () => {
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
 
-
           {/* =================================================
               SETTINGS
           ================================================= */}
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={
+              handleSubmit
+            }
             className="space-y-6"
           >
-
 
             {/* =================================================
                 IMAGES
@@ -951,153 +947,132 @@ const AppearancePage = () => {
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
-                Images
+                {t.Images}
 
               </h2>
 
-
               <div className="space-y-5">
-
 
                 <ImageUploader
                   label={
                     t.logo ||
                     'Logo'
                   }
-
                   previewUrl={
-                    form.logo || ''
+                    form.logo ||
+                    ''
                   }
-
                   loading={
                     saving
                   }
-
                   fileError={
                     errors.logo
                   }
-
-                  onSelect={(event) =>
+                  onSelect={(
+                    event
+                  ) =>
                     handleImageSelect(
                       'logo',
                       event
                     )
                   }
-
                   onRemove={() =>
                     handleImageRemove(
                       'logo'
                     )
                   }
-
                   uploadText={
                     t.upload ||
                     'Upload'
                   }
-
                   replaceText={
                     t.replace ||
                     'Replace'
                   }
-
                   removeText={
                     t.remove ||
                     'Remove'
                   }
                 />
-
 
                 <ImageUploader
                   label={
                     t.headerImage ||
                     'Header image'
                   }
-
                   previewUrl={
                     form.header_image ||
                     ''
                   }
-
                   loading={
                     saving
                   }
-
                   fileError={
                     errors.header_image
                   }
-
-                  onSelect={(event) =>
+                  onSelect={(
+                    event
+                  ) =>
                     handleImageSelect(
                       'header_image',
                       event
                     )
                   }
-
                   onRemove={() =>
                     handleImageRemove(
                       'header_image'
                     )
                   }
-
                   uploadText={
                     t.upload ||
                     'Upload'
                   }
-
                   replaceText={
                     t.replace ||
                     'Replace'
                   }
-
                   removeText={
                     t.remove ||
                     'Remove'
                   }
                 />
 
-
                 <ImageUploader
                   label={
                     t.backgroundImage ||
                     'Background image'
                   }
-
                   previewUrl={
                     form.background_image ||
                     ''
                   }
-
                   loading={
                     saving
                   }
-
                   fileError={
                     errors.background_image
                   }
-
-                  onSelect={(event) =>
+                  onSelect={(
+                    event
+                  ) =>
                     handleImageSelect(
                       'background_image',
                       event
                     )
                   }
-
                   onRemove={() =>
                     handleImageRemove(
                       'background_image'
                     )
                   }
-
                   uploadText={
                     t.upload ||
                     'Upload'
                   }
-
                   replaceText={
                     t.replace ||
                     'Replace'
                   }
-
                   removeText={
                     t.remove ||
                     'Remove'
@@ -1108,7 +1083,6 @@ const AppearancePage = () => {
 
             </div>
 
-
             {/* =================================================
                 COLORS
             ================================================= */}
@@ -1117,10 +1091,10 @@ const AppearancePage = () => {
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
-                {t.colors || 'Colors'}
+                {t.colors ||
+                  'Colors'}
 
               </h2>
-
 
               <div className="grid gap-4 md:grid-cols-2">
 
@@ -1148,10 +1122,8 @@ const AppearancePage = () => {
                     t.backgroundColor ||
                       'Background color',
                   ],
-
                 ].map(
                   ([field, label]) => (
-
                     <label
                       key={field}
                       className="block rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900"
@@ -1163,27 +1135,26 @@ const AppearancePage = () => {
 
                       </span>
 
-
                       <div className="flex items-center gap-3">
 
                         <input
                           type="color"
-
                           value={
                             form[field] ||
                             '#D97706'
                           }
-
-                          onChange={(event) =>
+                          onChange={(
+                            event
+                          ) =>
                             handleAppearanceChange(
                               field,
-                              event.target.value
+                              event
+                                .target
+                                .value
                             )
                           }
-
                           className="h-11 w-12 cursor-pointer rounded-xl border border-slate-200 bg-transparent p-1 dark:border-slate-700"
                         />
-
 
                         <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
 
@@ -1195,14 +1166,12 @@ const AppearancePage = () => {
                       </div>
 
                     </label>
-
                   )
                 )}
 
               </div>
 
             </div>
-
 
             {/* =================================================
                 FONT
@@ -1212,43 +1181,41 @@ const AppearancePage = () => {
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
-                {t.font || 'Font'}
+                {t.font ||
+                  'Font'}
 
               </h2>
-
 
               <select
                 value={
                   form.font_family ||
                   'Inter'
                 }
-
-                onChange={(event) =>
+                onChange={(
+                  event
+                ) =>
                   handleAppearanceChange(
                     'font_family',
                     event.target.value
                   )
                 }
-
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
               >
 
                 {FONT_OPTIONS.map(
                   (font) => (
-
                     <option
                       key={font}
                       value={font}
                     >
                       {font}
                     </option>
-
                   )
                 )}
 
-              </select> 
-            </div>
+              </select>
 
+            </div>
 
             {/* =================================================
                 SAVE
@@ -1274,7 +1241,6 @@ const AppearancePage = () => {
 
           </form>
 
-
           {/* =================================================
               LIVE PREVIEW
           ================================================= */}
@@ -1292,24 +1258,20 @@ const AppearancePage = () => {
 
                 </h2>
 
-
                 {previewLoading && (
-
                   <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
 
-                    <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-white" />
+                    <div className="mx-auto h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
                     <span>
-                      {t.loading  ||
+                      {t.loading ||
                         'Loading ...'}
                     </span>
 
                   </div>
-
                 )}
 
               </div>
-
 
               <div className="relative">
 
@@ -1325,25 +1287,23 @@ const AppearancePage = () => {
                   }
                 />
 
-
                 {previewLoading && (
-
                   <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[26px] bg-white/70 backdrop-blur-sm dark:bg-slate-950/70">
 
                     <div className="flex flex-col items-center gap-3">
 
-                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-white" />
+                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
 
                         {t.loadingPreview ||
                           'Loading preview...'}
+
                       </span>
 
                     </div>
 
                   </div>
-
                 )}
 
               </div>
@@ -1360,6 +1320,4 @@ const AppearancePage = () => {
   )
 }
 
-
 export default AppearancePage
- 

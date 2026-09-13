@@ -3,6 +3,7 @@ const translations = {
   // ENGLISH
   // =========================================================
   en: {
+    Images: 'images',
     login: 'Login',
     register: 'Register new restaurant',
     loadingPreview: 'Loading preview...',
@@ -722,6 +723,7 @@ const translations = {
     addressPlaceholder: 'Entrez l’adresse de votre restaurant', 
     openingHoursPlaceholder: 'Exemple : Lundi : 08:00-18:00, Mardi : 08:00-18:00', 
     facebookPlaceholder: 'Entrez le lien Facebook',
+    Images: 'images'
   },
 
   // =========================================================
@@ -1090,7 +1092,7 @@ const translations = {
     addressPlaceholder: 'أدخل عنوان المطعم', 
     openingHoursPlaceholder: 'مثال: الإثنين: 08:00-18:00، الثلاثاء: 08:00-18:00', 
     facebookPlaceholder: 'أدخل رابط Facebook',
-     
+    Images:'الصور'
    },
 }
 

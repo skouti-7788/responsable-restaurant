@@ -1,5 +1,16 @@
 import axiosClient from '../api/axiosClient'
 
+// =========================================================
+// CACHE
+// =========================================================
+
+export const APPEARANCE_CACHE_KEY =
+  'restaurant_appearance_cache'
+
+// =========================================================
+// DEFAULT APPEARANCE
+// =========================================================
+
 export const DEFAULT_APPEARANCE = {
   logo: null,
   header_image: null,
@@ -11,21 +22,116 @@ export const DEFAULT_APPEARANCE = {
   font_family: 'Inter',
 }
 
+// =========================================================
+// NORMALIZE APPEARANCE
+// =========================================================
+
 export const normalizeAppearance = (appearance = {}) => ({
   ...DEFAULT_APPEARANCE,
   ...appearance,
 })
 
-export const getRestaurantAppearance = async () => {
-  const response = await axiosClient.get('/restaurant/appearance')
+// =========================================================
+// CACHE
+// =========================================================
 
-  const appearance = response.data?.appearance ?? response.data ?? {}
+export const getCachedAppearance = () => {
+  try {
+    const cached = localStorage.getItem(
+      APPEARANCE_CACHE_KEY
+    )
 
-  return normalizeAppearance(appearance)
+    if (!cached) {
+      return null
+    }
+
+    return normalizeAppearance(
+      JSON.parse(cached)
+    )
+  } catch (error) {
+    console.error(
+      'Failed to read appearance cache:',
+      error
+    )
+
+    return null
+  }
 }
 
-export const saveRestaurantAppearance = async (payload = {}) => {
+export const setCachedAppearance = (
+  appearance
+) => {
+  try {
+    const normalized =
+      normalizeAppearance(
+        appearance
+      )
+
+    localStorage.setItem(
+      APPEARANCE_CACHE_KEY,
+      JSON.stringify(normalized)
+    )
+  } catch (error) {
+    console.error(
+      'Failed to save appearance cache:',
+      error
+    )
+  }
+}
+
+export const clearCachedAppearance = () => {
+  try {
+    localStorage.removeItem(
+      APPEARANCE_CACHE_KEY
+    )
+  } catch (error) {
+    console.error(
+      'Failed to clear appearance cache:',
+      error
+    )
+  }
+}
+
+// =========================================================
+// GET APPEARANCE
+// =========================================================
+
+export const getRestaurantAppearance = async () => {
+  const response =
+    await axiosClient.get(
+      '/restaurant/appearance'
+    )
+
+  const appearance =
+    response.data?.appearance ??
+    response.data ??
+    {}
+
+  const normalizedAppearance =
+    normalizeAppearance(
+      appearance
+    )
+
+  // Save fresh API data in cache
+  setCachedAppearance(
+    normalizedAppearance
+  )
+
+  return normalizedAppearance
+}
+
+// =========================================================
+// SAVE APPEARANCE
+// =========================================================
+
+export const saveRestaurantAppearance = async (
+  payload = {}
+) => {
   const formData = new FormData()
+
+  // =======================================================
+  // TEXT FIELDS
+  // =======================================================
 
   const fields = [
     'primary_color',
@@ -36,32 +142,88 @@ export const saveRestaurantAppearance = async (payload = {}) => {
   ]
 
   fields.forEach((field) => {
-    const value = payload[field]
+    const value =
+      payload[field]
 
-    if (value !== undefined && value !== null && value !== '') {
-      formData.append(field, String(value))
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== ''
+    ) {
+      formData.append(
+        field,
+        String(value)
+      )
     }
   })
 
-  ;['logo', 'header_image', 'background_image'].forEach((field) => {
-    const file = payload[`${field}File`]
+  // =======================================================
+  // IMAGE FILES
+  // =======================================================
+
+  ;[
+    'logo',
+    'header_image',
+    'background_image',
+  ].forEach((field) => {
+    const file =
+      payload[`${field}File`]
 
     if (file instanceof File) {
-      formData.append(field, file)
+      formData.append(
+        field,
+        file
+      )
     }
 
-    if (payload[`remove_${field}`] === true) {
-      formData.append(`remove_${field}`, '1')
+    // =====================================================
+    // REMOVE IMAGE
+    // =====================================================
+
+    if (
+      payload[`remove_${field}`] === true
+    ) {
+      formData.append(
+        `remove_${field}`,
+        '1'
+      )
     }
   })
 
-  const response = await axiosClient.post('/restaurant/appearance', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  // =======================================================
+  // API REQUEST
+  // =======================================================
 
-  const appearance = response.data?.appearance ?? response.data ?? {}
+  const response =
+    await axiosClient.post(
+      '/restaurant/appearance',
+      formData,
+      {
+        headers: {
+          'Content-Type':
+            'multipart/form-data',
+        },
+      }
+    )
 
-  return normalizeAppearance(appearance)
+  // =======================================================
+  // RESPONSE
+  // =======================================================
+
+  const appearance =
+    response.data?.appearance ??
+    response.data ??
+    {}
+
+  const normalizedAppearance =
+    normalizeAppearance(
+      appearance
+    )
+
+  // Update cache after successful save
+  setCachedAppearance(
+    normalizedAppearance
+  )
+
+  return normalizedAppearance
 }

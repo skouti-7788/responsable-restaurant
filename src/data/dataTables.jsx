@@ -1,23 +1,38 @@
 import axiosClient from '../api/axiosClient'
 
-// Get current restaurant
+// =====================================================
+// GET RESTAURANTS
+// =====================================================
+
 export const getRestaurants = () =>
   axiosClient.get('/restaurants')
 
-// Get restaurant tables
+// =====================================================
+// GET RESTAURANT TABLES
+// =====================================================
+
 export const getTables = (restaurantId) =>
   axiosClient.get(
     `/restaurants/${restaurantId}/tables`
   )
 
-// Create table
-export const createTable = (restaurantId, data) =>
+// =====================================================
+// CREATE TABLE
+// =====================================================
+
+export const createTable = (
+  restaurantId,
+  data
+) =>
   axiosClient.post(
     `/restaurants/${restaurantId}/tables`,
     data
   )
 
-// Update table
+// =====================================================
+// UPDATE TABLE
+// =====================================================
+
 export const updateTable = (
   restaurantId,
   tableId,
@@ -28,7 +43,10 @@ export const updateTable = (
     data
   )
 
-// Delete one table
+// =====================================================
+// DELETE ONE TABLE
+// =====================================================
+
 export const deleteTable = (
   restaurantId,
   tableId
@@ -37,8 +55,13 @@ export const deleteTable = (
     `/restaurants/${restaurantId}/tables/${tableId}`
   )
 
-// Delete all tables
-export const deleteAllTables = (restaurantId) =>
+// =====================================================
+// DELETE ALL TABLES
+// =====================================================
+
+export const deleteAllTables = (
+  restaurantId
+) =>
   axiosClient.delete(
     `/restaurants/${restaurantId}/tables/all`
   )

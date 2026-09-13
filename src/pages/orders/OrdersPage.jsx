@@ -2378,10 +2378,21 @@ const OrdersPage = () => {
         ================================================= */}
 
         {filteredOrders.length === 0 ? (
+          //  <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
 
+          // <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+
+          // <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          //   {t.loading ||
+          //     'Loading...'}
+          // </p>
+
+        // </div>
           <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+            
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
-            <p className="text-slate-500 dark:text-slate-400">
+            <p className=" mt-4 text-slate-500 dark:text-slate-400">
 
               {loading ? (
 

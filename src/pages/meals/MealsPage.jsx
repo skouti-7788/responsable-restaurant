@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
@@ -23,6 +24,7 @@ import {
   updateMeal,
   deleteMeal,
 } from '../../data/dataMeals'
+
 import {
   getCurrentRestaurantId,
   getRestaurantCache,
@@ -46,14 +48,17 @@ const emptyForm = {
 }
 
 const MealsPage = () => {
-  const { language } = useSelector((state) => state.ui)
+  const { language } = useSelector(
+    (state) => state.ui
+  )
 
   const t =
     translations[language] ||
     translations.en ||
     {}
 
-  const currentRestaurantId = getCurrentRestaurantId()
+  const currentRestaurantId =
+    getCurrentRestaurantId()
 
   const cachedMeals =
     currentRestaurantId
@@ -83,6 +88,22 @@ const MealsPage = () => {
 
   const [restaurantId, setRestaurantId] =
     useState(currentRestaurantId)
+
+  // =====================================================
+  // RESTAURANT ID REF
+  // =====================================================
+
+  const restaurantIdRef =
+    useRef(currentRestaurantId)
+
+  useEffect(() => {
+    restaurantIdRef.current =
+      restaurantId
+  }, [restaurantId])
+
+  // =====================================================
+  // LOADING
+  // =====================================================
 
   // Loading ديال أول دخول فقط
   // إلا كان cache موجود مايبانش loading
@@ -129,42 +150,60 @@ const MealsPage = () => {
   // =====================================================
 
   const saveMealsToCache =
-    useCallback((data) => {
-      const activeRestaurantId =
-        restaurantId ||
-        getCurrentRestaurantId()
+    useCallback(
+      (
+        data,
+        targetRestaurantId = null
+      ) => {
+        const activeRestaurantId =
+          targetRestaurantId ||
+          restaurantIdRef.current ||
+          getCurrentRestaurantId()
 
-      if (!activeRestaurantId) {
-        return
-      }
+        if (!activeRestaurantId) {
+          return
+        }
 
-      setRestaurantCache(
-        MEALS_CACHE_KEY,
-        activeRestaurantId,
-        Array.isArray(data) ? data : []
-      )
-    }, [restaurantId])
+        setRestaurantCache(
+          MEALS_CACHE_KEY,
+          activeRestaurantId,
+          Array.isArray(data)
+            ? data
+            : []
+        )
+      },
+      []
+    )
 
   // =====================================================
   // CACHE - CATEGORIES
   // =====================================================
 
   const saveCategoriesToCache =
-    useCallback((data) => {
-      const activeRestaurantId =
-        restaurantId ||
-        getCurrentRestaurantId()
+    useCallback(
+      (
+        data,
+        targetRestaurantId = null
+      ) => {
+        const activeRestaurantId =
+          targetRestaurantId ||
+          restaurantIdRef.current ||
+          getCurrentRestaurantId()
 
-      if (!activeRestaurantId) {
-        return
-      }
+        if (!activeRestaurantId) {
+          return
+        }
 
-      setRestaurantCache(
-        CATEGORIES_CACHE_KEY,
-        activeRestaurantId,
-        Array.isArray(data) ? data : []
-      )
-    }, [restaurantId])
+        setRestaurantCache(
+          CATEGORIES_CACHE_KEY,
+          activeRestaurantId,
+          Array.isArray(data)
+            ? data
+            : []
+        )
+      },
+      []
+    )
 
   // =====================================================
   // LOAD DATA
@@ -173,17 +212,16 @@ const MealsPage = () => {
   const loadMeals =
     useCallback(
       async (showRefreshLoading = false) => {
+        // Refresh button فقط
         if (showRefreshLoading) {
           setRefreshing(true)
-        } else if (meals.length === 0) {
-          setLoading(true)
         }
 
         setError('')
 
         try {
           const id =
-            restaurantId ||
+            restaurantIdRef.current ||
             getCurrentRestaurantId()
 
           if (!id) {
@@ -207,7 +245,9 @@ const MealsPage = () => {
             return
           }
 
+          // نحافظو على ID
           setRestaurantId(id)
+          restaurantIdRef.current = id
 
           // -------------------------------------------------
           // CATEGORIES
@@ -230,7 +270,8 @@ const MealsPage = () => {
           )
 
           saveCategoriesToCache(
-            normalizedCategories
+            normalizedCategories,
+            id
           )
 
           // -------------------------------------------------
@@ -254,7 +295,8 @@ const MealsPage = () => {
           )
 
           saveMealsToCache(
-            normalizedMeals
+            normalizedMeals,
+            id
           )
         } catch (err) {
           console.error(
@@ -272,16 +314,17 @@ const MealsPage = () => {
         } finally {
           if (showRefreshLoading) {
             setRefreshing(false)
-          } else {
-            setLoading(false)
           }
+
+          // أول load:
+          // إذا كان cache موجود loading أصلاً false
+          // وإذا ماكانش cache loading غادي يولي false
+          setLoading(false)
         }
       },
       [
-        meals.length,
         saveMealsToCache,
         saveCategoriesToCache,
-        restaurantId,
         t.restaurantNotFound,
         t.loadMealsError,
       ]
@@ -305,12 +348,13 @@ const MealsPage = () => {
   // REFRESH
   // =====================================================
 
-  const handleRefresh = useCallback(
-    async () => {
-      await loadMeals(true)
-    },
-    [loadMeals]
-  )
+  const handleRefresh =
+    useCallback(
+      async () => {
+        await loadMeals(true)
+      },
+      [loadMeals]
+    )
 
   // =====================================================
   // OPEN ADD / EDIT
@@ -760,7 +804,9 @@ const MealsPage = () => {
             meal.image_url ||
             meal.image ||
             ''
+
           console.log(image)
+
           return (
             <div
               key={meal.id}
@@ -1026,7 +1072,7 @@ const MealsPage = () => {
 
       {loading ? (
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center  dark:border-slate-800 dark:bg-slate-900">
 
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
@@ -1462,4 +1508,3 @@ const MealsPage = () => {
 }
 
 export default MealsPage
- 

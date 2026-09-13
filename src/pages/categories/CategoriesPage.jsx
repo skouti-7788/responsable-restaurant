@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 
@@ -57,12 +59,14 @@ const CategoriesPage = () => {
   const dispatch =
     useDispatch()
 
+
   const language =
     useSelector(
       (state) =>
         state.ui?.language ||
         'en'
     )
+
 
   const categories =
     useSelector(
@@ -71,12 +75,14 @@ const CategoriesPage = () => {
         []
     )
 
+
   const loading =
     useSelector(
       (state) =>
         state.categories?.loading ||
         false
     )
+
 
   const saving =
     useSelector(
@@ -85,6 +91,7 @@ const CategoriesPage = () => {
         false
     )
 
+
   const deletingId =
     useSelector(
       (state) =>
@@ -92,12 +99,14 @@ const CategoriesPage = () => {
         null
     )
 
+
   const reduxError =
     useSelector(
       (state) =>
         state.categories?.error ||
         null
     )
+
 
   // =====================================================
   // TRANSLATIONS
@@ -108,8 +117,9 @@ const CategoriesPage = () => {
     translations?.en ||
     {}
 
+
   // =====================================================
-  // LOCAL STATE
+  // RESTAURANT
   // =====================================================
 
   const [
@@ -126,15 +136,57 @@ const CategoriesPage = () => {
     )
   })
 
+
+  const restaurantIdRef =
+    useRef(restaurantId)
+
+
+  useEffect(() => {
+
+    restaurantIdRef.current =
+      restaurantId
+
+  }, [
+    restaurantId,
+  ])
+
+
+  // =====================================================
+  // INITIAL CACHE
+  // =====================================================
+
+  const [
+    initialCachedCategories,
+  ] = useState(
+    () => getCachedCategories()
+  )
+
+
+  // =====================================================
+  // REFRESH
+  // =====================================================
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false)
+
+
+  // =====================================================
+  // MODAL
+  // =====================================================
+
   const [
     isOpen,
     setIsOpen,
   ] = useState(false)
 
+
   const [
     editing,
     setEditing,
   ] = useState(null)
+
 
   const [
     form,
@@ -144,30 +196,197 @@ const CategoriesPage = () => {
     description: '',
   })
 
+
   // =====================================================
-  // LOAD CACHE ONLY
+  // LOAD CATEGORIES
+  // =====================================================
+
+  const loadCategories =
+    useCallback(
+      async ({
+        showInitialLoading = false,
+      } = {}) => {
+
+        // =================================================
+        // INITIAL LOADING ONLY
+        // =================================================
+
+        if (
+          showInitialLoading
+        ) {
+
+          dispatch(
+            fetchCategoriesStart()
+          )
+
+        }
+
+
+        try {
+
+          // =================================================
+          // API
+          // =================================================
+
+          const result =
+            await loadCategoriesData()
+
+
+          // =================================================
+          // RESTAURANT ID
+          // =================================================
+
+          const id =
+            result?.restaurant?.id ||
+            restaurantIdRef.current ||
+            getCachedRestaurant()?.id ||
+            null
+
+
+          if (id) {
+
+            setRestaurantId(id)
+
+            restaurantIdRef.current =
+              id
+
+          }
+
+
+          // =================================================
+          // NORMALIZE
+          // =================================================
+
+          const normalizedCategories =
+            Array.isArray(
+              result?.categories
+            )
+              ? result.categories
+              : []
+
+
+          // =================================================
+          // UPDATE REDUX
+          // =================================================
+
+          dispatch(
+            fetchCategoriesSuccess(
+              normalizedCategories
+            )
+          )
+
+
+          // =================================================
+          // UPDATE CACHE
+          // =================================================
+
+          saveCategoriesToCache(
+            normalizedCategories
+          )
+
+
+          return true
+
+        } catch (error) {
+
+          console.error(
+            'Load categories error:',
+            error?.response?.data ||
+            error
+          )
+
+
+          // =================================================
+          // IMPORTANT
+          // =================================================
+          // If cache exists:
+          //     keep cached categories.
+          //
+          // If no cache:
+          //     show the error.
+          // =================================================
+
+          if (
+            initialCachedCategories.length === 0 &&
+            showInitialLoading
+          ) {
+
+            dispatch(
+              fetchCategoriesFailure(
+                error?.response
+                  ?.data
+                  ?.message ||
+                error?.message ||
+                t.loadCategoriesError ||
+                'Failed to load categories.'
+              )
+            )
+
+          }
+
+
+          return false
+
+        }
+
+      },
+      [
+        dispatch,
+        initialCachedCategories.length,
+        t.loadCategoriesError,
+      ]
+    )
+
+
+  // =====================================================
+  // INITIAL LOAD
   // =====================================================
 
   useEffect(() => {
 
-    const cachedCategories =
-      getCachedCategories()
+    // ===================================================
+    // CACHE FIRST
+    // ===================================================
 
     if (
-      cachedCategories.length > 0
+      initialCachedCategories.length > 0
     ) {
+
+      // Show cache immediately.
 
       dispatch(
         fetchCategoriesSuccess(
-          cachedCategories
+          initialCachedCategories
         )
       )
 
+
+      // =================================================
+      // BACKGROUND API
+      // =================================================
+
+      loadCategories({
+        showInitialLoading: false,
+      })
+
+      return
     }
+
+
+    // ===================================================
+    // NO CACHE
+    // ===================================================
+
+    loadCategories({
+      showInitialLoading: true,
+    })
 
   }, [
     dispatch,
+    loadCategories,
+    initialCachedCategories,
   ])
+
 
   // =====================================================
   // ERROR
@@ -176,78 +395,49 @@ const CategoriesPage = () => {
   const error =
     reduxError || ''
 
+
   // =====================================================
   // REFRESH
   // =====================================================
 
-  const handleRefresh = async () => {
+  const handleRefresh =
+    async () => {
 
-    // Prevent multiple requests
-    if (loading) {
-      return
-    }
-
-    // Clear previous error
-    dispatch(
-      clearCategoryError()
-    )
-
-    // Start loading
-    dispatch(
-      fetchCategoriesStart()
-    )
-
-    try {
-
-      // Always make a NEW API request
-      const result =
-        await loadCategoriesData()
-
-      // Update restaurant ID
       if (
-        result?.restaurant?.id
+        loading ||
+        refreshing
       ) {
+        return
+      }
 
-        setRestaurantId(
-          result.restaurant.id
-        )
+
+      setRefreshing(true)
+
+
+      dispatch(
+        clearCategoryError()
+      )
+
+
+      try {
+
+        // IMPORTANT:
+        // Do NOT start Redux page loading.
+        //
+        // Existing categories stay visible.
+
+        await loadCategories({
+          showInitialLoading: false,
+        })
+
+      } finally {
+
+        setRefreshing(false)
 
       }
 
-      // Update Redux
-      dispatch(
-        fetchCategoriesSuccess(
-          result?.categories || []
-        )
-      )
-
-      // Update cache
-      saveCategoriesToCache(
-        result?.categories || []
-      )
-
-    } catch (error) {
-
-      console.error(
-        'Refresh categories error:',
-        error?.response?.data ||
-        error
-      )
-
-      dispatch(
-        fetchCategoriesFailure(
-          error?.response
-            ?.data
-            ?.message ||
-          error?.message ||
-          t.loadCategoriesError ||
-          'Failed to load categories.'
-        )
-      )
-
     }
 
-  }
 
   // =====================================================
   // OPEN MODAL
@@ -260,6 +450,7 @@ const CategoriesPage = () => {
     setEditing(
       category || null
     )
+
 
     setForm(
       category
@@ -278,12 +469,16 @@ const CategoriesPage = () => {
           }
     )
 
+
     dispatch(
       clearCategoryError()
     )
 
+
     setIsOpen(true)
+
   }
+
 
   // =====================================================
   // CLOSE MODAL
@@ -295,6 +490,7 @@ const CategoriesPage = () => {
       return
     }
 
+
     setIsOpen(false)
 
     setEditing(null)
@@ -304,10 +500,13 @@ const CategoriesPage = () => {
       description: '',
     })
 
+
     dispatch(
       clearCategoryError()
     )
+
   }
+
 
   // =====================================================
   // SAVE CATEGORY
@@ -328,6 +527,7 @@ const CategoriesPage = () => {
         return
       }
 
+
       if (
         !form.name.trim()
       ) {
@@ -342,13 +542,16 @@ const CategoriesPage = () => {
         return
       }
 
+
       dispatch(
         setCategorySaving(true)
       )
 
+
       dispatch(
         clearCategoryError()
       )
+
 
       try {
 
@@ -372,11 +575,13 @@ const CategoriesPage = () => {
                 form.description,
             })
 
+
           dispatch(
             updateCategory(
               updatedCategory
             )
           )
+
 
           const currentCategories =
             categories.map(
@@ -386,6 +591,7 @@ const CategoriesPage = () => {
                   ? updatedCategory
                   : category
             )
+
 
           saveCategoriesToCache(
             currentCategories
@@ -410,22 +616,26 @@ const CategoriesPage = () => {
                 form.description,
             })
 
+
           dispatch(
             addCategory(
               newCategory
             )
           )
 
+
           const updatedCategories = [
             ...categories,
             newCategory,
           ]
+
 
           saveCategoriesToCache(
             updatedCategories
           )
 
         }
+
 
         // =================================================
         // CLOSE
@@ -448,6 +658,7 @@ const CategoriesPage = () => {
           error
         )
 
+
         dispatch(
           setCategoryError(
             error?.response
@@ -469,6 +680,7 @@ const CategoriesPage = () => {
 
     }
 
+
   // =====================================================
   // DELETE CATEGORY
   // =====================================================
@@ -485,9 +697,11 @@ const CategoriesPage = () => {
         return
       }
 
+
       const categoryName =
         category.name ||
         'Category'
+
 
       const confirmed =
         window.confirm(
@@ -497,9 +711,11 @@ const CategoriesPage = () => {
           } "${categoryName}"?`
         )
 
+
       if (!confirmed) {
         return
       }
+
 
       dispatch(
         setCategoryDeleting(
@@ -507,9 +723,11 @@ const CategoriesPage = () => {
         )
       )
 
+
       dispatch(
         clearCategoryError()
       )
+
 
       try {
 
@@ -520,11 +738,13 @@ const CategoriesPage = () => {
             category.id,
         })
 
+
         dispatch(
           removeCategory(
             category.id
           )
         )
+
 
         const updatedCategories =
           categories.filter(
@@ -532,6 +752,7 @@ const CategoriesPage = () => {
               item.id !==
               category.id
           )
+
 
         saveCategoriesToCache(
           updatedCategories
@@ -544,6 +765,7 @@ const CategoriesPage = () => {
           error?.response?.data ||
           error
         )
+
 
         dispatch(
           setCategoryError(
@@ -567,6 +789,7 @@ const CategoriesPage = () => {
       }
 
     }
+
 
   // =====================================================
   // UI
@@ -594,6 +817,7 @@ const CategoriesPage = () => {
 
         </div>
 
+
         <div className="flex gap-2">
 
           {/* REFRESH */}
@@ -604,7 +828,8 @@ const CategoriesPage = () => {
               handleRefresh
             }
             disabled={
-              loading
+              loading ||
+              refreshing
             }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
@@ -612,7 +837,7 @@ const CategoriesPage = () => {
             <RefreshCw
               size={17}
               className={
-                loading
+                refreshing
                   ? 'animate-spin'
                   : ''
               }
@@ -624,6 +849,7 @@ const CategoriesPage = () => {
             </span>
 
           </button>
+
 
           {/* ADD */}
 
@@ -651,6 +877,7 @@ const CategoriesPage = () => {
 
       </div>
 
+
       {/* =================================================
           ERROR
       ================================================= */}
@@ -665,16 +892,16 @@ const CategoriesPage = () => {
 
       )}
 
+
       {/* =================================================
           LOADING
       ================================================= */}
 
-      {loading &&
-      categories.length === 0 ? (
+      {loading ? (
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto  h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
 
@@ -685,8 +912,7 @@ const CategoriesPage = () => {
 
         </div>
 
-      ) : categories.length ===
-        0 ? (
+      ) : categories.length === 0 ? (
 
         /* =================================================
             EMPTY
@@ -702,6 +928,7 @@ const CategoriesPage = () => {
 
           </div>
 
+
           <h2 className="mt-5 text-xl font-semibold">
 
             {t.noCategoriesAdded ||
@@ -709,12 +936,14 @@ const CategoriesPage = () => {
 
           </h2>
 
+
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
 
             {t.categoriesDescription ||
               'Create your first category to organize your menu.'}
 
           </p>
+
 
           <button
             type="button"
@@ -768,6 +997,7 @@ const CategoriesPage = () => {
 
               </thead>
 
+
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
 
                 {categories.map(
@@ -788,6 +1018,7 @@ const CategoriesPage = () => {
 
                       </td>
 
+
                       {/* DESCRIPTION */}
 
                       <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
@@ -796,6 +1027,7 @@ const CategoriesPage = () => {
                           '—'}
 
                       </td>
+
 
                       {/* ACTIONS */}
 
@@ -826,6 +1058,7 @@ const CategoriesPage = () => {
                             {t.editCategory}
 
                           </button>
+
 
                           {/* DELETE */}
 
@@ -880,6 +1113,7 @@ const CategoriesPage = () => {
 
       )}
 
+
       {/* =================================================
           MODAL
       ================================================= */}
@@ -905,8 +1139,11 @@ const CategoriesPage = () => {
               }
               disabled={saving}
             >
+
               {t.cancel}
+
             </Button>
+
 
             <Button
               onClick={
@@ -914,12 +1151,14 @@ const CategoriesPage = () => {
               }
               disabled={saving}
             >
+
               {saving
                 ? t.saving ||
                   'Saving...'
                 : editing
                   ? t.editCategory
                   : t.addCategory}
+
             </Button>
 
           </div>
@@ -947,6 +1186,7 @@ const CategoriesPage = () => {
             }
           />
 
+
           <Input
             label={
               t.description
@@ -973,5 +1213,5 @@ const CategoriesPage = () => {
   )
 }
 
+
 export default CategoriesPage
- 
