@@ -11,7 +11,7 @@ import {
 
 import {
   Plus,
-  Pencil,
+  // Pencil,
   Trash2,
   QrCode,
   RefreshCw,
@@ -21,7 +21,7 @@ import {
   getTables,
   getRestaurants,
   createTable,
-  updateTable,
+  // updateTable,
   deleteTable,
   deleteAllTables,
 } from '../../data/dataTables'
@@ -147,10 +147,10 @@ const TablesPage = () => {
   // SAVE
   // =====================================================
 
-  const [
-    saving,
-    setSaving,
-  ] = useState(false)
+  // const [
+  //   saving,
+  //   setSaving,
+  // ] = useState(false)
 
 
   // =====================================================
@@ -167,15 +167,15 @@ const TablesPage = () => {
   // EDIT MODAL
   // =====================================================
 
-  const [
-    open,
-    setOpen,
-  ] = useState(false)
+  // const [
+  //   open,
+  //   setOpen,
+  // ] = useState(false)
 
-  const [
-    editing,
-    setEditing,
-  ] = useState(null)
+  // const [
+  //   editing,
+  //   setEditing,
+  // ] = useState(null)
 
 
   // =====================================================
@@ -186,8 +186,14 @@ const TablesPage = () => {
     deletingAll,
     setDeletingAll,
   ] = useState(false)
+  // =====================================================
+  // DELETE ALL
+  // =====================================================
 
-
+   const [
+    deleting ,
+    setDeleting ,
+  ] = useState(null)
   // =====================================================
   // QR MODAL
   // =====================================================
@@ -207,14 +213,14 @@ const TablesPage = () => {
   // FORM
   // =====================================================
 
-  const [
-    form,
-    setForm,
-  ] = useState({
-    number: '',
-    name: '',
-    status: 'available',
-  })
+  // const [
+    // form,
+    // setForm,
+  // ] = useState({
+  //   number: '',
+  //   name: '',
+  //   status: 'available',
+  // })
 
 
   // =====================================================
@@ -896,173 +902,173 @@ const TablesPage = () => {
   // EDIT
   // =====================================================
 
-  const handleEdit =
-    (table) => {
+  // const handleEdit =
+  //   (table) => {
 
-      setEditing(table)
-
-
-      setForm({
-        number:
-          table.number ||
-          '',
-
-        name:
-          table.name ||
-          '',
-
-        status:
-          table.status ||
-          'available',
-      })
+  //     setEditing(table)
 
 
-      setError('')
-      setOpen(true)
+  //     setForm({
+  //       number:
+  //         table.number ||
+  //         '',
 
-    }
+  //       name:
+  //         table.name ||
+  //         '',
+
+  //       status:
+  //         table.status ||
+  //         'available',
+  //     })
+
+
+  //     setError('')
+  //     setOpen(true)
+
+  //   }
 
 
   // =====================================================
   // SAVE EDIT
   // =====================================================
 
-  const handleSave =
-    async () => {
+  // const handleSave =
+  //   async () => {
 
-      if (!restaurantId) {
+  //     if (!restaurantId) {
 
-        setError(
-          t.restaurantNotFound ||
-          'Restaurant not found.'
-        )
+  //       setError(
+  //         t.restaurantNotFound ||
+  //         'Restaurant not found.'
+  //       )
 
-        return
+  //       return
 
-      }
-
-
-      if (!form.number) {
-
-        setError(
-          t.tableNumberRequired ||
-          'Table number is required.'
-        )
-
-        return
-
-      }
+  //     }
 
 
-      if (!editing?.id) {
+  //     if (!form.number) {
 
-        setError(
-          'Table not found.'
-        )
+  //       setError(
+  //         t.tableNumberRequired ||
+  //         'Table number is required.'
+  //       )
 
-        return
+  //       return
 
-      }
-
-
-      setSaving(true)
-      setError('')
+  //     }
 
 
-      try {
+  //     if (!editing?.id) {
 
-        const payload = {
+  //       setError(
+  //         'Table not found.'
+  //       )
 
-          number:
-            Number(form.number),
+  //       return
 
-          name:
-            form.name ||
-            `${t.table || 'Table'} ${form.number}`,
-
-          status:
-            form.status,
-
-        }
+  //     }
 
 
-        const response =
-          await updateTable(
-            restaurantId,
-            editing.id,
-            payload
-          )
+  //     setSaving(true)
+  //     setError('')
 
 
-        const updatedTable =
-          response?.data?.table ||
-          response?.data?.data ||
-          response?.data
+  //     try {
+
+  //       const payload = {
+
+  //         number:
+  //           Number(form.number),
+
+  //         name:
+  //           form.name ||
+  //           `${t.table || 'Table'} ${form.number}`,
+
+  //         status:
+  //           form.status,
+
+  //       }
 
 
-        setTables(
-          (current) => {
-
-            const updated =
-              current.map(
-                (table) =>
-                  table.id ===
-                  editing.id
-                    ? updatedTable
-                    : table
-              )
+  //       const response =
+  //         await updateTable(
+  //           restaurantId,
+  //           editing.id,
+  //           payload
+  //         )
 
 
-            tablesRef.current =
-              updated
+  //       const updatedTable =
+  //         response?.data?.table ||
+  //         response?.data?.data ||
+  //         response?.data
 
 
-            saveTablesToCache(
-              updated,
-              restaurantId
-            )
+  //       setTables(
+  //         (current) => {
+
+  //           const updated =
+  //             current.map(
+  //               (table) =>
+  //                 table.id ===
+  //                 editing.id
+  //                   ? updatedTable
+  //                   : table
+  //             )
 
 
-            return updated
-
-          }
-        )
+  //           tablesRef.current =
+  //             updated
 
 
-        setOpen(false)
-        setEditing(null)
+  //           saveTablesToCache(
+  //             updated,
+  //             restaurantId
+  //           )
 
 
-        setForm({
-          number: '',
-          name: '',
-          status: 'available',
-        })
+  //           return updated
+
+  //         }
+  //       )
 
 
-      } catch (err) {
-
-        console.error(
-          'Save table error:',
-          err
-        )
+  //       setOpen(false)
+  //       setEditing(null)
 
 
-        setError(
-          err?.response?.data?.message ||
-          err?.message ||
-          t.saveTableError ||
-          'Failed to save table.'
-        )
+  //       setForm({
+  //         number: '',
+  //         name: '',
+  //         status: 'available',
+  //       })
 
 
-      } finally {
+  //     } catch (err) {
 
-        setSaving(false)
+  //       console.error(
+  //         'Save table error:',
+  //         err
+  //       )
 
-      }
 
-    }
+  //       setError(
+  //         err?.response?.data?.message ||
+  //         err?.message ||
+  //         t.saveTableError ||
+  //         'Failed to save table.'
+  //       )
+
+
+  //     } finally {
+
+  //       setSaving(false)
+
+  //     }
+
+  //   }
 
 
   // =====================================================
@@ -1285,7 +1291,7 @@ const TablesPage = () => {
         return
       }
 
-
+      setDeleting(table.id)
       setError('')
 
 
@@ -1339,12 +1345,15 @@ const TablesPage = () => {
           'Failed to delete table.'
         )
 
+      }finally {
+
+        setDeleting (null)
+
       }
 
     }
 
-
-  // =====================================================
+   // =====================================================
   // STATUS LABEL
   // =====================================================
 
@@ -1600,12 +1609,12 @@ const TablesPage = () => {
 
                     <div className="min-w-0">
 
-                      <h2 className="font-semibold text-slate-900 dark:text-slate-100">
+                      {/* <h2 className="font-semibold text-slate-900 dark:text-slate-100">
 
                         {table.name ||
                           `${t.table} ${table.number}`}
 
-                      </h2>
+                      </h2> */}
 
                       <p className="text-xs text-slate-500 dark:text-slate-400">
 
@@ -1664,7 +1673,7 @@ const TablesPage = () => {
 
                 <div className="mt-5 flex gap-2">
 
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() =>
                       handleEdit(table)
@@ -1676,19 +1685,19 @@ const TablesPage = () => {
 
                     {t.editTable}
 
-                  </button>
+                  </button> */}
 
                   <button
                     type="button"
                     onClick={() =>
                       handleDelete(table)
                     }
-                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                    className='disabled:cursor-not-allowed disabled:opacity-50 flex h-11 w-80 mx-auto items-center justify-center gap-2 rounded-2xl border border-rose-200  text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50'
                     aria-label={t.deleteTable}
-                  >
-
-                    <Trash2 size={17} />
-
+                    disabled={deleting === table.id}
+                   >
+                   <Trash2 size={17} /> 
+                   {deleting === table.id ? t.deletingTable : t.deleteTable || 'Delete Table'} 
                   </button>
 
                 </div>
@@ -1814,7 +1823,7 @@ const TablesPage = () => {
 
 
       {/* EDIT MODAL */}
-
+{/* 
       {open && (
 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
@@ -1872,10 +1881,10 @@ const TablesPage = () => {
                   placeholder="1"
                 />
 
-              </div>
+              </div> */}
 
 
-              <div>
+              {/* <div>
 
                 <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.tableName}
@@ -1895,12 +1904,12 @@ const TablesPage = () => {
                   placeholder={`${t.table} ${form.number || '1'}`}
                 />
 
-              </div>
+              </div> */}
 
 
-              <div>
+              {/* <div> */}
 
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                {/* <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t.status}
                 </label>
 
@@ -1932,10 +1941,10 @@ const TablesPage = () => {
 
               </div>
 
-            </div>
+            </div> */}
 
 
-            <div className="mt-7 flex justify-end gap-3">
+            {/* <div className="mt-7 flex justify-end gap-3">
 
               <button
                 type="button"
@@ -1969,7 +1978,7 @@ const TablesPage = () => {
 
         </div>
 
-      )}
+      )} */}
 
 
       {/* QR MODAL */}

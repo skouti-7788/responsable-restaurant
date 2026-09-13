@@ -359,7 +359,12 @@ const translations = {
     addressPlaceholder: 'Enter your restaurant address',
     openingHoursPlaceholder: 'Example: Monday: 08:00-18:00, Tuesday: 08:00-18:00', 
     facebookPlaceholder: 'Enter your Facebook URL',
-   },
+    deletingTable: 'Deleting table ...',
+    deletingMeal: 'Deleting meal ...',
+    deleteMeal: 'Delete meal',
+    currencySymbol: 'DH',
+           
+    },
 
   // =========================================================
   // FRANÇAIS
@@ -723,7 +728,11 @@ const translations = {
     addressPlaceholder: 'Entrez l’adresse de votre restaurant', 
     openingHoursPlaceholder: 'Exemple : Lundi : 08:00-18:00, Mardi : 08:00-18:00', 
     facebookPlaceholder: 'Entrez le lien Facebook',
-    Images: 'images'
+    Images: 'images',
+    deletingTable: 'Suppression de la table ...',
+    deletingMeal: 'Suppression du plat ...',
+    deleteMeal: 'Supprimer le plat',
+    currencySymbol: 'DH',
   },
 
   // =========================================================
@@ -1092,7 +1101,12 @@ const translations = {
     addressPlaceholder: 'أدخل عنوان المطعم', 
     openingHoursPlaceholder: 'مثال: الإثنين: 08:00-18:00، الثلاثاء: 08:00-18:00', 
     facebookPlaceholder: 'أدخل رابط Facebook',
-    Images:'الصور'
+    Images:'الصور',
+    deletingTable: 'جاري حذف الطاولة ...',
+    deletingMeal : 'جاري حذف الطبق ...',
+    deleteMeal: 'حذف الطبق',
+    currencySymbol: 'د.م',
+           
    },
 }
 

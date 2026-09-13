@@ -141,3 +141,13 @@
     `/restaurants/${restaurantId}/meals/${mealId}`
     )
     }
+    // =====================================================
+    // DELETE ALL MEALS
+    // =====================================================
+
+    export const deleteAllMeals = (
+      restaurantId
+    ) =>
+      axiosClient.delete(
+        `/restaurants/${restaurantId}/meals/all`
+      )

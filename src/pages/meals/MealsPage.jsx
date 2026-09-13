@@ -23,6 +23,7 @@ import {
   createMeal,
   updateMeal,
   deleteMeal,
+  deleteAllMeals
 } from '../../data/dataMeals'
 
 import {
@@ -82,7 +83,7 @@ const MealsPage = () => {
 
   const [meals, setMeals] =
     useState(cachedMeals)
-
+  // const mealsRef = useRef(cachedMeals)
   const [categories, setCategories] =
     useState(cachedCategories)
 
@@ -101,6 +102,9 @@ const MealsPage = () => {
       restaurantId
   }, [restaurantId])
 
+  // useEffect(() => {
+  //    mealsRef.current = meals
+  //   }, [meals])
   // =====================================================
   // LOADING
   // =====================================================
@@ -804,8 +808,7 @@ const MealsPage = () => {
             meal.image_url ||
             meal.image ||
             ''
-
-          console.log(image)
+ 
 
           return (
             <div
@@ -888,11 +891,10 @@ const MealsPage = () => {
                 <div className="mt-5 flex items-center justify-between gap-3">
 
                   <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    $
                     {Number(
                       meal.price ||
                         0
-                    ).toFixed(2)}
+                    ).toFixed(2)} {t.currencySymbol || '$'}
                   </span>
 
                   <div className="flex gap-2">
@@ -931,23 +933,18 @@ const MealsPage = () => {
                         deletingId ===
                         meal.id
                       }
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                      className=" disabled:cursor-not-allowed disabled:opacity-50 flex h-10 px-3 gap-2 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
                       aria-label={
                         t.deleteMeal ||
                         'Delete'
                       }
                     >
                       <Trash2
-                        size={16}
-                        className={
-                          deletingId ===
-                          meal.id
-                            ? 'animate-pulse'
-                            : ''
-                        }
+                        size={16} 
                       />
-                    </button>
+                      {deletingId === meal.id ? t.deletingMeal : t.deleteMeal || 'Delete Meal'} 
 
+                    </button>
                   </div>
 
                 </div>
@@ -971,15 +968,84 @@ const MealsPage = () => {
       handleOpen,
       handleDelete,
     ])
-
+  // =====================================================
+  // DELETE ALL  
+  // =====================================================
+  const [deletingAll, setDeletingAll] = useState(false)
+  const handleDeleteAll =
+     async () => {
+ 
+       if (
+         !restaurantId ||
+         meals.length === 0
+       ) {
+         return
+       }
+ 
+ 
+       const confirmed =
+         window.confirm(
+           `${t.deleteAllTablesConfirm} (${meals.length})?`
+         )
+ 
+ 
+       if (!confirmed) {
+         return
+       }
+ 
+ 
+       setDeletingAll(true)
+       setError('')
+ 
+ 
+       try {
+ 
+         await deleteAllMeals(
+           restaurantId
+         )
+ 
+ 
+         setMeals([])
+        //  mealsRef.current = []
+ 
+         saveMealsToCache(
+           [],
+           restaurantId
+         )
+ 
+ 
+       } catch (err) {
+ 
+         console.error(
+           'Delete all tables error:',
+           err
+         )
+ 
+ 
+         setError(
+           err?.response?.data?.message ||
+           err?.message ||
+           t.deleteAllTablesError ||
+           'Failed to delete all tables.'
+         )
+ 
+ 
+       } finally {
+ 
+         setDeletingAll(false)
+ 
+       }
+ 
+     }
   // =====================================================
   // UI
   // =====================================================
+ 
 
   return (
     <div className="text-slate-900 dark:text-slate-100">
 
-      {/* HEADER */}
+     
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -996,9 +1062,29 @@ const MealsPage = () => {
         </div>
 
         <div className="flex gap-2">
+           {/*  DELETE ALL */}
 
+          <button
+            type="button"
+            onClick={
+                handleDeleteAll
+            }
+            disabled={
+              deletingAll
+            }
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+          >
+            <Trash2
+              size={17}
+            />
+
+            <span className="hidden sm:inline">
+              {deletingAll ? t.deletingAll : t.deleteAll || 'Delete All'}
+            </span>
+          </button>
+          
           {/* REFRESH */}
-
+          
           <button
             type="button"
             onClick={
@@ -1131,9 +1217,9 @@ const MealsPage = () => {
       {/* ADD / EDIT MODAL */}
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50   flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm">
 
-          <div className="my-8 w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+          <div className="my-8 mt-auto w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
 
             {/* MODAL HEADER */}
 
@@ -1478,12 +1564,12 @@ const MealsPage = () => {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
-                {saving && (
+                {/* {saving && (
                   <RefreshCw
                     size={16}
                     className="animate-spin"
                   />
-                )}
+                )} */}
 
                 {saving
                   ? t.saving ||
