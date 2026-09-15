@@ -57,12 +57,14 @@ function App() {
           <Route path="orders" element={<ProtectedRoute requiredPermission="orders.view"><OrdersPage /></ProtectedRoute>} />
             <Route path="tables" element={<ProtectedRoute requiredPermission="tables.view"><TablesPage /></ProtectedRoute>} />
             <Route path="appearance" element={
-              <ProtectedRoute allowedRoles={[ 'owner' ]}>
+              // <ProtectedRoute allowedRoles={[ 'owner' ]}>
+              <ProtectedRoute requiredPermission="appearance.view">
                 <AppearancePage />
               </ProtectedRoute>
             } />
             <Route path="staff" element={
-              <ProtectedRoute allowedRoles={[ 'owner' ]}>
+              // <ProtectedRoute allowedRoles={[ 'owner' ]}>
+              <ProtectedRoute requiredPermission="staff.view">
                 <StaffPage />
               </ProtectedRoute>
             } />
