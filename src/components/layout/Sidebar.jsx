@@ -47,7 +47,11 @@ const Sidebar = () => {
       label: t.tables,
       icon: TableProperties,
     },
-    
+    {
+      to: '/staff',
+      label: t.staff || 'Staff',
+      icon: Users,
+    },
     {
       to: '/appearance',
       label: t.appearance,
@@ -77,14 +81,12 @@ const Sidebar = () => {
     '/tables': 'tables.view',
     '/appearance': 'appearance.view',
     '/qr-code': 'qrcode.view',
+    '/staff': 'staff.view',
+
   }
 
   const links = (user?.role === 'owner')
-    ? [
-        ...allLinks,
-        { to: '/staff', label: t.staff || 'Staff', icon: Users },
-      ]
-    : allLinks.filter((l) => {
+    ? allLinks : allLinks.filter((l) => {
         const perm = mapToPermission[l.to]
         if (!perm) return true
         return hasPermission(user, perm)
