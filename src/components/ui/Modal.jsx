@@ -1,9 +1,9 @@
-import { useSelector } from "react-redux"
-import translations from '../../i18n/translations'
+// import { useSelector } from "react-redux"
+// import translations from '../../i18n/translations'
 const Modal = ({ title, open, onClose, footer, children }) => {
  
-   const { language } = useSelector((state) => state.ui)
-   const t = translations[language]
+  //  const { language } = useSelector((state) => state.ui)
+  //  const t = translations[language]
    if (!open) return null
    return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
@@ -18,9 +18,11 @@ const Modal = ({ title, open, onClose, footer, children }) => {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+             className="text-xl  text-slate-400 w-4 hover:text-slate-700 dark:hover:text-slate-200"
+
+            // className="rounded-xl bg-slate-100 px-3 py-2 w-10 h-10 text-sm text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-             {t.close}
+            x
           </button>
         </div>
 

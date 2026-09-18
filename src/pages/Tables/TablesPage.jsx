@@ -1786,7 +1786,7 @@ const TablesPage = () => {
                 onClick={() =>
                   setBulkOpen(false)
                 }
-                className="text-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                className="text-xl text-slate-400  mb-20 hover:text-slate-700 dark:hover:text-slate-200"
                 aria-label={t.close}
               >
                 ✕
