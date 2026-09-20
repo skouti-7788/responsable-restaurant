@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Search,
   X,
-  // Eye,
 } from 'lucide-react'
 
 import {
@@ -23,6 +22,7 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from '../../data/dataOrders'
+
 import {
   getCurrentRestaurantId,
   getRestaurantCache,
@@ -52,9 +52,6 @@ import bidiFactory from 'bidi-js'
 // CACHE KEYS
 // =====================================================
 
-const ORDERS_CACHE_KEY =
-  'restaurant_orders_cache'
-
 const MEALS_CACHE_KEY =
   'restaurant_meals_cache'
 
@@ -75,9 +72,6 @@ const statusClasses = {
 
   ready:
     'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300',
-
-  // completed:
-  //   'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300',
 
   cancelled:
     'bg-rose-500/15 text-rose-600 dark:text-rose-300',
@@ -131,13 +125,26 @@ const readCache = (
   fallback,
   restaurantId = getCurrentRestaurantId()
 ) => {
-  const cached =
-    getRestaurantCache(
-      key,
-      restaurantId
+  if (!restaurantId) {
+    return fallback
+  }
+
+  try {
+    const cached =
+      getRestaurantCache(
+        key,
+        restaurantId
+      )
+
+    return cached ?? fallback
+  } catch (error) {
+    console.error(
+      'Restaurant cache read error:',
+      error
     )
 
-  return cached ?? fallback
+    return fallback
+  }
 }
 
 
@@ -150,11 +157,22 @@ const saveCache = (
   data,
   restaurantId = getCurrentRestaurantId()
 ) => {
-  setRestaurantCache(
-    key,
-    restaurantId,
-    data
-  )
+  if (!restaurantId) {
+    return
+  }
+
+  try {
+    setRestaurantCache(
+      key,
+      restaurantId,
+      data
+    )
+  } catch (error) {
+    console.error(
+      'Restaurant cache save error:',
+      error
+    )
+  }
 }
 
 
@@ -316,7 +334,7 @@ const OrdersPage = () => {
   const orders =
     useSelector(
       (state) =>
-        state.orders.items
+        state.orders.items || []
     )
 
 
@@ -331,18 +349,16 @@ const OrdersPage = () => {
 
 
   // ===================================================
-  // INITIAL CACHE
+  // CURRENT RESTAURANT
   // ===================================================
 
   const currentRestaurantId =
     getCurrentRestaurantId()
 
-  const cachedOrders =
-    readCache(
-      ORDERS_CACHE_KEY,
-      [],
-      currentRestaurantId
-    )
+
+  // ===================================================
+  // INITIAL CACHE
+  // ===================================================
 
   const cachedMeals =
     readCache(
@@ -363,20 +379,25 @@ const OrdersPage = () => {
   // STATE
   // ===================================================
 
-  const [restaurants] = useState([])
+  const [restaurants] =
+    useState([])
 
   const [
     meals,
     setMeals,
   ] = useState(
-    cachedMeals
+    Array.isArray(cachedMeals)
+      ? cachedMeals
+      : []
   )
 
   const [
     tables,
     setTables,
   ] = useState(
-    cachedTables
+    Array.isArray(cachedTables)
+      ? cachedTables
+      : []
   )
 
 
@@ -387,9 +408,7 @@ const OrdersPage = () => {
   const [
     loading,
     setLoading,
-  ] = useState(
-    cachedOrders.length === 0
-  )
+  ] = useState(true)
 
 
   // ===================================================
@@ -473,81 +492,115 @@ const OrdersPage = () => {
       ) => {
         try {
 
+          const restaurantId =
+            getCurrentRestaurantId()
+
+
           // =============================================
-          // USE CACHE FIRST
+          // USE MEALS + TABLES CACHE FIRST
           // =============================================
 
-          if (useCache) {
+          if (
+            useCache &&
+            restaurantId
+          ) {
             const mealsCache =
               readCache(
                 MEALS_CACHE_KEY,
                 [],
-                currentRestaurantId
+                restaurantId
               )
 
             const tablesCache =
               readCache(
                 TABLES_CACHE_KEY,
                 [],
-                currentRestaurantId
+                restaurantId
               )
 
-            if (mealsCache.length) {
-              setMeals(mealsCache)
+            if (
+              Array.isArray(
+                mealsCache
+              ) &&
+              mealsCache.length > 0
+            ) {
+              setMeals(
+                mealsCache
+              )
             }
 
-            if (tablesCache.length) {
-              setTables(tablesCache)
+            if (
+              Array.isArray(
+                tablesCache
+              ) &&
+              tablesCache.length > 0
+            ) {
+              setTables(
+                tablesCache
+              )
             }
           }
+
+
+          // =============================================
+          // VERIFY RESTAURANT
+          // =============================================
 
           const authenticatedRestaurantId =
             getCurrentRestaurantId()
 
-          if (!authenticatedRestaurantId) {
+          if (
+            !authenticatedRestaurantId
+          ) {
             setMeals([])
             setTables([])
-            saveCache(
-              MEALS_CACHE_KEY,
-              [],
-              authenticatedRestaurantId
-            )
-            saveCache(
-              TABLES_CACHE_KEY,
-              [],
-              authenticatedRestaurantId
-            )
+
             return null
           }
 
-          const currentUser =
-            JSON.parse(
-              localStorage.getItem(
-                'restaurant_user'
-              ) || 'null'
+
+          // =============================================
+          // GET CURRENT USER
+          // =============================================
+
+          let currentUser = null
+
+          try {
+            currentUser =
+              JSON.parse(
+                localStorage.getItem(
+                  'restaurant_user'
+                ) || 'null'
+              )
+          } catch (parseError) {
+            console.error(
+              'Restaurant user cache parse error:',
+              parseError
             )
+          }
+
+
+          // =============================================
+          // RESOLVE RESTAURANT
+          // =============================================
 
           const restaurant =
-            currentUser?.restaurant || {
-              id: authenticatedRestaurantId,
-              slug:
-                currentUser?.restaurant?.slug ||
-                null,
-            }
+            currentUser?.restaurant?.id
+              ? currentUser.restaurant
+              : {
+                  id:
+                    authenticatedRestaurantId,
+
+                  slug:
+                    currentUser?.restaurant
+                      ?.slug || null,
+                }
+
 
           if (!restaurant?.id) {
             setMeals([])
             setTables([])
-            saveCache(
-              MEALS_CACHE_KEY,
-              [],
-              authenticatedRestaurantId
-            )
-            saveCache(
-              TABLES_CACHE_KEY,
-              [],
-              authenticatedRestaurantId
-            )
+
             return null
           }
 
@@ -569,25 +622,51 @@ const OrdersPage = () => {
             ),
           ])
 
+
+          // =============================================
+          // UPDATE STATE
+          // =============================================
+
+          const safeMeals =
+            Array.isArray(
+              mealsData
+            )
+              ? mealsData
+              : []
+
+          const safeTables =
+            Array.isArray(
+              tablesData
+            )
+              ? tablesData
+              : []
+
+
           setMeals(
-            mealsData
+            safeMeals
           )
 
           setTables(
-            tablesData
+            safeTables
           )
+
+
+          // =============================================
+          // SAVE ONLY NON-ORDER DATA
+          // =============================================
 
           saveCache(
             MEALS_CACHE_KEY,
-            mealsData,
+            safeMeals,
             restaurant.id
           )
 
           saveCache(
             TABLES_CACHE_KEY,
-            tablesData,
+            safeTables,
             restaurant.id
           )
+
 
           return restaurant
 
@@ -610,16 +689,7 @@ const OrdersPage = () => {
 
   const checkOrders =
     useCallback(
-      async (
-        showPageLoading = false
-      ) => {
-
-        if (
-          showPageLoading
-        ) {
-          setLoading(true)
-        }
-
+      async () => {
         try {
 
           // =============================================
@@ -636,15 +706,11 @@ const OrdersPage = () => {
           // NO RESTAURANT
           // =============================================
 
-          if (!restaurant?.id) {
+          if (
+            !restaurant?.id
+          ) {
             dispatch(
               fetchOrdersSuccess([])
-            )
-
-            saveCache(
-              ORDERS_CACHE_KEY,
-              [],
-              restaurant?.id || getCurrentRestaurantId()
             )
 
             return
@@ -662,25 +728,19 @@ const OrdersPage = () => {
 
 
           // =============================================
-          // UPDATE REDUX
+          // UPDATE REDUX ONLY
           // =============================================
 
           dispatch(
             fetchOrdersSuccess(
-              freshOrders
+              Array.isArray(
+                freshOrders
+              )
+                ? freshOrders
+                : []
             )
           )
 
-
-          // =============================================
-          // UPDATE CACHE
-          // =============================================
-
-          saveCache(
-            ORDERS_CACHE_KEY,
-            freshOrders,
-            restaurant.id
-          )
 
           setError('')
 
@@ -690,42 +750,13 @@ const OrdersPage = () => {
             err
           )
 
+          setError(
+            err?.response
+              ?.data?.message ||
+            err?.message ||
+            'Unable to load orders'
+          )
 
-          // =============================================
-          // KEEP OLD CACHE
-          // =============================================
-
-          const oldOrders =
-            readCache(
-              ORDERS_CACHE_KEY,
-              [],
-              getCurrentRestaurantId()
-            )
-
-          if (
-            oldOrders.length
-          ) {
-            dispatch(
-              fetchOrdersSuccess(
-                oldOrders
-              )
-            )
-          } else {
-            setError(
-              err?.response
-                ?.data?.message ||
-                err?.message ||
-                'Unable to load orders'
-            )
-          }
-
-        } finally {
-
-          if (
-            showPageLoading
-          ) {
-            setLoading(false)
-          }
         }
       },
       [
@@ -745,47 +776,19 @@ const OrdersPage = () => {
     const initialize =
       async () => {
 
-        // ===============================================
-        // SHOW CACHE IMMEDIATELY
-        // ===============================================
-
-        const ordersCache =
-          readCache(
-            ORDERS_CACHE_KEY,
-            [],
-            getCurrentRestaurantId()
-          )
-
-        if (
-          ordersCache.length
-        ) {
-          dispatch(
-            fetchOrdersSuccess(
-              ordersCache
-            )
-          )
-
-          setLoading(false)
-        }
-
         if (cancelled) {
           return
         }
 
-
-        // ===============================================
-        // AUTO REFRESH
-        // ===============================================
-
         setRefreshing(true)
+        setLoading(true)
 
         try {
-          await checkOrders(
-            false
-          )
+          await checkOrders()
         } finally {
           if (!cancelled) {
             setRefreshing(false)
+            setLoading(false)
           }
         }
       }
@@ -797,7 +800,6 @@ const OrdersPage = () => {
     }
 
   }, [
-    dispatch,
     checkOrders,
   ])
 
@@ -820,9 +822,7 @@ const OrdersPage = () => {
       setError('')
 
       try {
-        await checkOrders(
-          false
-        )
+        await checkOrders()
       } finally {
         setRefreshing(false)
       }
@@ -870,10 +870,6 @@ const OrdersPage = () => {
     orders.filter(
       (order) => {
 
-        // =============================================
-        // STATUS MATCH
-        // =============================================
-
         const matchesStatus =
           statusFilter === 'all' ||
           order.status ===
@@ -884,10 +880,6 @@ const OrdersPage = () => {
           return false
         }
 
-
-        // =============================================
-        // SEARCH
-        // =============================================
 
         if (!normalizedSearch) {
           return true
@@ -1064,31 +1056,6 @@ const OrdersPage = () => {
 
 
         // =============================================
-        // UPDATE CACHE
-        // =============================================
-
-        const currentOrders =
-          readCache(
-            ORDERS_CACHE_KEY,
-            []
-          )
-
-        const updatedOrders =
-          currentOrders.map(
-            (item) =>
-              Number(item.id) ===
-              Number(order.id)
-                ? updatedOrder
-                : item
-          )
-
-        saveCache(
-          ORDERS_CACHE_KEY,
-          updatedOrders
-        )
-
-
-        // =============================================
         // UPDATE SELECTED ORDER
         // =============================================
 
@@ -1150,29 +1117,6 @@ const OrdersPage = () => {
           removeOrder(
             order.id
           )
-        )
-
-
-        // =============================================
-        // UPDATE CACHE
-        // =============================================
-
-        const currentOrders =
-          readCache(
-            ORDERS_CACHE_KEY,
-            []
-          )
-
-        const updatedOrders =
-          currentOrders.filter(
-            (item) =>
-              Number(item.id) !==
-              Number(order.id)
-          )
-
-        saveCache(
-          ORDERS_CACHE_KEY,
-          updatedOrders
         )
 
 
@@ -1276,16 +1220,6 @@ const OrdersPage = () => {
 
 
         // =============================================
-        // CLEAR CACHE
-        // =============================================
-
-        saveCache(
-          ORDERS_CACHE_KEY,
-          []
-        )
-
-
-        // =============================================
         // CLOSE MODAL
         // =============================================
 
@@ -1311,9 +1245,7 @@ const OrdersPage = () => {
         // =============================================
 
         try {
-          await checkOrders(
-            false
-          )
+          await checkOrders()
         } catch (
           refreshError
         ) {
@@ -2046,9 +1978,7 @@ const OrdersPage = () => {
 
         <div className="flex flex-wrap items-center gap-3">
 
-          {/* =================================================
-              STATUS FILTER
-          ================================================= */}
+          {/* STATUS FILTER */}
 
           <div className="relative">
 
@@ -2061,7 +1991,7 @@ const OrdersPage = () => {
                   e.target.value
                 )
               }
-              className="h-11 min-w-[130px]   rounded-2xl border border-slate-200 bg-white px-4 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11 min-w-[130px] rounded-2xl border border-slate-200 bg-white px-4 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
             >
 
               <option value="all">
@@ -2084,22 +2014,6 @@ const OrdersPage = () => {
                     : 'Preparing'}
               </option>
 
-              {/* <option value="ready">
-                {language === 'ar'
-                  ? 'جاهز'
-                  : language === 'fr'
-                    ? 'Prêt'
-                    : 'Ready'}
-              </option> */}
-
-              {/* <option value="completed">
-                {language === 'ar'
-                  ? 'مكتمل'
-                  : language === 'fr'
-                    ? 'Terminé'
-                    : 'Completed'}
-              </option> */}
-
               <option value="cancelled">
                 {language === 'ar'
                   ? 'ملغى'
@@ -2110,32 +2024,10 @@ const OrdersPage = () => {
 
             </select>
 
-
-            {/* <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01.02 1.06l-4.25 4.5a.75.75 0 01-1.08-1.04l3.71-3.938L5.23 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-
-              </svg>
-
-            </div> */}
-
           </div>
 
 
-          {/* =================================================
-              REFRESH
-          ================================================= */}
+          {/* REFRESH */}
 
           <button
             type="button"
@@ -2166,9 +2058,7 @@ const OrdersPage = () => {
           </button>
 
 
-          {/* =================================================
-              DELETE ALL
-          ================================================= */}
+          {/* DELETE ALL */}
 
           <button
             type="button"
@@ -2207,8 +2097,6 @@ const OrdersPage = () => {
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-        {/* TOTAL */}
-
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -2222,22 +2110,18 @@ const OrdersPage = () => {
         </div>
 
 
-        {/* PENDING */}
-
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {statisticsLabels.pending}
           </p>
 
-          <p className="mt-2 text-3xl font-bold  text-slate-900">
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">
             {pendingOrders}
           </p>
 
         </div>
 
-
-        {/* PREPARING */}
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
 
@@ -2245,14 +2129,12 @@ const OrdersPage = () => {
             {statisticsLabels.preparing}
           </p>
 
-          <p className="mt-2 text-3xl font-bold  text-slate-900">
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">
             {preparingOrders}
           </p>
 
         </div>
 
-
-        {/* COMPLETED */}
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
 
@@ -2260,7 +2142,7 @@ const OrdersPage = () => {
             {statisticsLabels.completed}
           </p>
 
-          <p className="mt-2 text-3xl font-bold  text-slate-900">
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">
             {completedOrders}
           </p>
 
@@ -2351,7 +2233,8 @@ const OrdersPage = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">
 
             {language === 'ar'
-              ? `${filteredOrders.length} طلب`: language === 'fr'
+              ? `${filteredOrders.length} طلب`
+              : language === 'fr'
                 ? `${filteredOrders.length} commande${filteredOrders.length !== 1 ? 's' : ''}`
                 : `${filteredOrders.length} order${filteredOrders.length !== 1 ? 's' : ''}`}
 
@@ -2368,63 +2251,58 @@ const OrdersPage = () => {
 
       <div className="space-y-5">
 
-        {/* =================================================
-            NO ORDERS
-        ================================================= */}
-
         {filteredOrders.length === 0 ? (
-          //  <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
 
-          // <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-
-          // <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-          //   {t.loading ||
-          //     'Loading...'}
-          // </p>
-
-        // </div>
           <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
-            
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
-            <p className=" mt-4 text-slate-500 dark:text-slate-400">
+            {loading ? (
 
-              {loading ? (
+              <>
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
 
-                language === 'ar'
-                  ? 'جاري تحميل الطلبات...'
-                  : language === 'fr'
-                    ? 'Chargement des commandes...'
-                    : 'Loading orders...'
-
-              ) : orders.length > 0 ? (
-
-                searchTerm.trim() ? (
-
-                  language === 'ar'
-                    ? 'لا توجد طلبات تطابق البحث'
+                <p className="mt-4 text-slate-500 dark:text-slate-400">
+                  {language === 'ar'
+                    ? 'جاري تحميل الطلبات...'
                     : language === 'fr'
-                      ? 'Aucune commande ne correspond à votre recherche'
-                      : 'No orders match your search'
+                      ? 'Chargement des commandes...'
+                      : 'Loading orders...'}
+                </p>
+              </>
+
+            ) : (
+
+              <p className="text-slate-500 dark:text-slate-400">
+
+                {orders.length > 0 ? (
+
+                  searchTerm.trim() ? (
+
+                    language === 'ar'
+                      ? 'لا توجد طلبات تطابق البحث'
+                      : language === 'fr'
+                        ? 'Aucune commande ne correspond à votre recherche'
+                        : 'No orders match your search'
+
+                  ) : (
+
+                    language === 'ar'
+                      ? 'لا توجد طلبات بهذه الحالة'
+                      : language === 'fr'
+                        ? 'Aucune commande avec ce statut'
+                        : 'No orders with this status'
+
+                  )
 
                 ) : (
 
-                  language === 'ar'
-                    ? 'لا توجد طلبات بهذه الحالة'
-                    : language === 'fr'
-                      ? 'Aucune commande avec ce statut'
-                      : 'No orders with this status'
+                  t.noOrdersAvailable ||
+                  'No orders available'
 
-                )
+                )}
 
-              ) : (
+              </p>
 
-                t.noOrdersAvailable ||
-                'No orders available'
-
-              )}
-
-            </p>
+            )}
 
           </div>
 
@@ -2491,10 +2369,6 @@ const OrdersPage = () => {
 
                   <div className="w-full max-w-full">
 
-                    {/* =================================
-                        ORDER TOP
-                    ================================= */}
-
                     <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
 
                       <div>
@@ -2513,15 +2387,7 @@ const OrdersPage = () => {
                     </div>
 
 
-                    {/* =================================
-                        HORIZONTAL ORDER DATA
-                    ================================= */}
-
                     <div className="flex items-stretch">
-
-                      {/* =================================
-                          CUSTOMER
-                      ================================= */}
 
                       <div className="min-w-[190px] flex-1 px-6 py-5">
 
@@ -2541,10 +2407,6 @@ const OrdersPage = () => {
                       </div>
 
 
-                      {/* =================================
-                          TABLE
-                      ================================= */}
-
                       <div className="min-w-[130px] border-l border-slate-200 px-6 py-5 dark:border-slate-800">
 
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -2562,10 +2424,6 @@ const OrdersPage = () => {
 
                       </div>
 
-
-                      {/* =================================
-                          ITEMS
-                      ================================= */}
 
                       <div className="min-w-[300px] flex-[1.5] border-l border-slate-200 px-6 py-5 dark:border-slate-800">
 
@@ -2629,10 +2487,6 @@ const OrdersPage = () => {
                       </div>
 
 
-                      {/* =================================
-                          TOTAL
-                      ================================= */}
-
                       <div className="min-w-[150px] border-l border-slate-200 px-6 py-5 dark:border-slate-800">
 
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -2642,17 +2496,21 @@ const OrdersPage = () => {
 
                         </p>
 
-                        <p className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100"> 
-                          {Number( order.total || 0 ).toFixed(2)} 
-                          <span> {t.currencySymbol || '$'} </span> 
+                        <p className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+
+                          {Number(
+                            order.total || 0
+                          ).toFixed(2)}
+
+                          <span>
+                            {' '}
+                            {t.currencySymbol || '$'}
+                          </span>
+
                         </p>
 
                       </div>
 
-
-                      {/* =================================
-                          STATUS
-                      ================================= */}
 
                       <div className="min-w-[160px] border-l border-slate-200 px-6 py-5 dark:border-slate-800">
 
@@ -2680,39 +2538,88 @@ const OrdersPage = () => {
 
                       </div>
 
-
-                      
-
-                       
-
                     </div>
-                    {/* =================================
-                          ACTIONS
-                      ================================= */}
 
-                      <div className="border-l border-slate-200 px-40 py-5 dark:border-slate-800">
 
-                        {/* <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    {/* ACTIONS */}
+
+                    <div className="border-t border-slate-200 px-6 py-5 dark:border-slate-800">
+
+                      <div className="flex flex-wrap gap-4">
+
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            setSelectedOrder(
+                              order
+                            )
+                          }
+                          disabled={
+                            deletingAll
+                          }
+                        >
 
                           {language === 'ar'
-                            ? 'الإجراءات'
+                            ? 'التفاصيل'
                             : language === 'fr'
-                              ? 'Actions'
-                              : 'Actions'}
+                              ? 'Détails'
+                              : 'Details'}
 
-                        </p> */}
+                        </Button>
 
 
-                        <div className="mt-3 flex flex-wrap gap-10">
+                        <Button
+                          onClick={() =>
+                            changeStatus(
+                              order,
+                              'preparing'
+                            )
+                          }
+                          disabled={
+                            isAccepting ||
+                            deletingAll
+                          }
+                        >
 
-                          {/* =================================
-                              DETAILS
-                          ================================= */}
+                          {isAccepting
+                            ? t.accepting ||
+                              'Accepting...'
+                            : t.accept ||
+                              'Accept'}
+
+                        </Button>
+
+
+                        <Button
+                          variant="danger"
+                          onClick={() =>
+                            changeStatus(
+                              order,
+                              'cancelled'
+                            )
+                          }
+                          disabled={
+                            isCancelling ||
+                            deletingAll
+                          }
+                        >
+
+                          {isCancelling
+                            ? t.cancelling ||
+                              'Cancelling...'
+                            : t.cancel ||
+                              'Cancel'}
+
+                        </Button>
+
+
+                        {order.status ===
+                          'preparing' && (
 
                           <Button
                             variant="secondary"
                             onClick={() =>
-                              setSelectedOrder(
+                              handleDownloadInvoice(
                                 order
                               )
                             }
@@ -2721,127 +2628,39 @@ const OrdersPage = () => {
                             }
                           >
 
-                            <span className="inline-flex items-center gap-2">
-
-                              
-                              {language === 'ar'
-                                ? 'التفاصيل'
-                                : language === 'fr'
-                                  ? 'Détails'
-                                  : 'Details'}
-
-                            </span>
+                            {t.downloadInvoice ||
+                              'Invoice'}
 
                           </Button>
 
-
-                          {/* =================================
-                              ACCEPT
-                          ================================= */}
-
-                          <Button
-                            onClick={() =>
-                              changeStatus(
-                                order,
-                                'preparing'
-                              )
-                            }
-                            disabled={
-                              isAccepting ||
-                              deletingAll
-                            }
-                          >
-
-                            {isAccepting
-                              ? t.accepting ||
-                                'Accepting...'
-                              : t.accept ||
-                                'Accept'}
-
-                          </Button>
+                        )}
 
 
-                          {/* =================================
-                              CANCEL
-                          ================================= */}
+                        <Button
+                          variant="ghost"
+                          onClick={() =>
+                            handleDeleteOrder(
+                              order
+                            )
+                          }
+                          disabled={
+                            isDeleting ||
+                            deletingAll
+                          }
+                        >
 
-                          <Button
-                            variant="danger"
-                            onClick={() =>
-                              changeStatus(
-                                order,
-                                'cancelled'
-                              )
-                            }
-                            disabled={
-                              isCancelling ||
-                              deletingAll
-                            }
-                          >
+                          {isDeleting
+                            ? t.deleting ||
+                              'Deleting...'
+                            : t.deleteCategory ||
+                              'Delete'}
 
-                            {isCancelling
-                              ? t.cancelling ||
-                                'Cancelling...'
-                              : t.cancel ||
-                                'Cancel'}
+                        </Button>
 
-                          </Button>
+                      </div>
 
+                    </div>
 
-                          {/* =================================
-                              INVOICE
-                          ================================= */}
-
-                          {order.status ===
-                            'preparing' && (
-
-                            <Button
-                              variant="secondary"
-                              onClick={() =>
-                                handleDownloadInvoice(
-                                  order
-                                )
-                              }
-                              disabled={
-                                deletingAll
-                              }
-                            >
-
-                              {t.downloadInvoice ||
-                                'Invoice'}
-
-                            </Button>
-
-                          )}
-
-
-                          {/* =================================
-                              DELETE
-                          ================================= */}
-
-                          <Button
-                            variant="ghost"
-                            onClick={() =>
-                              handleDeleteOrder(
-                                order
-                              )
-                            }
-                            disabled={
-                              isDeleting ||
-                              deletingAll
-                            }
-                          >
-
-                            {isDeleting
-                              ? t.deleting ||
-                                'Deleting...'
-                              : t.deleteCategory ||
-                                'Delete'}
-
-                          </Button>
-
-                        </div>
-                       </div>
                   </div>
 
                 </div>
@@ -2878,10 +2697,6 @@ const OrdersPage = () => {
         >
 
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-
-            {/* =============================================
-                MODAL HEADER
-            ============================================= */}
 
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
 
@@ -2926,19 +2741,9 @@ const OrdersPage = () => {
             </div>
 
 
-            {/* =============================================
-                MODAL CONTENT
-            ============================================= */}
-
             <div className="space-y-6 p-6">
 
-              {/* =============================================
-                  BASIC INFO
-              ============================================= */}
-
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-                {/* CUSTOMER */}
 
                 <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/70">
 
@@ -2960,8 +2765,6 @@ const OrdersPage = () => {
                 </div>
 
 
-                {/* TABLE */}
-
                 <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/70">
 
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -2981,8 +2784,6 @@ const OrdersPage = () => {
 
                 </div>
 
-
-                {/* STATUS */}
 
                 <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/70">
 
@@ -3017,10 +2818,6 @@ const OrdersPage = () => {
               </div>
 
 
-              {/* =============================================
-                  DATE
-              ============================================= */}
-
               <div className="rounded-2xl border border-slate-200 px-4 py-4 dark:border-slate-800">
 
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -3043,10 +2840,6 @@ const OrdersPage = () => {
 
               </div>
 
-
-              {/* =============================================
-                  ITEMS
-              ============================================= */}
 
               <div>
 
@@ -3162,13 +2955,16 @@ const OrdersPage = () => {
 
                             <p className="text-sm text-slate-500 dark:text-slate-400">
 
-                               {t.currencySymbol || '$'}{unitPrice.toFixed(2)}
+                              {t.currencySymbol || '$'}
+                              {unitPrice.toFixed(2)}
 
                             </p>
 
                             <p className="mt-1 font-semibold text-slate-900 dark:text-slate-100">
 
-                              {t.currencySymbol || '$'}  {itemTotal.toFixed(2)}
+                              {t.currencySymbol || '$'}
+                              {' '}
+                              {itemTotal.toFixed(2)}
 
                             </p>
 
@@ -3185,10 +2981,6 @@ const OrdersPage = () => {
               </div>
 
 
-              {/* =============================================
-                  TOTAL
-              ============================================= */}
-
               <div className="flex items-center justify-between border-t border-slate-200 pt-5 dark:border-slate-800">
 
                 <span className="text-base font-semibold text-slate-900 dark:text-slate-100">
@@ -3201,7 +2993,7 @@ const OrdersPage = () => {
 
                 <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
 
-                   {t.currencySymbol || '$'}
+                  {t.currencySymbol || '$'}
                   {Number(
                     selectedOrder.total ||
                     0
@@ -3210,9 +3002,6 @@ const OrdersPage = () => {
                 </span>
 
               </div>
-
-
-             
 
             </div>
 

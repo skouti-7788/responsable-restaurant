@@ -33,8 +33,8 @@ const {
   getRestaurantCache,
   setRestaurantCache,
   clearRestaurantCachesById,
+  clearRestaurantCaches,
 } = await import('./restaurantCache.js')
-
 test('restaurant cache keys never use object IDs', () => {
   assert.equal(
     getRestaurantCacheKey('restaurant_meals_cache', { id: 3 }),
@@ -79,5 +79,31 @@ test('remove cache by restaurant id removes only matching restaurant data', () =
   assert.deepEqual(
     JSON.parse(globalThis.localStorage.getItem('restaurant_meals_cache_3')),
     [{ id: 100, restaurant_id: 3 }],
+  )
+})
+
+test('cleanup removes legacy sensitive scoped caches', () => {
+  globalThis.localStorage.clear()
+
+  globalThis.localStorage.setItem(
+    'restaurant_orders_cache_1',
+    JSON.stringify([{ id: 1 }]),
+  )
+
+  globalThis.localStorage.setItem(
+    'restaurant_staff_cache_1',
+    JSON.stringify([{ id: 2 }]),
+  )
+
+  clearRestaurantCaches()
+
+  assert.equal(
+    globalThis.localStorage.getItem('restaurant_orders_cache_1'),
+    null,
+  )
+
+  assert.equal(
+    globalThis.localStorage.getItem('restaurant_staff_cache_1'),
+    null,
   )
 })

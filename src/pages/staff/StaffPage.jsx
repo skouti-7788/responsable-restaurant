@@ -48,6 +48,8 @@ const PERMISSIONS = [
 
   'qrcode.view',
 
+  'restaurant.update',
+
   'profile.view',
   'profile.update',
 ]
@@ -119,6 +121,12 @@ const PERMISSION_GROUPS = [
     permissions: ['qrcode.view'],
   },
   {
+    key: 'restaurant',
+    permissions: [
+      'restaurant.update',
+    ],
+  },
+  {
     key: 'profile',
     permissions: [
       'profile.view',
@@ -126,114 +134,6 @@ const PERMISSION_GROUPS = [
     ],
   },
 ]
-
-// =====================================================
-// CACHE
-// =====================================================
-
-const STAFF_CACHE_PREFIX =
-  'restaurant_staff_cache_'
-
-const STAFF_CACHE_TTL =
-  5 * 60 * 1000 // 5 minutes
-
-const getStaffCacheKey = (
-  restaurantId,
-) =>
-  `${STAFF_CACHE_PREFIX}${restaurantId}`
-
-const getStaffFromCache = (
-  restaurantId,
-) => {
-  if (!restaurantId) {
-    return null
-  }
-
-  try {
-    const raw =
-      localStorage.getItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-    if (!raw) {
-      return null
-    }
-
-    const cached =
-      JSON.parse(raw)
-
-    if (
-      !cached ||
-      !Array.isArray(
-        cached.staff,
-      ) ||
-      !cached.timestamp
-    ) {
-      localStorage.removeItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-      return null
-    }
-
-    const expired =
-      Date.now() -
-        cached.timestamp >
-      STAFF_CACHE_TTL
-
-    if (expired) {
-      localStorage.removeItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-      return null
-    }
-
-    return cached.staff
-  } catch (error) {
-    console.error(
-      'Read staff cache error:',
-      error,
-    )
-
-    return null
-  }
-}
-
-const saveStaffToCache = (
-  restaurantId,
-  staff,
-) => {
-  if (
-    !restaurantId ||
-    !Array.isArray(staff)
-  ) {
-    return
-  }
-
-  try {
-    localStorage.setItem(
-      getStaffCacheKey(
-        restaurantId,
-      ),
-      JSON.stringify({
-        staff,
-        timestamp: Date.now(),
-      }),
-    )
-  } catch (error) {
-    console.error(
-      'Save staff cache error:',
-      error,
-    )
-  }
-}
 
 // =====================================================
 // PERMISSION LABEL
@@ -302,6 +202,9 @@ const getPermissionLabel = (
     'qrcode.view':
       t.permissionQrCodeView,
 
+    'restaurant.update':
+      t.permissionRestaurantUpdate,
+
     'profile.view':
       t.permissionProfileView,
     'profile.update':
@@ -331,6 +234,7 @@ const getGroupLabel = (
     appearance: t.appearance,
     staff: t.staff,
     qrcode: t.qrCode,
+    restaurant: t.restaurant,
     profile: t.profile,
   }
 
@@ -375,39 +279,14 @@ const StaffPage = () => {
     language === 'ar'
 
   // ===================================================
-  // INITIAL CACHE
-  // ===================================================
-
-  /*
-   * The cache is read during state initialization.
-   *
-   * This avoids calling setState synchronously
-   * from useEffect and fixes:
-   *
-   * react-hooks/set-state-in-effect
-   */
-
-  const initialCachedStaff =
-    getStaffFromCache(
-      restaurantId,
-    )
-
-  // ===================================================
   // STATE
   // ===================================================
 
   const [staff, setStaff] =
-    useState(
-      () =>
-        initialCachedStaff ||
-        [],
-    )
+    useState([])
 
   const [loading, setLoading] =
-    useState(
-      () =>
-        !initialCachedStaff,
-    )
+    useState(true)
 
   const [creating, setCreating] =
     useState(false)
@@ -448,73 +327,60 @@ const StaffPage = () => {
 
   useEffect(() => {
     if (!restaurantId) {
-      return
-    }
-
-    /*
-     * If valid cache exists, the data has already
-     * been rendered immediately through useState().
-     *
-     * No API request is necessary during the TTL.
-     */
-    const cachedStaff =
-      getStaffFromCache(
-        restaurantId,
-      )
-
-    if (cachedStaff) {
+      // setStaff([])   
+      // setLoading(false)
       return
     }
 
     let cancelled = false
 
-    const fetchStaff =
-      async () => {
-        try {
-          const response =
-            await axiosClient.get(
-              '/staff',
-            )
+    const fetchStaff = async () => {
+      setLoading(true)
+      setError(null)
 
-          if (cancelled) {
-            return
-          }
-
-          const staffData =
-            response.data
-              ?.staff || []
-
-          setStaff(
-            staffData,
+      try {
+        const response =
+          await axiosClient.get(
+            '/staff',
           )
 
-          saveStaffToCache(
-            restaurantId,
-            staffData,
-          )
-        } catch (err) {
-          if (cancelled) {
-            return
-          }
+        if (cancelled) {
+          return
+        }
 
-          console.error(
-            'Load staff error:',
-            err,
+        const staffData =
+          Array.isArray(
+            response.data?.staff,
           )
+            ? response.data.staff
+            : []
 
-          setError(
-            err?.message ||
-              err?.response?.data
-                ?.message ||
-              t.loadStaffError ||
-              'Unable to load staff.',
-          )
-        } finally {
-          if (!cancelled) {
-            setLoading(false)
-          }
+        setStaff(
+          staffData,
+        )
+      } catch (err) {
+        if (cancelled) {
+          return
+        }
+
+        console.error(
+          'Load staff error:',
+          err,
+        )
+
+        setError(
+          err?.message ||
+            err?.response?.data
+              ?.message ||
+            t.loadStaffError ||
+            'Unable to load staff.',
+        )
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
         }
       }
+    }
 
     fetchStaff()
 
@@ -617,20 +483,10 @@ const StaffPage = () => {
 
         if (createdStaff) {
           setStaff(
-            (current) => {
-              const updatedStaff =
-                [
-                  createdStaff,
-                  ...current,
-                ]
-
-              saveStaffToCache(
-                restaurantId,
-                updatedStaff,
-              )
-
-              return updatedStaff
-            },
+            (current) => [
+              createdStaff,
+              ...current,
+            ],
           )
         }
 
@@ -703,20 +559,11 @@ const StaffPage = () => {
         )
 
         setStaff(
-          (current) => {
-            const updatedStaff =
-              current.filter(
-                (member) =>
-                  member.id !== id,
-              )
-
-            saveStaffToCache(
-              restaurantId,
-              updatedStaff,
-            )
-
-            return updatedStaff
-          },
+          (current) =>
+            current.filter(
+              (member) =>
+                member.id !== id,
+            ),
         )
       } catch (err) {
         console.error(
@@ -757,9 +604,11 @@ const StaffPage = () => {
           )
 
         const permissions =
-          response.data
-            ?.permissions ||
-          []
+          Array.isArray(
+            response.data?.permissions,
+          )
+            ? response.data.permissions
+            : []
 
         const chosen = {}
 
@@ -917,26 +766,17 @@ const StaffPage = () => {
         )
 
         setStaff(
-          (current) => {
-            const updatedStaff =
-              current.map(
-                (member) =>
-                  member.id ===
-                  modal.staff.id
-                    ? {
-                        ...member,
-                        permissions,
-                      }
-                    : member,
-              )
-
-            saveStaffToCache(
-              restaurantId,
-              updatedStaff,
-            )
-
-            return updatedStaff
-          },
+          (current) =>
+            current.map(
+              (member) =>
+                member.id ===
+                modal.staff.id
+                  ? {
+                      ...member,
+                      permissions,
+                    }
+                  : member,
+            ),
         )
 
         closeModal()
@@ -969,8 +809,7 @@ const StaffPage = () => {
       () =>
         Object.values(
           modal.chosen,
-        ).filter(Boolean)
-          .length,
+        ).filter(Boolean).length,
       [modal.chosen],
     )
 
@@ -1123,14 +962,13 @@ const StaffPage = () => {
           {loading ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-               <p className='mt-4 text-sm text-slate-500 dark:text-slate-400'>
-                 {t.loading ||
-                'Loading...'}
-               </p>
-             
+
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+                {t.loading ||
+                  'Loading...'}
+              </p>
             </div>
-          ) : staff.length ===
-            0 ? (
+          ) : staff.length === 0 ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
               {t.noStaff ||
                 'No staff members yet.'}
@@ -1192,8 +1030,6 @@ const StaffPage = () => {
                           }
                           className="border-b border-slate-200 last:border-b-0 dark:border-slate-800"
                         >
-                          {/* Name */}
-
                           <td className="p-4 align-middle">
                             <div
                               className="max-w-[220px] truncate font-medium text-slate-900 dark:text-slate-100"
@@ -1206,8 +1042,6 @@ const StaffPage = () => {
                               }
                             </div>
                           </td>
-
-                          {/* Email */}
 
                           <td className="p-4 px-20 align-middle">
                             <div
@@ -1223,8 +1057,6 @@ const StaffPage = () => {
                             </div>
                           </td>
 
-                          {/* Role */}
-
                           <td className="whitespace-nowrap p-4 px-20 align-middle">
                             <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                               {
@@ -1232,8 +1064,6 @@ const StaffPage = () => {
                               }
                             </span>
                           </td>
-
-                          {/* Permissions */}
 
                           <td className="whitespace-nowrap p-4 px-20 align-middle">
                             <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
@@ -1250,8 +1080,6 @@ const StaffPage = () => {
                               }
                             </span>
                           </td>
-
-                          {/* Actions */}
 
                           <td className="min-w-[320px] p-4 px-20 align-middle">
                             <div className="flex items-center gap-3">
@@ -1323,9 +1151,6 @@ const StaffPage = () => {
               role="dialog"
               aria-modal="true"
             >
-
-              {/* Modal Header */}
-
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -1335,9 +1160,7 @@ const StaffPage = () => {
 
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     {
-                      modal
-                        .staff
-                        .name
+                      modal.staff.name
                     }
                   </p>
 
@@ -1366,8 +1189,6 @@ const StaffPage = () => {
                   ✕
                 </button>
               </div>
-
-              {/* Select / Unselect */}
 
               <div className="mb-6 flex flex-wrap gap-2">
                 <Button
@@ -1398,8 +1219,6 @@ const StaffPage = () => {
                     'Unselect all'}
                 </Button>
               </div>
-
-              {/* Permission Groups */}
 
               <div className="space-y-5">
                 {PERMISSION_GROUPS.map(
@@ -1481,8 +1300,6 @@ const StaffPage = () => {
                 )}
               </div>
 
-              {/* Modal Footer */}
-
               <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-800">
                 <Button
                   type="button"
@@ -1522,4 +1339,3 @@ const StaffPage = () => {
 }
 
 export default StaffPage
- 
