@@ -3,14 +3,24 @@ import { createSlice } from '@reduxjs/toolkit'
 import { clearRestaurantCaches } from '../utils/restaurantCache'
 
 const token = localStorage.getItem('restaurant_token')
-const user = localStorage.getItem('restaurant_user')
+const storedUser = localStorage.getItem('restaurant_user')
+
+let user = null
+
+if (storedUser) {
+  try {
+    user = JSON.parse(storedUser)
+  } catch {
+    localStorage.removeItem('restaurant_user')
+  }
+}
+
 const initialState = {
   token: token || null,
-  user: user ? JSON.parse(user) : null,
+  user,
   loading: false,
   error: null,
 }
-
 const authSlice = createSlice({
   name: 'auth',
   initialState,

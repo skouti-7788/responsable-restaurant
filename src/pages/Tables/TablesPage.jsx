@@ -273,11 +273,16 @@ const TablesPage = () => {
           return
         }
 
+
         setRestaurantCache(
           TABLES_CACHE_KEY,
           activeRestaurantId,
           Array.isArray(data)
-            ? data
+            ? data.map((table) => {
+                const safeTable = { ...table }
+                delete safeTable.qr_token
+                return safeTable
+              })
             : []
         )
 
