@@ -7,6 +7,7 @@ import ordersReducer from './orderSlice'
 import restaurantReducer from './restaurantSlice'
 import dashboardReducer from './dashboardSlice'
 import tablesReducer from './tableSlice'
+import staffReducer from './staffSlice'
 
 const store = configureStore({
   reducer: {
@@ -18,8 +19,7 @@ const store = configureStore({
     restaurant: restaurantReducer,
     dashboard: dashboardReducer,
     tables: tablesReducer,
-
-
+    staff: staffReducer,
   },
 })
 

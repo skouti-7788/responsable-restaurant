@@ -3,12 +3,29 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useSelector } from 'react-redux'
 
-import axiosClient from '../../api/axiosClient'
+import { useDispatch, useSelector } from 'react-redux'
+
+import {
+  getStaff,
+  createStaff,
+  deleteStaff,
+  getStaffPermissions,
+  updateStaffPermissions,
+} from '../../data/dataStaff'
+
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import translations from '../../i18n/translations'
+
+import {
+  setStaff,
+  setStaffLoading,
+  setStaffError,
+  addStaff,
+  removeStaff,
+  updateStaff,
+} from '../../store/staffSlice'
 
 // =====================================================
 // PERMISSIONS
@@ -250,6 +267,8 @@ const StaffPage = () => {
   // REDUX
   // ===================================================
 
+  const dispatch = useDispatch()
+
   const language = useSelector(
     (state) =>
       state.ui?.language || 'en',
@@ -258,6 +277,21 @@ const StaffPage = () => {
   const user = useSelector(
     (state) =>
       state.auth?.user,
+  )
+
+  const staff = useSelector(
+    (state) =>
+      state.staff?.staff || [],
+  )
+
+  const loading = useSelector(
+    (state) =>
+      state.staff?.loading || false,
+  )
+
+  const reduxError = useSelector(
+    (state) =>
+      state.staff?.error || '',
   )
 
   const restaurantId =
@@ -281,12 +315,6 @@ const StaffPage = () => {
   // ===================================================
   // STATE
   // ===================================================
-
-  const [staff, setStaff] =
-    useState([])
-
-  const [loading, setLoading] =
-    useState(true)
 
   const [creating, setCreating] =
     useState(false)
@@ -325,73 +353,130 @@ const StaffPage = () => {
   // LOAD STAFF FROM API
   // ===================================================
 
+  // useEffect(() => {
+  //   if (!restaurantId) {
+  //     dispatch(setStaff([]))
+  //     dispatch(setStaffLoading(false))
+  //     dispatch(setStaffError(''))
+  //     return
+  //   }
+
+  //   let cancelled = false
+
+  //   const fetchStaff = async () => {
+  //     dispatch(setStaffLoading(true))
+  //     dispatch(setStaffError(''))
+  //     setError(null)
+
+  //     try {
+  //       const response =
+  //         await getStaff()
+  //          console.log('STAFF: API response', response)
+
+  //       if (cancelled) {
+  //     console.log('STAFF: request cancelled')
+
+  //         return
+  //       }
+
+  //       const staffData =
+  //         Array.isArray(
+  //           response.data?.staff,
+  //         )
+  //           ? response.data.staff
+  //           : []
+
+  //       dispatch(
+  //         setStaff(staffData),
+  //       )
+  //     } catch (err) {
+  //       if (cancelled) {
+  //         return
+  //       }
+
+  //       console.error(
+  //         'Load staff error:',
+  //         err,
+  //       )
+
+  //       const message =
+  //         err?.message ||
+  //         err?.response?.data
+  //           ?.message ||
+  //         t.loadStaffError ||
+  //         'Unable to load staff.'
+
+  //       dispatch(
+  //         setStaffError(message),
+  //       )
+
+  //       setError(message)
+  //     } finally {
+  //       if (!cancelled) {
+  //         dispatch(
+  //           setStaffLoading(false),
+  //         )
+  //       }
+  //     }
+  //   }
+
+  //   fetchStaff()
+
+  //   return () => {
+  //     cancelled = true
+  //   }
+  // }, [
+  //   restaurantId,
+  //   t.loadStaffError,
+  //   dispatch,
+  // ])
   useEffect(() => {
     if (!restaurantId) {
-      // setStaff([])   
-      // setLoading(false)
+      dispatch(setStaff([]))
+      dispatch(setStaffLoading(false))
+      dispatch(setStaffError(''))
       return
     }
 
-    let cancelled = false
-
     const fetchStaff = async () => {
-      setLoading(true)
+      dispatch(setStaffLoading(true))
+      dispatch(setStaffError(''))
       setError(null)
 
       try {
-        const response =
-          await axiosClient.get(
-            '/staff',
-          )
-
-        if (cancelled) {
-          return
-        }
+        const response = await getStaff()
 
         const staffData =
-          Array.isArray(
-            response.data?.staff,
-          )
+          Array.isArray(response.data?.staff)
             ? response.data.staff
             : []
 
-        setStaff(
-          staffData,
-        )
+        dispatch(setStaff(staffData))
       } catch (err) {
-        if (cancelled) {
-          return
-        }
-
         console.error(
           'Load staff error:',
           err,
         )
 
-        setError(
+        const message =
           err?.message ||
-            err?.response?.data
-              ?.message ||
-            t.loadStaffError ||
-            'Unable to load staff.',
-        )
+          err?.response?.data?.message ||
+          t.loadStaffError ||
+          'Unable to load staff.'
+
+        dispatch(setStaffError(message))
+        setError(message)
       } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+        dispatch(setStaffLoading(false))
       }
     }
 
     fetchStaff()
-
-    return () => {
-      cancelled = true
-    }
   }, [
     restaurantId,
     t.loadStaffError,
+    dispatch,
   ])
-
   // ===================================================
   // FORM CHANGE
   // ===================================================
@@ -421,6 +506,7 @@ const StaffPage = () => {
       e.preventDefault()
 
       setError(null)
+      dispatch(setStaffError(''))
 
       const name =
         form.name.trim()
@@ -469,24 +555,18 @@ const StaffPage = () => {
 
       try {
         const response =
-          await axiosClient.post(
-            '/staff',
-            {
-              name,
-              email,
-              password,
-            },
-          )
+          await createStaff({
+            name,
+            email,
+            password,
+          })
 
         const createdStaff =
           response.data?.staff
 
         if (createdStaff) {
-          setStaff(
-            (current) => [
-              createdStaff,
-              ...current,
-            ],
+          dispatch(
+            addStaff(createdStaff),
           )
         }
 
@@ -554,16 +634,10 @@ const StaffPage = () => {
       setError(null)
 
       try {
-        await axiosClient.delete(
-          `/staff/${id}`,
-        )
+        await deleteStaff(id)
 
-        setStaff(
-          (current) =>
-            current.filter(
-              (member) =>
-                member.id !== id,
-            ),
+        dispatch(
+          removeStaff(id),
         )
       } catch (err) {
         console.error(
@@ -599,8 +673,8 @@ const StaffPage = () => {
 
       try {
         const response =
-          await axiosClient.get(
-            `/staff/${staffMember.id}/permissions`,
+          await getStaffPermissions(
+            staffMember.id,
           )
 
         const permissions =
@@ -758,25 +832,16 @@ const StaffPage = () => {
         )
 
       try {
-        await axiosClient.put(
-          `/staff/${modal.staff.id}/permissions`,
-          {
-            permissions,
-          },
+        await updateStaffPermissions(
+          modal.staff.id,
+          permissions,
         )
 
-        setStaff(
-          (current) =>
-            current.map(
-              (member) =>
-                member.id ===
-                modal.staff.id
-                  ? {
-                      ...member,
-                      permissions,
-                    }
-                  : member,
-            ),
+        dispatch(
+          updateStaff({
+            ...modal.staff,
+            permissions,
+          }),
         )
 
         closeModal()
@@ -847,9 +912,9 @@ const StaffPage = () => {
             ERROR
         ================================================= */}
 
-        {error && (
+        {(error || reduxError) && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-            {error}
+            {error || reduxError}
           </div>
         )}
 
@@ -1339,3 +1404,4 @@ const StaffPage = () => {
 }
 
 export default StaffPage
+ 
