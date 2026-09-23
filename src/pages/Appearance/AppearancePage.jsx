@@ -1247,7 +1247,7 @@ const AppearancePage = () => {
 
           <div>
 
-            <div className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
+            <div className="sticky top-6  rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
 
               <div className="mb-4 flex items-center justify-between gap-3">
 
