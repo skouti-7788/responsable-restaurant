@@ -67,7 +67,7 @@ const PUBLIC_MENU_ORIGIN = (
 const IMAGE_LIMITS = {
   logo: 2 * 1024 * 1024,
   header_image: 4 * 1024 * 1024,
-  background_image: 4 * 1024 * 1024,
+  // background_image: 4 * 1024 * 1024,
 }
 
 // =========================================================
@@ -273,7 +273,7 @@ const AppearancePage = () => {
     useState({
       logo: null,
       header_image: null,
-      background_image: null,
+      // background_image: null,
     })
 
   // =======================================================
@@ -284,7 +284,7 @@ const AppearancePage = () => {
     useState({
       logo: false,
       header_image: false,
-      background_image: false,
+      // background_image: false,
     })
 
   // =======================================================
@@ -768,8 +768,8 @@ const AppearancePage = () => {
           header_imageFile:
             imageFiles.header_image,
 
-          background_imageFile:
-            imageFiles.background_image,
+          // background_imageFile:
+          //   imageFiles.background_image,
 
           remove_logo:
             removeFlags.logo,
@@ -777,8 +777,8 @@ const AppearancePage = () => {
           remove_header_image:
             removeFlags.header_image,
 
-          remove_background_image:
-            removeFlags.background_image,
+          // remove_background_image:
+          //   removeFlags.background_image,
         }
 
         const updatedAppearance =
@@ -798,13 +798,13 @@ const AppearancePage = () => {
         setImageFiles({
           logo: null,
           header_image: null,
-          background_image: null,
+          // background_image: null,
         })
 
         setRemoveFlags({
           logo: false,
           header_image: false,
-          background_image: false,
+          // background_image: false,
         })
 
         setStatus({
@@ -1037,7 +1037,7 @@ const AppearancePage = () => {
                   }
                 />
 
-                <ImageUploader
+                {/* <ImageUploader
                   label={
                     t.backgroundImage ||
                     'Background image'
@@ -1077,7 +1077,7 @@ const AppearancePage = () => {
                     t.remove ||
                     'Remove'
                   }
-                />
+                /> */}
 
               </div>
 
@@ -1109,8 +1109,8 @@ const AppearancePage = () => {
                     'secondary_color',
                     t.secondaryColor ||
                       'Secondary color',
-                  ],
-
+                  ], 
+                  
                   [
                     'text_color',
                     t.textColor ||
