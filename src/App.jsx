@@ -17,6 +17,7 @@ import AppearancePage from './pages/Appearance/AppearancePage'
 import StaffPage from './pages/staff/StaffPage'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import PageHome  from './pages/home/pageHome'
 function App() {
     const {
         language,
@@ -39,8 +40,10 @@ function App() {
     
     <BrowserRouter>
       <Routes>
+        <Route path="/home" element={<PageHome/>}/>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        {/* <Route path="/" element={<PageHome/>}/> */}
 
         <Route
           path="/"

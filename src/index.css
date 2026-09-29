@@ -1,12 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #FF9800;
+  /* --color-brand-dark: #ea580c; */
+
+  --color-sand: #FFF9ED;
+  --color-ink: #12343C;
+  --color-muted: #69777B;
+  --color-line: #EEE6D9;
+}
 
 :root {
-  color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #020617;
-  color: #e2e8f0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  color: #292018;
+  background: #fff;
+  color-scheme: light;
 }
 
 html {
@@ -16,8 +26,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #020617;
-  color: #e2e8f0;
+  background: #fff;
+  color: #292018;
 }
 
 #root {
@@ -32,17 +42,23 @@ select {
 }
 
 ::selection {
-  background: #0ea5e9;
-  color: #ffffff;
+  background: #fed7aa;
+  color: #292018;
 }
 
 .bg-panel {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #38bdf8, #818cf8, #a855f7);
+  background: linear-gradient(
+    90deg,
+    #f97316,
+    #fbbf24,
+    #ea580c
+  );
+
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
