@@ -1,6 +1,4 @@
-import { BrowserRouter, Routes, Route, 
-  
- } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import SidebarLayout from './components/layout/SidebarLayout'
 import LoginPage from './pages/auth/LoginPage'
@@ -17,25 +15,17 @@ import AppearancePage from './pages/Appearance/AppearancePage'
 import StaffPage from './pages/staff/StaffPage'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import PageHome  from './pages/home/pageHome'
+import PageHome from './pages/home/pageHome'
+
 function App() {
-    const {
-        language,
-        // theme,
-      } = useSelector(
-        (state) => state.ui
-      )
-  
-     
-   useEffect(() => {
-      document.documentElement.dir =
-        language === 'ar'
-          ? 'rtl'
-          : 'ltr'
-  
-      document.documentElement.lang =
-        language
-    }, [language])
+  const { language, theme } = useSelector((state) => state.ui)
+
+  useEffect(() => {
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.lang = language
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [language, theme])
+
   return (
     
     <BrowserRouter>

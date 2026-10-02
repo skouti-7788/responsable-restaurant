@@ -48,6 +48,7 @@ const authSlice = createSlice({
       localStorage.removeItem('restaurant_user')
       clearRestaurantCaches()
       localStorage.removeItem('restaurant_current_cache')
+      // localStorage.removeItem('restaurant_theme')
     },
   },
 })

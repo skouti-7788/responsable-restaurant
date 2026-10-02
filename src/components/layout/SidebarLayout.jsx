@@ -20,7 +20,7 @@ const SidebarLayout = () => {
   }, [language])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-sand dark:bg-[#0f1d22]">
 
       <Sidebar />
 

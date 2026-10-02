@@ -796,7 +796,7 @@ const CategoriesPage = () => {
   // =====================================================
 
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-slate-100">
 
       {/* =================================================
           HEADER
@@ -806,11 +806,11 @@ const CategoriesPage = () => {
 
         <div>
 
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-semibold text-ink dark:text-white">
             {t.categories}
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted dark:text-slate-400">
             {t.categoriesDescription ||
               'Create categories and organize your menu.'}
           </p>
@@ -831,7 +831,7 @@ const CategoriesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
           >
 
             <RefreshCw
@@ -899,11 +899,11 @@ const CategoriesPage = () => {
 
       {loading ? (
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-line bg-white p-10 text-center dark:border-[#234b58] dark:bg-[#18353d]">
 
-          <div className="mx-auto  h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto  h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
 
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-4 text-sm text-muted dark:text-slate-400">
 
             {t.loading ||
               'Loading...'}
@@ -918,9 +918,9 @@ const CategoriesPage = () => {
             EMPTY
         ================================================= */
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-line bg-white p-12 text-center shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-brand/10 text-brand-dark">
 
             <Plus
               size={30}
@@ -952,7 +952,7 @@ const CategoriesPage = () => {
                 null
               )
             }
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
 
             <Plus
@@ -971,13 +971,13 @@ const CategoriesPage = () => {
             TABLE
         ================================================= */
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-[2rem] border border-line bg-white shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
 
           <div className="overflow-x-auto">
 
-            <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+            <table className="min-w-full divide-y divide-line text-sm dark:divide-[#234b58]">
 
-              <thead className="bg-slate-50 text-slate-500 dark:bg-slate-950/80 dark:text-slate-400">
+              <thead className="bg-sand text-muted dark:bg-[#132a30] dark:text-[#dfe7eb]">
 
                 <tr>
 
@@ -998,7 +998,7 @@ const CategoriesPage = () => {
               </thead>
 
 
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-line dark:divide-[#234b58]">
 
                 {categories.map(
                   (category) => (
@@ -1007,7 +1007,7 @@ const CategoriesPage = () => {
                       key={
                         category.id
                       }
-                      className="bg-white transition-colors hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/50"
+                      className="bg-white transition-colors hover:bg-sand dark:bg-[#18353d] dark:hover:bg-[#234b58]/60"
                     >
 
                       {/* NAME */}
@@ -1048,7 +1048,7 @@ const CategoriesPage = () => {
                               deletingId ===
                               category.id
                             }
-                            className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                            className="inline-flex items-center gap-2 rounded-2xl bg-sand px-3 py-2 text-sm text-ink transition hover:bg-[#f1e7d7] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#234b58] dark:text-white dark:hover:bg-[#2d5c69]"
                           >
 
                             <Pencil

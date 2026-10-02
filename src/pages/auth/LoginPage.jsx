@@ -36,21 +36,21 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 sm:px-6 lg:px-8 bg-white ">
-      <div className="mx-auto max-w-xl rounded-[2rem]   bg-white p-10 shadow-[20px_20px_40px_rgba(0,0,0,0.15)]">
+    <div className="min-h-screen bg-sand px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-10 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line">
         <div className="mb-8 space-y-3 text-center">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-400/80">Restaurant manager</p>
-          <h1 className="text-3xl font-semibold text-slate-600 ">Login</h1>
-          {/* <p className="text-sm text-slate-400">Secure access to your Restaurant SaaS dashboard.</p> */}
+          <p className="text-sm uppercase tracking-[0.35em] text-brand">Restaurant manager</p>
+          <h1 className="text-3xl font-semibold text-ink">Login</h1>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <Input
-             label='Email'
+            label='Email'
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="manager@example.com"
             type="email"
+            
           />
           <Input
             label= 'Password'
@@ -63,13 +63,13 @@ const LoginPage = () => {
      
 
         <div className="col-span-full flex flex-col gap-3 pt-2">
-          {error && <p className="text-sm text-rose-400">{error}</p>}
+          {error && <p className="text-sm text-rose-500">{error}</p>}
           <Button type="submit" disabled={loading}>
-            {loading ? 'Signing in...' :  'Login'}
+            {loading ? 'Signing in...' : 'Login'}
           </Button>
-          <p className="mt-6 text-center text-sm text-slate-400">
-            <Link to="/register" className="text-sky-400 hover:text-sky-300">
-             Already have an account? Login 
+          <p className="mt-6 text-center text-sm text-muted">
+            <Link to="/register" className="font-medium text-brand hover:text-brand-dark">
+              Already have an account? Login
             </Link>
           </p>
         </div>

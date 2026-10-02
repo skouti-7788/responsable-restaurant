@@ -808,7 +808,7 @@ const MealsPage = () => {
         return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
       }
 
-      return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+      return 'bg-brand/10 text-brand-dark dark:text-[#ffb347]'
     }, [])
 
   // =====================================================
@@ -897,14 +897,14 @@ const MealsPage = () => {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
 
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="rounded-full bg-sand px-3 py-1 text-xs font-medium text-ink dark:bg-[#18353d] dark:text-[#f8fafc]">
                     {category?.name ||
                       t.selectCategory ||
                       'Category'}
                   </span>
 
                   {meal.featured && (
-                    <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
+                    <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark dark:text-[#ffb347]">
                       {t.featured ||
                         'Featured'}
                     </span>
@@ -1069,19 +1069,19 @@ const MealsPage = () => {
   // =====================================================
  
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-slate-100">
 
      
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold text-ink dark:text-white">
             {t.meals ||
               'Meals'}
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted dark:text-slate-400">
             {t.mealsDescription ||
               'Manage your restaurant meals.'}
           </p>
@@ -1098,7 +1098,7 @@ const MealsPage = () => {
             disabled={
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
           >
             <RefreshCw
               size={17}
@@ -1170,7 +1170,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
             <Plus size={18} />
 

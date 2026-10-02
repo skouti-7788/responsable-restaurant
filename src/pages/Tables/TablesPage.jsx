@@ -1457,7 +1457,7 @@ const TablesPage = () => {
   // =====================================================
 
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-slate-100">
 
       {/* HEADER */}
 
@@ -1465,11 +1465,11 @@ const TablesPage = () => {
 
         <div>
 
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold text-ink dark:text-white">
             {t.tables}
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted dark:text-slate-400">
             {t.tablesDescription}
           </p>
 
@@ -1485,7 +1485,7 @@ const TablesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
           >
 
             <RefreshCw
@@ -1512,7 +1512,7 @@ const TablesPage = () => {
                     e.target.value
                   )
                 }
-                className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+                className="h-11 rounded-2xl border border-line bg-white px-2 pr-4 text-sm font-medium text-ink outline-none transition focus:border-brand dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:focus:border-brand"
               > 
                 <option value="all">
                   {t.statusAll}
@@ -1562,7 +1562,7 @@ const TablesPage = () => {
           <button
             type="button"
             onClick={handleOpenBulkAdd}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
 
             <Plus size={18} />
@@ -1593,11 +1593,11 @@ const TablesPage = () => {
 
       {loading ? (
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-line bg-white p-10 text-center dark:border-[#234b58] dark:bg-[#18353d]">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
 
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-4 text-sm text-muted dark:text-slate-400">
             {t.loading || 'Loading...'}
           </p>
 
@@ -1605,9 +1605,9 @@ const TablesPage = () => {
 
       ) : tables.length === 0 ? (
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-line bg-white p-12 text-center shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-brand/10 text-brand-dark">
 
             <QrCode size={30} />
 
@@ -1624,7 +1624,7 @@ const TablesPage = () => {
           <button
             type="button"
             onClick={handleOpenBulkAdd}
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-600"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
 
             <Plus size={18} />

@@ -1,8 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+const savedTheme = localStorage.getItem('restaurant_theme') || 'light'
+
 const initialState = {
   language: localStorage.getItem('restaurant_language') || 'en',
-  theme: localStorage.getItem('restaurant_theme') || 'light',
+  theme: savedTheme,
   loading: false,
   error: null,
 }
@@ -30,8 +32,7 @@ const uiSlice = createSlice({
     },
 
     toggleTheme(state) {
-      const newTheme =
-        state.theme === 'dark' ? 'light' : 'dark'
+      const newTheme = state.theme === 'dark' ? 'light' : 'dark'
 
       state.theme = newTheme
 

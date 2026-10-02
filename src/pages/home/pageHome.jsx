@@ -22,10 +22,10 @@ const MINI = [
 ];
 
 const SOLUTIONS = [
-  { icon: Smartphone, title: "Menu Online", img: "menu.png",
-    text: "A beautiful digital menu where customers can discover your meals and place orders directly from their phones." },
+  { icon: Smartphone, title: "Menu Online", img: "menu3.png",
+    text: "A beautiful digital menu where customers can discover your meals, explore your dishes, check prices, view photos, customize their orders, and place orders directly from their phones. Make your restaurant more modern, accessible, and convenient with a simple digital experience designed for both customers and restaurant staff." },
   { icon: Monitor, title: "Restaurant Dashboard", img: "/images/dashboard-preview.png",
-    text: "Manage your meals, categories, tables, QR codes and customer orders from one simple dashboard." },
+    text: "Manage your restaurant from one powerful and easy-to-use dashboard. Create and organize meals and categories, manage tables and QR codes, track customer orders in real time, monitor restaurant activity, customize your restaurant's appearance, and control staff access and permissions all in one place. Simplify daily operations, improve order management, and deliver a seamless digital dining experience" },
 ];
 
 const STEPS = [
@@ -135,15 +135,15 @@ function PageHome() {
       {/* HERO */}
       <section id="home" className="relative overflow-hidden bg-gradient-to-br from-white via-sand to-[#FFF1D6] pb-16 pt-32 lg:pb-20 lg:pt-36">
         <div className="absolute inset-y-0 right-0 hidden w-[42%] lg:block">
-          <img src="/food-photo.webp" alt="" className="h-full w-full object-cover" />
+          <img src="stock-photo-dessert.webp" alt="" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-sand via-sand/70 to-transparent" />
         </div>
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div className="max-w-xl">
-            <span className="inline-flex rounded-full border border-[#FBD9A0] bg-[#FFF8EC] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand">
+            {/* <span className="inline-flex rounded-full border border-[#FBD9A0] bg-[#FFF8EC] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-brand">
               The smart menu solution
-            </span>
+            </span> */}
             <h1 className="mt-6 text-5xl font-extrabold leading-[1.05] tracking-tight lg:text-[56px]">
               Digital Menu for <span className="text-brand">Modern</span> Restaurants
             </h1>
@@ -180,12 +180,12 @@ function PageHome() {
 
           {/* VISUAL */}
           <div className="relative mx-auto h-[500px] w-full max-w-[460px]">
-            <div className="absolute left-[8%] top-[6%] h-[380px] w-[240px] rotate-[-7deg] rounded-[2rem] bg-gradient-to-br from-[#FFD66B] to-[#FFB347] opacity-80" />
+            <div className="absolute left-[16%] top-[8%] h-[360px] w-[207px] rotate-[-7deg] rounded-[2rem] bg-gradient-to-br from-[#FFD66B] to-[#FFB347] opacity-80" />
 
-            <div className="absolute left-[14%] top-0 z-20 w-[250px] rounded-[38px] border-[7px] border-[#11191B] bg-[#11191B] shadow-2xl shadow-black/30">
-              <div className="overflow-hidden rounded-[30px] bg-white">
-                <img src="/images/menu-preview.png" alt="Menu Online mobile app"
-                  className="h-[440px] w-full object-cover object-top" />
+            <div className="absolute left-[-38%] top-[-25px]   z-20 w-[740px]  shadow-black/30">
+              <div className="overflow-hidden rounded-[30px]  ">
+                <img src="menu.png" alt="Menu Online mobile app"
+                  className="h-[490px] w-full    object-top" />
               </div>
             </div>
 
@@ -208,29 +208,42 @@ function PageHome() {
 
       {/* OUR SOLUTION */}
       <section id="platform" className="bg-white py-20">
-        <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 lg:grid-cols-[0.7fr_1.6fr] lg:px-8">
+        <div className="mx-auto   max-w-7xl items-start  px-6   lg:px-8">
           <div>
             <Eyebrow>Our solution</Eyebrow>
             <h2 className="mt-3 text-4xl font-bold leading-tight">Everything Your Restaurant Needs</h2>
-            <p className="mt-5 max-w-sm text-[15px] leading-7 text-muted">
+            <p className="mt-2 text-[15px] leading-7 text-muted">
               Give your customers a modern digital experience while keeping full control of your restaurant.
             </p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="mt-10 flex flex-col gap-6">
             {SOLUTIONS.map(({ icon: Icon, title, img, text }) => (
-              <article key={title} className="overflow-hidden rounded-2xl border border-line bg-[#FFFDF9]">
-                <div className="h-44 overflow-hidden bg-sand">
-                  <img src={img} alt={title} className="h-full w-full object-cover object-top" />
+              <article
+                key={title}
+                className="grid grid-cols-1 items-center gap-80 overflow-hidden rounded-2xl  bg-white p-4 px-25  sm:grid-cols-[220px_1fr]"
+              >
+                {/* Image à gauche */}
+                <div className="h-150 w-[200%] overflow-hidden ">
+                  <img 
+                    src={img}
+                    alt={title}
+                    className="h-full w-full object-cover object-top"
+                  />
                 </div>
-                <div className="p-6">
-                  <h3 className="flex items-center gap-3 text-base font-bold">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
+
+                {/* Texte à droite */}
+                <div className="p-2">
+                  <h3 className="flex items-center gap-3 text-base font-bold text-ink">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
                       <Icon className="h-4 w-4" />
                     </span>
                     {title}
                   </h3>
-                  <p className="mt-3 text-sm leading-6 text-muted">{text}</p>
+
+                  <p className="mt-3 text-sm leading-6 text-muted">
+                    {text}
+                  </p>
                 </div>
               </article>
             ))}
@@ -350,7 +363,7 @@ function PageHome() {
               <h3 className="text-xs font-bold text-white">Get in Touch</h3>
               <ul className="mt-4 space-y-3 text-xs">
                 <li className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> info@menuonline.com</li>
-                <li className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Rabat, Morocco</li>
+                <li className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> Agadir, Morocco</li>
                 <li className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> +212 6 12 34 56 78</li>
               </ul>
             </div>

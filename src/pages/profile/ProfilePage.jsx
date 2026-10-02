@@ -462,13 +462,13 @@ const ProfilePage = () => {
   // ===================================================
 
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-slate-100">
 
       {/* =================================================
           PROFILE CARD
       ================================================= */}
 
-      <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="rounded-[2rem] border border-line bg-white p-6 shadow-card transition-colors dark:border-[#234b58] dark:bg-[#18353d]">
 
         {/* =================================================
             HEADER
@@ -477,11 +477,11 @@ const ProfilePage = () => {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            <h1 className="text-2xl font-semibold text-ink dark:text-white">
               {t.profile}
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted dark:text-slate-400">
               {t.manageRestaurantDetails}
             </p>
           </div>
@@ -508,7 +508,7 @@ const ProfilePage = () => {
               SAVE
           ================================================= */}
 
-          <div className="col-span-full flex justify-end border-t border-slate-200 pt-5 dark:border-slate-800">
+          <div className="col-span-full flex justify-end border-t border-line pt-5 dark:border-[#234b58]">
 
             <Button type="submit">
               {t.saveChanges}
