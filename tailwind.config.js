@@ -20,14 +20,16 @@
             "sans-serif",
           ],
         },
-        // colors: {
-        //   brand: "#FF9800",
-        //   ink: "#12343C",
-        //   sand: "#FFF9ED",
-        //   line: "#EEE6D9",
-        //   muted: "#69777B",
-        
-        // },
+        colors: {
+          brand: 'var(--color-brand)',
+          // 'brand-dark': 'var(--color-brand-dark)',
+          sand: 'var(--color-sand)',
+          ink: 'var(--color-ink)',
+          muted: 'var(--color-muted)',
+          line: 'var(--color-line)',
+          gray: 'var(--color-gray)',
+          
+        },
       },
   
     },

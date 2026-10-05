@@ -487,27 +487,7 @@ const TablesPage = () => {
           // =================================================
           // DEBUG
           // =================================================
-
-          // console.log(
-          //   'Restaurant:',
-          //   restaurant
-          // )
-
-          // console.log(
-          //   'Restaurant ID:',
-          //   id
-          // )
-
-          // console.log(
-          //   'Restaurant Slug:',
-          //   slug
-          // )
-
-          // console.log(
-          //   'Tables:',
-          //   normalizedTables
-          // )
-
+ 
         } catch (err) {
 
           console.error(
@@ -903,179 +883,7 @@ const TablesPage = () => {
 
     }
 
-
-  // =====================================================
-  // EDIT
-  // =====================================================
-
-  // const handleEdit =
-  //   (table) => {
-
-  //     setEditing(table)
-
-
-  //     setForm({
-  //       number:
-  //         table.number ||
-  //         '',
-
-  //       name:
-  //         table.name ||
-  //         '',
-
-  //       status:
-  //         table.status ||
-  //         'available',
-  //     })
-
-
-  //     setError('')
-  //     setOpen(true)
-
-  //   }
-
-
-  // =====================================================
-  // SAVE EDIT
-  // =====================================================
-
-  // const handleSave =
-  //   async () => {
-
-  //     if (!restaurantId) {
-
-  //       setError(
-  //         t.restaurantNotFound ||
-  //         'Restaurant not found.'
-  //       )
-
-  //       return
-
-  //     }
-
-
-  //     if (!form.number) {
-
-  //       setError(
-  //         t.tableNumberRequired ||
-  //         'Table number is required.'
-  //       )
-
-  //       return
-
-  //     }
-
-
-  //     if (!editing?.id) {
-
-  //       setError(
-  //         'Table not found.'
-  //       )
-
-  //       return
-
-  //     }
-
-
-  //     setSaving(true)
-  //     setError('')
-
-
-  //     try {
-
-  //       const payload = {
-
-  //         number:
-  //           Number(form.number),
-
-  //         name:
-  //           form.name ||
-  //           `${t.table || 'Table'} ${form.number}`,
-
-  //         status:
-  //           form.status,
-
-  //       }
-
-
-  //       const response =
-  //         await updateTable(
-  //           restaurantId,
-  //           editing.id,
-  //           payload
-  //         )
-
-
-  //       const updatedTable =
-  //         response?.data?.table ||
-  //         response?.data?.data ||
-  //         response?.data
-
-
-  //       setTables(
-  //         (current) => {
-
-  //           const updated =
-  //             current.map(
-  //               (table) =>
-  //                 table.id ===
-  //                 editing.id
-  //                   ? updatedTable
-  //                   : table
-  //             )
-
-
-  //           tablesRef.current =
-  //             updated
-
-
-  //           saveTablesToCache(
-  //             updated,
-  //             restaurantId
-  //           )
-
-
-  //           return updated
-
-  //         }
-  //       )
-
-
-  //       setOpen(false)
-  //       setEditing(null)
-
-
-  //       setForm({
-  //         number: '',
-  //         name: '',
-  //         status: 'available',
-  //       })
-
-
-  //     } catch (err) {
-
-  //       console.error(
-  //         'Save table error:',
-  //         err
-  //       )
-
-
-  //       setError(
-  //         err?.response?.data?.message ||
-  //         err?.message ||
-  //         t.saveTableError ||
-  //         'Failed to save table.'
-  //       )
-
-
-  //     } finally {
-
-  //       setSaving(false)
-
-  //     }
-
-  //   }
-
+  
 
   // =====================================================
   // MENU URL
@@ -1485,7 +1293,7 @@ const TablesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:hover:bg-[#234b58]"
           >
 
             <RefreshCw
@@ -1512,7 +1320,7 @@ const TablesPage = () => {
                     e.target.value
                   )
                 }
-                className="h-11 rounded-2xl border border-line bg-white px-2 pr-4 text-sm font-medium text-ink outline-none transition focus:border-brand dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:focus:border-brand"
+                className="h-11 rounded-2xl border border-line bg-white px-2 pr-4 text-sm font-medium text-ink outline-none transition focus:border-brand dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:focus:border-brand"
               > 
                 <option value="all">
                   {t.statusAll}
@@ -1593,7 +1401,7 @@ const TablesPage = () => {
 
       {loading ? (
 
-        <div className="rounded-[2rem] border border-line bg-white p-10 text-center dark:border-[#234b58] dark:bg-[#18353d]">
+        <div className="rounded-[2rem] border border-line bg-white p-10 text-center dark:border-[#234b58] dark:bg-gray">
 
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
 
@@ -1605,7 +1413,7 @@ const TablesPage = () => {
 
       ) : tables.length === 0 ? (
 
-        <div className="rounded-[2rem] border border-line bg-white p-12 text-center shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
+        <div className="rounded-[2rem] border border-line bg-white p-12 text-center shadow-card dark:border-[#234b58] dark:bg-gray">
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-brand/10 text-brand-dark">
 
@@ -1644,7 +1452,7 @@ const TablesPage = () => {
 
               <div
                 key={table.id}
-                className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+                className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
               >
 
                 <div className="flex items-start justify-between gap-3">
@@ -1661,13 +1469,7 @@ const TablesPage = () => {
 
                     <div className="min-w-0">
 
-                      {/* <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-
-                        {table.name ||
-                          `${t.table} ${table.number}`}
-
-                      </h2> */}
-
+                      
                       <p className="text-xs text-slate-500 dark:text-slate-400">
 
                         {t.tableNumber}: {table.number}

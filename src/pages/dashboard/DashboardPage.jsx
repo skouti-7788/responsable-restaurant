@@ -1,4 +1,4 @@
-import {
+  import {
   useCallback,
   useEffect,
   useMemo,
@@ -180,7 +180,7 @@ const DashboardPage = () => {
       icon: Layers,
 
       color:
-        'bg-[#fff1d9] text-brand dark:bg-[#18353d] dark:text-[#ffb347]',
+        'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
 
     {
@@ -195,7 +195,7 @@ const DashboardPage = () => {
       icon: BarChart2,
 
       color:
-        'bg-[#f9eadf] text-ink dark:bg-[#18353d] dark:text-[#f3d7b2]',
+        'bg-sand text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]',
     },
 
     {
@@ -210,7 +210,7 @@ const DashboardPage = () => {
       icon: ShoppingBag,
 
       color:
-        'bg-[#fff7e9] text-[#b45309] dark:bg-[#18353d] dark:text-[#f5c35a]',
+        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
 
     {
@@ -225,7 +225,7 @@ const DashboardPage = () => {
       icon: Activity,
 
       color:
-        'bg-[#fdf3e7] text-brand-dark dark:bg-[#18353d] dark:text-[#ffb347]',
+        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
   ]
 
@@ -248,7 +248,7 @@ const DashboardPage = () => {
               'Dashboard'}
           </h1>
 
-          <p className="mt-1 text-sm text-muted dark:text-[#dfe7eb]">
+          <p className="mt-1 text-sm text-muted dark:text-[var(--color-sand)]">
             {t.dashboardDescription ||
               'Overview of your restaurant.'}
           </p>
@@ -262,7 +262,7 @@ const DashboardPage = () => {
             handleRefresh
           }
           disabled={loading}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[var(--surface-dark-card)]"
         >
           <RefreshCw
             size={17}
@@ -302,7 +302,7 @@ const DashboardPage = () => {
         0 &&
       dashboard.totalOrders ===
         0 ? (
-        <div className="rounded-[2rem] border border-line bg-white p-10 text-center shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
+        <div className="rounded-[2rem] border border-line bg-white p-10 text-center shadow-card dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)]">
 
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
 
@@ -371,7 +371,7 @@ const DashboardPage = () => {
                 POPULAR MEALS
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray ">
 
               <div className="flex items-center justify-between">
 
@@ -387,7 +387,7 @@ const DashboardPage = () => {
                   </h2>
                 </div>
 
-                <span className="rounded-2xl bg-sand px-3 py-2 text-sm text-ink dark:bg-[#234b58] dark:text-[#dfe7eb]">
+                <span className="rounded-2xl bg-sand px-3 py-2 text-sm text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]">
                   {t.live ||
                     'Live'}
                 </span>
@@ -467,7 +467,7 @@ const DashboardPage = () => {
                 RECENT ACTIVITY
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
 
               <div className="flex items-center justify-between">
 

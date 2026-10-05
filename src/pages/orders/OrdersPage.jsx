@@ -68,7 +68,7 @@ const statusClasses = {
     'bg-amber-500/15 text-amber-600 dark:text-amber-300',
 
   preparing:
-    'bg-brand/15 text-brand-dark dark:text-[#ffb347]',
+    'bg-brand/15 text-brand-dark dark:text-brand',
 
   ready:
     'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300',
@@ -1991,7 +1991,7 @@ const OrdersPage = () => {
                   e.target.value
                 )
               }
-              className="h-11 min-w-[130px] rounded-2xl border border-slate-200 bg-white px-4 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11 min-w-[130px] rounded-2xl border border-slate-200 bg-white px-4 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:focus:border-slate-500"
             >
 
               <option value="all">
@@ -2038,7 +2038,7 @@ const OrdersPage = () => {
               refreshing ||
               deletingAll
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:hover:bg-slate-800"
           >
 
             <RefreshCw
@@ -2097,7 +2097,7 @@ const OrdersPage = () => {
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-gray">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {statisticsLabels.total}
@@ -2110,7 +2110,7 @@ const OrdersPage = () => {
         </div>
 
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-gray">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {statisticsLabels.pending}
@@ -2123,7 +2123,7 @@ const OrdersPage = () => {
         </div>
 
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-gray">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {statisticsLabels.preparing}
@@ -2136,7 +2136,7 @@ const OrdersPage = () => {
         </div>
 
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-card dark:border-slate-800 dark:bg-gray">
 
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {statisticsLabels.completed}
@@ -2181,7 +2181,7 @@ const OrdersPage = () => {
                   ? 'Rechercher par commande, client, table ou article...'
                   : 'Search by order, customer, table or meal...'
             }
-            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
+            className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
           />
 
 
@@ -2253,12 +2253,12 @@ const OrdersPage = () => {
 
         {filteredOrders.length === 0 ? (
 
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-gray">
 
             {loading ? (
 
               <>
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
 
                 <p className="mt-4 text-slate-500 dark:text-slate-400">
                   {language === 'ar'
@@ -2364,7 +2364,7 @@ const OrdersPage = () => {
 
                 <div
                   key={order.id}
-                  className="w-full max-w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+                  className="w-full max-w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
                 >
 
                   <div className="w-full max-w-full">

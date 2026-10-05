@@ -102,7 +102,7 @@ const Sidebar = () => {
     }, [language])
   return (
     <aside
-      className="group fixed left-0 top-0 z-40 h-screen w-20 overflow-hidden border-r border-line bg-white px-3 py-6 text-ink transition-all duration-300 hover:w-64 dark:border-[#234b58] dark:bg-[#0f1d22] dark:text-white rtl:left-auto rtl:right-0 rtl:border-r-0 rtl:border-l"
+      className="group fixed left-0 top-0 z-40 h-screen w-20 overflow-hidden border-r border-line bg-white px-3 py-6 text-ink transition-all duration-300 hover:w-64 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)] dark:text-white rtl:left-auto rtl:right-0 rtl:border-r-0 rtl:border-l"
     >
       <div className="mb-8 flex h-12 items-center gap-3 px-2">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white shadow-lg shadow-orange-200 dark:shadow-orange-950/30">
@@ -114,7 +114,7 @@ const Sidebar = () => {
             Restaurant
           </p>
 
-          <p className="text-xs text-muted dark:text-[#dfe7eb]">
+          <p className="text-xs text-muted dark:text-[var(--color-sand)]">
             Manager
           </p>
         </div>
@@ -129,8 +129,8 @@ const Sidebar = () => {
             className={({ isActive }) =>
               `flex h-12 items-center gap-3 rounded-2xl px-3 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-sand text-brand dark:bg-[#18353d] dark:text-[#ffb347]'
-                  : 'text-ink hover:bg-sand hover:text-brand dark:text-[#dfe7eb] dark:hover:bg-[#18353d] dark:hover:text-white'
+                  ? 'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand'
+                  : 'text-ink hover:bg-sand hover:text-brand dark:text-[var(--color-sand)] dark:hover:bg-[var(--surface-dark-card)] dark:hover:text-white'
               }`
             }
           >

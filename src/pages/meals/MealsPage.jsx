@@ -808,7 +808,7 @@ const MealsPage = () => {
         return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
       }
 
-      return 'bg-brand/10 text-brand-dark dark:text-[#ffb347]'
+      return 'bg-brand/10 text-brand-dark dark:text-brand'
     }, [])
 
   // =====================================================
@@ -839,7 +839,7 @@ const MealsPage = () => {
           return (
             <div
               key={meal.id}
-              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
             >
               {/* IMAGE */}
 
@@ -897,14 +897,14 @@ const MealsPage = () => {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
 
-                  <span className="rounded-full bg-sand px-3 py-1 text-xs font-medium text-ink dark:bg-[#18353d] dark:text-[#f8fafc]">
+                  <span className="rounded-full bg-sand px-3 py-1 text-xs font-medium text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]">
                     {category?.name ||
                       t.selectCategory ||
                       'Category'}
                   </span>
 
                   {meal.featured && (
-                    <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark dark:text-[#ffb347]">
+                    <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark dark:text-brand">
                       {t.featured ||
                         'Featured'}
                     </span>
@@ -1098,7 +1098,7 @@ const MealsPage = () => {
             disabled={
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:hover:bg-[#234b58]"
           >
             <RefreshCw
               size={17}
@@ -1125,7 +1125,7 @@ const MealsPage = () => {
                   e.target.value
                 )
               }
-              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:focus:border-slate-500"
             > 
               <option value="all">
                 {t.statusAll}
@@ -1205,7 +1205,7 @@ const MealsPage = () => {
                t.sherchMealsPlaceholder ||
                 'Search meals...'
               }
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
             />
   
   
@@ -1261,7 +1261,7 @@ const MealsPage = () => {
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center  dark:border-slate-800 dark:bg-slate-900">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
 
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
             {t.loading ||

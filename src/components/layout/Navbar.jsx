@@ -95,7 +95,7 @@ const onLgout = () => {
   // =====================================================
 
   return (
-    <header className="flex items-center justify-between border-b border-line bg-white px-8 py-4 transition-colors lg:mx-10 dark:border-[#234b58] dark:bg-[#0f1d22]">
+    <header className="flex items-center justify-between border-b border-line bg-white px-8 py-4 transition-colors lg:mx-10 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)]">
 
       <div>
         <h1 className="text-xl font-semibold text-ink dark:text-white">
@@ -107,7 +107,7 @@ const onLgout = () => {
         <button
           type="button"
           onClick={handleNotificationClick}
-          className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[#234b58] dark:bg-[#18353d] dark:text-[#dfe7eb] dark:hover:bg-[#234b58]"
+          className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)] dark:hover:bg-[var(--surface-dark-card)]"
           aria-label="Notifications"
         >
           <Bell size={20} />
@@ -134,10 +134,10 @@ const onLgout = () => {
                   type="button"
                   onClick={() => dispatch(setLanguage(item.locale))}
                   className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
-                    language === item.locale
-                      ? 'bg-sand text-brand dark:bg-[#234b58] dark:text-[#ffb347]'
-                      : 'text-ink hover:bg-sand dark:text-[#dfe7eb] dark:hover:bg-[#234b58]'
-                  }`}
+                          language === item.locale
+                            ? 'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand'
+                            : 'text-ink hover:bg-sand dark:text-[var(--color-sand)] dark:hover:bg-[var(--surface-dark-card)]'
+                        }`}
                 >
 
                     <span>
@@ -168,7 +168,7 @@ const onLgout = () => {
         <button
           type="button"
           onClick={() => dispatch(toggleTheme())}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[#234b58] dark:bg-[#18353d] dark:text-[#dfe7eb] dark:hover:bg-[#234b58]"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)] dark:hover:bg-[var(--surface-dark-card)]"
           aria-label="Toggle theme"
         >
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -181,7 +181,7 @@ const onLgout = () => {
         <button
           type="button"
           onClick={onLgout}
-          className="inline-flex h-11 items-center justify-center rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
+          className="inline-flex h-11 items-center justify-center rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[var(--surface-dark-card)]"
         >
           {t.logout}
         </button>

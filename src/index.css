@@ -2,12 +2,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand: #ff9800;
-  --color-brand-dark: #e48654;
+  --color-brand: #FF9800;
+  --color-brand-dark: #ea580c;
   --color-sand: #fff9ed;
   --color-ink: #12343c;
   --color-muted: #69777b;
   --color-line: #eee6d9;
+  --color-gray : #18353d;
 }
 
 :root {

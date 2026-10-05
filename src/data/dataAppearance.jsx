@@ -15,9 +15,9 @@ export const DEFAULT_APPEARANCE = {
   logo: null,
   header_image: null,
   background_image: null,
-  primary_color: '#D97706',
-  secondary_color: '#92400E',
-  text_color: '#1F2937',
+  primary_color: '#FF9800',
+  secondary_color: '#ea580c',
+  text_color: '#12343C',
   background_color: '#FFFFFF',
   font_family: 'Inter',
 }

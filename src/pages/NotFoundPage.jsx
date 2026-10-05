@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 
 const NotFoundPage = () => (
-  <div className="flex min-h-screen items-center justify-center bg-sand px-4 py-16 text-center transition-colors dark:bg-[#0f1d22]">
+  <div className="flex min-h-screen items-center justify-center bg-sand px-4 py-16 text-center transition-colors dark:bg-[var(--surface-dark)]">
 
-    <div className="max-w-xl rounded-[2rem] border border-line bg-white p-10 shadow-card transition-colors dark:border-[#234b58] dark:bg-[#18353d]">
+    <div className="max-w-xl rounded-[2rem] border border-line bg-white p-10 shadow-card transition-colors dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)]">
 
-      <p className="text-sm uppercase tracking-[0.35em] text-brand-dark dark:text-[#ffb347]">
+      <p className="text-sm uppercase tracking-[0.35em] text-brand-dark dark:text-brand">
         404 error
       </p>
 

@@ -922,7 +922,7 @@ const StaffPage = () => {
             ADD STAFF
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {t.addStaff ||
@@ -1009,7 +1009,7 @@ const StaffPage = () => {
             STAFF LIST
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
 
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -1026,7 +1026,7 @@ const StaffPage = () => {
 
           {loading ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
 
               <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
                 {t.loading ||
