@@ -1211,19 +1211,7 @@ const AppearancePage = () => {
 
                 </h2>
 
-                {previewLoading && (
-                  <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-
-                    <div className="mx-auto h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-
-                    <span>
-                      {t.loading ||
-                        'Loading ...'}
-                    </span>
-
-                  </div>
-                )}
-
+                
               </div>
 
               <div className="relative">
@@ -1245,8 +1233,8 @@ const AppearancePage = () => {
 
                     <div className="flex flex-col items-center gap-3">
 
-                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-
+                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
+                      
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
 
                         {t.loadingPreview ||
