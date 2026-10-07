@@ -22,7 +22,7 @@
         },
         colors: {
           brand: 'var(--color-brand)',
-          // 'brand-dark': 'var(--color-brand-dark)',
+          'brand-dark': 'var(--color-brand-dark)',
           sand: 'var(--color-sand)',
           ink: 'var(--color-ink)',
           muted: 'var(--color-muted)',

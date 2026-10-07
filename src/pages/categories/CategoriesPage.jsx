@@ -831,7 +831,7 @@ const CategoriesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[#18353d] dark:text-white dark:hover:bg-[#234b58]"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
           >
 
             <RefreshCw
@@ -952,7 +952,7 @@ const CategoriesPage = () => {
                 null
               )
             }
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
 
             <Plus
@@ -1048,7 +1048,7 @@ const CategoriesPage = () => {
                               deletingId ===
                               category.id
                             }
-                            className="inline-flex items-center gap-2 rounded-2xl bg-sand px-3 py-2 text-sm text-ink transition hover:bg-[#f1e7d7] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#234b58] dark:text-white dark:hover:bg-[#2d5c69]"
+                            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sand px-3 py-2 text-sm text-ink transition hover:bg-[#f1e7d7] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
                           >
 
                             <Pencil
@@ -1073,7 +1073,7 @@ const CategoriesPage = () => {
                               deletingId ===
                               category.id
                             }
-                            className="inline-flex items-center gap-2 rounded-2xl bg-rose-500 px-3 py-2 text-sm text-white transition hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-rose-500 px-3 py-2 text-sm text-white transition hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"
                           >
 
                             <Trash2

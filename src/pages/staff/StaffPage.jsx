@@ -1248,7 +1248,7 @@ const StaffPage = () => {
                   disabled={
                     savingPermissions
                   }
-                  className="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+                  className="cursor-pointer rounded-xl px-3 py-2 text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
                   aria-label="Close"
                 >
                   ✕

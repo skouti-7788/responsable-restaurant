@@ -19,7 +19,7 @@ const NotFoundPage = () => (
 
       <Link
         to="/"
-        className="mt-8 inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
+        className="mt-8 inline-flex cursor-pointer items-center justify-center rounded-2xl bg-brand px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
       >
         Return home
       </Link>

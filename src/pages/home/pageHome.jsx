@@ -239,14 +239,14 @@ function PageHome() {
 
             <Link
               to="/login"
-              className="hidden rounded-xl border border-brand bg-white px-4 py-2.5 text-sm font-semibold transition hover:bg-sand sm:block sm:px-5"
+              className="hidden cursor-pointer rounded-xl border border-brand bg-white px-4 py-2.5 text-sm font-semibold transition hover:bg-sand sm:block sm:px-5"
             >
               Login
             </Link>
 
             <Link
               to="/register"
-              className="hidden rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
+              className="hidden cursor-pointer rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
             >
               Get Started
             </Link>
@@ -342,7 +342,7 @@ function PageHome() {
 
                   <Link
                     to="/register"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:w-auto"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:w-auto"
                   >
                     Get Started
                    </Link>
@@ -596,7 +596,7 @@ function PageHome() {
 
             <Link
               to="/register"
-              className="relative z-10 inline-flex w-fit items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5"
+              className="relative z-10 inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5"
             >
               Create Your Menu
               <ArrowRight className="h-4 w-4" />

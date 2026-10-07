@@ -1293,7 +1293,7 @@ const TablesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:hover:bg-[#234b58]"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
           >
 
             <RefreshCw
@@ -1370,7 +1370,7 @@ const TablesPage = () => {
           <button
             type="button"
             onClick={handleOpenBulkAdd}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
 
             <Plus size={18} />
@@ -1432,7 +1432,7 @@ const TablesPage = () => {
           <button
             type="button"
             onClick={handleOpenBulkAdd}
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
 
             <Plus size={18} />
@@ -1498,7 +1498,7 @@ const TablesPage = () => {
                   onClick={() =>
                     handleOpenQr(table)
                   }
-                  className="mt-6 w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800 dark:hover:bg-slate-900"
+                  className="mt-6 w-full cursor-pointer rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800 dark:hover:bg-slate-900"
                 >
 
                   <div className="flex items-center gap-3">
@@ -1546,7 +1546,7 @@ const TablesPage = () => {
                     onClick={() =>
                       handleDelete(table)
                     }
-                    className='disabled:cursor-not-allowed disabled:opacity-50 flex h-11 w-80 mx-auto items-center justify-center gap-2 rounded-2xl border border-rose-200  text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50'
+                    className='disabled:cursor-not-allowed disabled:opacity-50 flex h-11 w-80 cursor-pointer mx-auto items-center justify-center gap-2 rounded-2xl border border-rose-200  text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50'
                     aria-label={t.deleteTable}
                     disabled={deleting === table.id}
                    >
@@ -1593,7 +1593,7 @@ const TablesPage = () => {
                 onClick={() =>
                   setBulkOpen(false)
                 }
-                className="text-xl text-slate-400  mb-20 hover:text-slate-700 dark:hover:text-slate-200"
+                className="cursor-pointer text-xl text-slate-400  mb-20 hover:text-slate-700 dark:hover:text-slate-200"
                 aria-label={t.close}
               >
                 ✕
@@ -1647,7 +1647,7 @@ const TablesPage = () => {
                   setBulkOpen(false)
                 }
                 disabled={bulkSaving}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
 
                 {t.cancel}
@@ -1658,7 +1658,7 @@ const TablesPage = () => {
                 type="button"
                 disabled={bulkSaving}
                 onClick={handleBulkSave}
-                className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
                 {bulkSaving
@@ -1960,7 +1960,7 @@ const TablesPage = () => {
                     qrTable
                   )
                 }
-                className="flex-1 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
                 {t.downloadQRCode}
