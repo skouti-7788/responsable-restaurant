@@ -1,33 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import {
-  getCurrentRestaurantId,
-  getRestaurantCache,
-  setRestaurantCache,
-  clearRestaurantCachesById,
-} from '../utils/restaurantCache'
-
-const TABLES_CACHE_KEY = 'restaurant_tables_cache'
-
-const getCachedTables = () => {
-  const restaurantId = getCurrentRestaurantId()
-
-  if (!restaurantId) {
-    return []
-  }
-
-  return getRestaurantCache(TABLES_CACHE_KEY, restaurantId) ?? []
-}
-
 const initialState = {
-  tables: getCachedTables(),
-
-  restaurantId: getCurrentRestaurantId(),
-
+  tables: [],
+  restaurantId: null,
   restaurantSlug: null,
-
   loading: false,
-
   error: '',
 }
 
@@ -38,21 +15,9 @@ const tableSlice = createSlice({
 
   reducers: {
     setTables(state, action) {
-      state.tables = action.payload
-
-      const activeRestaurantId =
-        state.restaurantId ||
-        getCurrentRestaurantId()
-
-      if (!activeRestaurantId) {
-        return
-      }
-
-      setRestaurantCache(
-        TABLES_CACHE_KEY,
-        activeRestaurantId,
-        action.payload
-      )
+      state.tables = Array.isArray(action.payload)
+        ? action.payload
+        : []
     },
 
     setRestaurantInfo(state, action) {
@@ -72,17 +37,11 @@ const tableSlice = createSlice({
     },
 
     clearTables(state) {
-      const restaurantIdToClear = state.restaurantId
-
       state.tables = []
       state.restaurantId = null
       state.restaurantSlug = null
       state.loading = false
       state.error = ''
-
-      clearRestaurantCachesById(
-        restaurantIdToClear
-      )
     },
   },
 })

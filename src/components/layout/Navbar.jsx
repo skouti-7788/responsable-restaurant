@@ -16,9 +16,10 @@ import {
 } from '../../store/uiSlice'
 
 import {
-  clearNotafication,
+  markNewOrdersViewed,
+  resetOrdersState,
 } from '../../store/orderSlice'
-
+ 
 // import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -69,10 +70,12 @@ const Navbar = ( ) => {
   // =====================================================
 
 const onLgout = () => {
+  dispatch(resetOrdersState())
   dispatch(logout())
 
   document.documentElement.dir = 'ltr'
-  document.documentElement.classList.remove('dark')
+  dispatch( toggleTheme('light') )
+  window.location.href = '/login'
 }
  
  
@@ -81,93 +84,66 @@ const onLgout = () => {
   // =====================================================
 
   const handleNotificationClick = () => {
-    if(notafication === true){navigate('/orders')}  
-    dispatch(
-      clearNotafication()
-    )
+  if (!notafication) {
+    return
   }
+
+  dispatch(markNewOrdersViewed())
+
+  navigate('/orders')
+}
 
   // =====================================================
   // UI
   // =====================================================
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white lg:mx-10  px-8 py-4 transition-colors dark:border-slate-800 dark:bg-slate-950">
+    <header className="flex items-center justify-between border-b border-line bg-white px-8 py-4 transition-colors lg:mx-10 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)]">
 
-      {/* Dashboard */}
       <div>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
-          {t.managerDashboard ||
-            'Manager Dashboard'}
+        <h1 className="text-xl font-semibold text-ink dark:text-white">
+          {t.managerDashboard || 'Manager Dashboard'}
         </h1>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-3">
-
-        {/* =================================================
-            Notifications
-        ================================================= */}
-
+        {/* Notification Button */}
         <button
           type="button"
-          onClick={
-            handleNotificationClick
-          }
-          className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          onClick={handleNotificationClick}
+          className="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)] dark:hover:bg-[#1f4a54]"
           aria-label="Notifications"
         >
-
           <Bell size={20} />
 
-          {/* BLUE NOTIFICATION DOT */}
           {notafication && (
-            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-sky-500 ring-2 ring-white dark:ring-slate-800" />
+            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-brand ring-2 ring-white dark:ring-[#0f1d22]" />
           )}
-
         </button>
 
-        {/* =================================================
-            Language
-        ================================================= */}
-
         <div className="group relative">
-
+          {/* Language Button */}
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)] dark:hover:bg-[#1f4a54]"
             aria-label="Language"
           >
             <Languages size={20} />
           </button>
 
-          {/* Language Menu */}
-
           <div className="pointer-events-none absolute right-0 top-full z-50 pt-2 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-
-            <div className="w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-
-              {languages.map(
-                (item) => (
-                  <button
-                    key={
-                      item.locale
-                    }
-                    type="button"
-                    onClick={() =>
-                      dispatch(
-                        setLanguage(
-                          item.locale
-                        )
-                      )
-                    }
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
-                      language ===
-                      item.locale
-                        ? 'bg-sky-100 text-sky-700 dark:bg-slate-800 dark:text-sky-300'
-                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-                    }`}
-                  >
+            <div className="w-44 rounded-2xl border border-line bg-white p-2 shadow-xl dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)]">
+              {languages.map((item) => (
+                <button
+                  key={item.locale}
+                  type="button"
+                  onClick={() => dispatch(setLanguage(item.locale))}
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
+                          language === item.locale
+                            ? 'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand'
+                            : 'text-ink hover:bg-sand dark:text-[var(--color-sand)] dark:hover:bg-[#1f4a54]'
+                        }`}
+                >
 
                     <span>
                       {
@@ -196,20 +172,11 @@ const onLgout = () => {
 
         <button
           type="button"
-          onClick={() =>
-            dispatch(
-              toggleTheme()
-            )
-          }
-          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          onClick={() => dispatch(toggleTheme('dark'))}
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl border border-line bg-white text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)] dark:hover:bg-[#1f4a54]"
           aria-label="Toggle theme"
         >
-          {theme ===
-          'dark' ? (
-            <Sun size={20} />
-          ) : (
-            <Moon size={20} />
-          )}
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
         {/* =================================================
@@ -219,7 +186,7 @@ const onLgout = () => {
         <button
           type="button"
           onClick={onLgout}
-          className="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="inline-flex h-11 cursor-pointer items-center justify-center rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
         >
           {t.logout}
         </button>

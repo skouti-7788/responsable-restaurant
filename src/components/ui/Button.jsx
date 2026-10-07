@@ -5,15 +5,15 @@ const Button = ({
   ...props
 }) => {
   const base =
-    'inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50'
+    'inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[var(--surface-dark)] disabled:cursor-not-allowed disabled:opacity-50'
 
   const variants = {
     primary:
-      'bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+      'bg-brand text-white hover:bg-brand-dark shadow-lg shadow-orange-200 dark:shadow-orange-950/20',
     secondary:
-      'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+      'border border-line bg-white text-ink hover:bg-sand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]',
     ghost:
-      'bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
+      'bg-transparent text-ink hover:bg-sand dark:text-white dark:hover:bg-[var(--surface-dark-card)]',
     danger:
       'bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400',
   }

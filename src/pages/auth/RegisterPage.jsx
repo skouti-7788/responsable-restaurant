@@ -43,12 +43,12 @@ const RegisterPage = () => {
  
     
      return (
-    <div className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl rounded-[2rem]  bg-white p-10 shadow-[20px_20px_40px_rgba(0,0,0,0.15)]">
+    <div className="min-h-screen bg-sand px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-10 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line">
         <div className="mb-8 space-y-3 text-center">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-400/80">Restaurant SaaS</p>
-          <h1 className="text-3xl font-semibold text-slate-600">Register new restaurant</h1>
-          <p className="text-sm text-slate-400">Create your restaurant account and start managing your digital menu.</p>
+          <p className="text-sm uppercase tracking-[0.35em] text-brand">Restaurant SaaS</p>
+          <h1 className="text-3xl font-semibold text-ink">Register new restaurant</h1>
+          <p className="text-sm text-muted">Create your restaurant account and start managing your digital menu.</p>
         </div>
 
         <form className="grid gap-5 lg:grid-cols-2" onSubmit={handleSubmit}>
@@ -58,13 +58,13 @@ const RegisterPage = () => {
           <Input label='Address' value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main Street" />
           <Input label='Opening hours' value={form.openingHours} onChange={(e) => setForm({ ...form, openingHours: e.target.value })} placeholder="08:00 - 23:00" />
           <Input label= 'Password' value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" type="password" />
-          {error && <p className="col-span-full text-sm text-rose-400">{error}</p>}
+          {error && <p className="col-span-full text-sm text-rose-500">{error}</p>}
           <div className="col-span-full flex flex-col gap-3 pt-2">
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating account...' :  'Create account'}
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
-            <p className="text-center text-sm text-slate-400">
-              <Link to="/login" className="text-sky-400 hover:text-sky-300">
+            <p className="text-center text-sm text-muted">
+              <Link to="/login" className="font-medium text-brand hover:text-brand-dark">
                 Already have an account? Login
               </Link>
             </p>

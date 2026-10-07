@@ -1,4 +1,4 @@
-import {
+  import {
   useCallback,
   useEffect,
   useMemo,
@@ -180,7 +180,7 @@ const DashboardPage = () => {
       icon: Layers,
 
       color:
-        'bg-cyan-500/10 text-cyan-600 dark:text-cyan-300',
+        'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
 
     {
@@ -195,7 +195,7 @@ const DashboardPage = () => {
       icon: BarChart2,
 
       color:
-        'bg-violet-500/10 text-violet-600 dark:text-violet-300',
+        'bg-sand text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]',
     },
 
     {
@@ -210,7 +210,7 @@ const DashboardPage = () => {
       icon: ShoppingBag,
 
       color:
-        'bg-amber-500/10 text-amber-600 dark:text-amber-300',
+        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
 
     {
@@ -225,7 +225,7 @@ const DashboardPage = () => {
       icon: Activity,
 
       color:
-        'bg-sky-500/10 text-sky-600 dark:text-sky-300',
+        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
     },
   ]
 
@@ -234,7 +234,7 @@ const DashboardPage = () => {
   // =====================================================
 
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-white">
 
       {/* =================================================
           HEADER
@@ -243,12 +243,12 @@ const DashboardPage = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-semibold text-ink dark:text-white">
             {t.dashboard ||
               'Dashboard'}
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted dark:text-[var(--color-sand)]">
             {t.dashboardDescription ||
               'Overview of your restaurant.'}
           </p>
@@ -262,7 +262,7 @@ const DashboardPage = () => {
             handleRefresh
           }
           disabled={loading}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
         >
           <RefreshCw
             size={17}
@@ -302,11 +302,11 @@ const DashboardPage = () => {
         0 &&
       dashboard.totalOrders ===
         0 ? (
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-[2rem] border border-line bg-white p-10 text-center shadow-card dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)]">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
 
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-4 text-sm text-muted dark:text-[#dfe7eb]">
             {t.loading ||
               'Loading...'}
           </p>
@@ -330,7 +330,7 @@ const DashboardPage = () => {
                     key={
                       item.labelKey
                     }
-                    className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+                    className="rounded-[2rem] border border-line bg-white p-6 shadow-card transition-colors dark:border-[#234b58] dark:bg-[#18353d]"
                   >
 
                     <div
@@ -341,14 +341,14 @@ const DashboardPage = () => {
                       />
                     </div>
 
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-muted dark:text-[#dfe7eb]">
                       {t[
                         item.labelKey
                       ] ||
                         item.labelKey}
                     </p>
 
-                    <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-white">
+                    <p className="mt-2 text-3xl font-semibold text-ink dark:text-white">
                       {
                         item.value
                       }
@@ -371,7 +371,7 @@ const DashboardPage = () => {
                 POPULAR MEALS
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray ">
 
               <div className="flex items-center justify-between">
 
@@ -387,7 +387,7 @@ const DashboardPage = () => {
                   </h2>
                 </div>
 
-                <span className="rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="rounded-2xl bg-sand px-3 py-2 text-sm text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]">
                   {t.live ||
                     'Live'}
                 </span>
@@ -410,7 +410,7 @@ const DashboardPage = () => {
                         className="space-y-3"
                       >
 
-                        <div className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-200">
+                        <div className="flex items-center justify-between text-sm text-ink dark:text-white">
 
                           <span>
                             {
@@ -427,10 +427,10 @@ const DashboardPage = () => {
 
                         </div>
 
-                        <div className="h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                        <div className="h-3 overflow-hidden rounded-full bg-[#f4e9d8] dark:bg-[#234b58]">
 
                           <div
-                            className="h-full rounded-full bg-sky-400 transition-all duration-500"
+                            className="h-full rounded-full bg-brand transition-all duration-500"
                             style={{
                               width: `${Math.max(
                                 0,
@@ -467,7 +467,7 @@ const DashboardPage = () => {
                 RECENT ACTIVITY
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
 
               <div className="flex items-center justify-between">
 
@@ -501,16 +501,16 @@ const DashboardPage = () => {
                           activity.id ||
                           `${activity.event}-${index}`
                         }
-                        className="rounded-3xl border border-slate-200 bg-slate-50 p-4 transition-colors dark:border-slate-800 dark:bg-slate-950/80"
+                        className="rounded-3xl border border-line bg-sand p-4 transition-colors dark:border-[#234b58] dark:bg-[#0f1d22]"
                       >
 
-                        <p className="text-sm text-slate-900 dark:text-slate-100">
+                        <p className="text-sm text-ink dark:text-white">
                           {
                             activity.event
                           }
                         </p>
 
-                        <p className="mt-2 text-xs text-slate-500">
+                        <p className="mt-2 text-xs text-muted">
                           {
                             activity.time
                           }

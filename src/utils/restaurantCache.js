@@ -1,12 +1,17 @@
+// Persistent caches allowed for non-sensitive restaurant data.
 const CACHE_PREFIXES = [
   'restaurant_categories_cache',
   'restaurant_meals_cache',
-  'restaurant_orders_cache',
   'restaurant_tables_cache',
   'restaurant_dashboard_cache',
-  'restaurant_staff_cache',
   'restaurant_restaurants_cache',
   'restaurant_profile_cache',
+]
+
+// Sensitive caches must never be persisted.
+const SENSITIVE_CACHE_PREFIXES = [
+  'restaurant_orders_cache',
+  'restaurant_staff_cache',
 ]
 
 const LEGACY_GLOBAL_KEYS = [
@@ -19,6 +24,10 @@ const LEGACY_GLOBAL_KEYS = [
   'restaurant_restaurants_cache',
   'restaurant_current_cache',
 ]
+
+const isSensitiveCachePrefix = (prefix) =>
+  typeof prefix === 'string' &&
+  SENSITIVE_CACHE_PREFIXES.includes(prefix)
 
 const getStorage = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -91,6 +100,10 @@ export const getCurrentRestaurantId = () => {
 
 export const getRestaurantCacheKey = (prefix, restaurantId) => {
   if (!prefix || typeof prefix !== 'string') {
+    return null
+  }
+
+  if (isSensitiveCachePrefix(prefix)) {
     return null
   }
 
@@ -212,7 +225,15 @@ export const clearRestaurantCachesById = (restaurantId) => {
       (prefix) => key.startsWith(`${prefix}_${id}`)
     )
 
-    if (isScopedRestaurantCache || key === 'restaurant_current_cache') {
+    const isSensitiveRestaurantCache = SENSITIVE_CACHE_PREFIXES.some(
+      (prefix) => key.startsWith(`${prefix}_${id}`)
+    )
+
+    if (
+      isScopedRestaurantCache ||
+      isSensitiveRestaurantCache ||
+      key === 'restaurant_current_cache'
+    ) {
       keysToRemove.push(key)
     }
   }
@@ -254,9 +275,17 @@ export const clearRestaurantCaches = () => {
       (prefix) => key.startsWith(`${prefix}_`)
     )
 
+    const hasSensitiveCachePrefix = SENSITIVE_CACHE_PREFIXES.some(
+      (prefix) => key.startsWith(`${prefix}_`)
+    )
+
     const isCurrentRestaurantCache = key === 'restaurant_current_cache'
 
-    if (hasRestaurantCachePrefix || isCurrentRestaurantCache) {
+    if (
+      hasRestaurantCachePrefix ||
+      hasSensitiveCachePrefix ||
+      isCurrentRestaurantCache
+    ) {
       keysToRemove.push(key)
     }
   }

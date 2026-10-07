@@ -4,7 +4,17 @@ const initialState = {
   items: [],
   loading: false,
   error: null,
-  notafication:false
+
+  notafication: false,
+
+  // Track IDs of newly arrived orders
+  newOrderIds: [],
+
+  // Track IDs of orders already viewed
+  viewedOrderIds: [],
+
+  // Know if the first orders request has already been processed
+  ordersInitialized: false,
 }
 
 const orderSlice = createSlice({
@@ -29,11 +39,85 @@ const orderSlice = createSlice({
     fetchOrdersSuccess(state, action) {
       state.loading = false
       state.error = null
-      state.items = Array.isArray(
-        action.payload
-      )
-        ? action.payload
-        : []
+
+      const incomingOrders =
+        Array.isArray(action.payload)
+          ? action.payload
+          : []
+
+      const incomingIds =
+        incomingOrders
+          .map((order) => Number(order?.id))
+          .filter((id) => Number.isFinite(id))
+
+      // =================================================
+      // FIRST LOAD
+      // =================================================
+
+      if (!state.ordersInitialized) {
+        state.items = incomingOrders
+
+        // Existing orders are considered already known.
+        state.viewedOrderIds = [
+          ...new Set([
+            ...state.viewedOrderIds,
+            ...incomingIds,
+          ]),
+        ]
+
+        state.newOrderIds = []
+        state.notafication = false
+        state.ordersInitialized = true
+
+        return
+      }
+
+      // =================================================
+      // FIND NEW ORDERS
+      // =================================================
+
+      const previousIds =
+        new Set(
+          state.items
+            .map((order) => Number(order?.id))
+            .filter((id) =>
+              Number.isFinite(id)
+            )
+        )
+
+      const viewedIds =
+        new Set(
+          state.viewedOrderIds
+            .map((id) => Number(id))
+        )
+
+      const newIds =
+        incomingIds.filter(
+          (id) =>
+            !previousIds.has(id) &&
+            !viewedIds.has(id)
+        )
+
+      // =================================================
+      // SAVE NEW ORDERS
+      // =================================================
+
+      if (newIds.length > 0) {
+        state.newOrderIds = [
+          ...new Set([
+            ...state.newOrderIds,
+            ...newIds,
+          ]),
+        ]
+
+        state.notafication = true
+      }
+
+      // =================================================
+      // UPDATE ORDERS
+      // =================================================
+
+      state.items = incomingOrders
     },
 
     // =================================================
@@ -77,12 +161,43 @@ const orderSlice = createSlice({
     // =================================================
 
     removeOrder(state, action) {
+      const orderId =
+        Number(action.payload)
+
       state.items =
         state.items.filter(
           (order) =>
-            Number(order.id) !==
-            Number(action.payload)
+            Number(order.id) !== orderId
         )
+
+      // Remove it from pending notifications
+      state.newOrderIds =
+        state.newOrderIds.filter(
+          (id) =>
+            Number(id) !== orderId
+        )
+
+      if (
+        state.newOrderIds.length === 0
+      ) {
+        state.notafication = false
+      }
+    },
+
+    // =================================================
+    // MARK NEW ORDERS AS VIEWED
+    // =================================================
+
+    markNewOrdersViewed(state) {
+      state.viewedOrderIds = [
+        ...new Set([
+          ...state.viewedOrderIds,
+          ...state.newOrderIds,
+        ]),
+      ]
+
+      state.newOrderIds = []
+      state.notafication = false
     },
 
     // =================================================
@@ -92,11 +207,28 @@ const orderSlice = createSlice({
     clearOrdersError(state) {
       state.error = null
     },
+
     // =================================================
-    // NOTAFICATION 
+    // NOTIFICATION
     // =================================================
-    setNotafication(state,action){state.notafication = action.payload},
-    clearNotafication(state){state.notafication = false},
+
+    setNotafication(state, action) {
+      state.notafication =
+        action.payload
+    },
+
+    clearNotafication(state) {
+      state.notafication = false
+    },
+    resetOrdersState(state) {
+    state.items = []
+    state.loading = false
+    state.error = null
+    state.notafication = false
+    state.newOrderIds = []
+    state.viewedOrderIds = []
+    state.ordersInitialized = false
+  }
   },
 })
 
@@ -106,10 +238,11 @@ export const {
   fetchOrdersFailure,
   updateOrder,
   removeOrder,
+  markNewOrdersViewed,
   clearOrdersError,
   setNotafication,
   clearNotafication,
+  resetOrdersState,
 } = orderSlice.actions
 
 export default orderSlice.reducer
- 

@@ -67,7 +67,7 @@ const PUBLIC_MENU_ORIGIN = (
 const IMAGE_LIMITS = {
   logo: 2 * 1024 * 1024,
   header_image: 4 * 1024 * 1024,
-  background_image: 4 * 1024 * 1024,
+  // background_image: 4 * 1024 * 1024,
 }
 
 // =========================================================
@@ -111,7 +111,7 @@ const ImageUploader = ({
     useRef(null)
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-gray">
 
       <div className="mb-4 flex items-center justify-between gap-3">
 
@@ -273,7 +273,7 @@ const AppearancePage = () => {
     useState({
       logo: null,
       header_image: null,
-      background_image: null,
+      // background_image: null,
     })
 
   // =======================================================
@@ -284,7 +284,7 @@ const AppearancePage = () => {
     useState({
       logo: false,
       header_image: false,
-      background_image: false,
+      // background_image: false,
     })
 
   // =======================================================
@@ -768,18 +768,14 @@ const AppearancePage = () => {
           header_imageFile:
             imageFiles.header_image,
 
-          background_imageFile:
-            imageFiles.background_image,
-
+ 
           remove_logo:
             removeFlags.logo,
 
           remove_header_image:
             removeFlags.header_image,
 
-          remove_background_image:
-            removeFlags.background_image,
-        }
+         }
 
         const updatedAppearance =
           await saveRestaurantAppearance(
@@ -798,13 +794,13 @@ const AppearancePage = () => {
         setImageFiles({
           logo: null,
           header_image: null,
-          background_image: null,
+          // background_image: null,
         })
 
         setRemoveFlags({
           logo: false,
           header_image: false,
-          background_image: false,
+          // background_image: false,
         })
 
         setStatus({
@@ -843,7 +839,7 @@ const AppearancePage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-gray">
 
         <div className="flex flex-col items-center gap-3">
 
@@ -865,7 +861,7 @@ const AppearancePage = () => {
   // =======================================================
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-6 dark:bg-slate-950 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100 px-4 py-6 dark:bg-[var(--surface-dark)] sm:px-6 lg:px-8">
 
       <div className="mx-auto max-w-7xl">
 
@@ -943,7 +939,7 @@ const AppearancePage = () => {
                 IMAGES
             ================================================= */}
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[var(--surface-dark)] sm:p-6">
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
@@ -1035,50 +1031,7 @@ const AppearancePage = () => {
                     t.remove ||
                     'Remove'
                   }
-                />
-
-                <ImageUploader
-                  label={
-                    t.backgroundImage ||
-                    'Background image'
-                  }
-                  previewUrl={
-                    form.background_image ||
-                    ''
-                  }
-                  loading={
-                    saving
-                  }
-                  fileError={
-                    errors.background_image
-                  }
-                  onSelect={(
-                    event
-                  ) =>
-                    handleImageSelect(
-                      'background_image',
-                      event
-                    )
-                  }
-                  onRemove={() =>
-                    handleImageRemove(
-                      'background_image'
-                    )
-                  }
-                  uploadText={
-                    t.upload ||
-                    'Upload'
-                  }
-                  replaceText={
-                    t.replace ||
-                    'Replace'
-                  }
-                  removeText={
-                    t.remove ||
-                    'Remove'
-                  }
-                />
-
+                /> 
               </div>
 
             </div>
@@ -1087,7 +1040,7 @@ const AppearancePage = () => {
                 COLORS
             ================================================= */}
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[var(--surface-dark)] sm:p-6">
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
@@ -1109,8 +1062,8 @@ const AppearancePage = () => {
                     'secondary_color',
                     t.secondaryColor ||
                       'Secondary color',
-                  ],
-
+                  ], 
+                  
                   [
                     'text_color',
                     t.textColor ||
@@ -1126,7 +1079,7 @@ const AppearancePage = () => {
                   ([field, label]) => (
                     <label
                       key={field}
-                      className="block rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900"
+                      className="block rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-gray"
                     >
 
                       <span className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -1177,7 +1130,7 @@ const AppearancePage = () => {
                 FONT
             ================================================= */}
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[var(--surface-dark)] sm:p-6">
 
               <h2 className="mb-5 text-lg font-semibold text-slate-900 dark:text-slate-100">
 
@@ -1199,7 +1152,7 @@ const AppearancePage = () => {
                     event.target.value
                   )
                 }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
               >
 
                 {FONT_OPTIONS.map(
@@ -1247,7 +1200,7 @@ const AppearancePage = () => {
 
           <div>
 
-            <div className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
+            <div className="sticky top-6  rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[var(--surface-dark)] sm:p-5">
 
               <div className="mb-4 flex items-center justify-between gap-3">
 
@@ -1258,19 +1211,7 @@ const AppearancePage = () => {
 
                 </h2>
 
-                {previewLoading && (
-                  <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-
-                    <div className="mx-auto h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-
-                    <span>
-                      {t.loading ||
-                        'Loading ...'}
-                    </span>
-
-                  </div>
-                )}
-
+                
               </div>
 
               <div className="relative">
@@ -1292,8 +1233,8 @@ const AppearancePage = () => {
 
                     <div className="flex flex-col items-center gap-3">
 
-                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-
+                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand" />
+                      
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
 
                         {t.loadingPreview ||

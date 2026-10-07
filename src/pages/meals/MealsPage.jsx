@@ -808,7 +808,7 @@ const MealsPage = () => {
         return 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
       }
 
-      return 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+      return 'bg-brand/10 text-brand-dark dark:text-brand'
     }, [])
 
   // =====================================================
@@ -839,7 +839,7 @@ const MealsPage = () => {
           return (
             <div
               key={meal.id}
-              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900"
+              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
             >
               {/* IMAGE */}
 
@@ -897,14 +897,14 @@ const MealsPage = () => {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
 
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="rounded-full bg-sand px-3 py-1 text-xs font-medium text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]">
                     {category?.name ||
                       t.selectCategory ||
                       'Category'}
                   </span>
 
                   {meal.featured && (
-                    <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-600 dark:text-sky-300">
+                    <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark dark:text-brand">
                       {t.featured ||
                         'Featured'}
                     </span>
@@ -934,7 +934,7 @@ const MealsPage = () => {
                           meal
                         )
                       }
-                      className="flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     >
                       <Pencil
                         size={16}
@@ -959,7 +959,7 @@ const MealsPage = () => {
                         deletingId ===
                         meal.id
                       }
-                      className=" disabled:cursor-not-allowed disabled:opacity-50 flex h-10 px-3 gap-2 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                      className="disabled:cursor-not-allowed disabled:opacity-50 flex h-10 cursor-pointer px-3 gap-2 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
                       aria-label={
                         t.deleteMeal ||
                         'Delete'
@@ -1069,19 +1069,19 @@ const MealsPage = () => {
   // =====================================================
  
   return (
-    <div className="text-slate-900 dark:text-slate-100">
+    <div className="text-ink dark:text-slate-100">
 
      
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold text-ink dark:text-white">
             {t.meals ||
               'Meals'}
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted dark:text-slate-400">
             {t.mealsDescription ||
               'Manage your restaurant meals.'}
           </p>
@@ -1098,7 +1098,7 @@ const MealsPage = () => {
             disabled={
               refreshing
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
           >
             <RefreshCw
               size={17}
@@ -1125,7 +1125,7 @@ const MealsPage = () => {
                   e.target.value
                 )
               }
-              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:focus:border-slate-500"
             > 
               <option value="all">
                 {t.statusAll}
@@ -1150,7 +1150,7 @@ const MealsPage = () => {
             disabled={
               deletingAll
             }
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
           >
             <Trash2
               size={17}
@@ -1170,7 +1170,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
             <Plus size={18} />
 
@@ -1205,7 +1205,7 @@ const MealsPage = () => {
                t.sherchMealsPlaceholder ||
                 'Search meals...'
               }
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
             />
   
   
@@ -1243,7 +1243,7 @@ const MealsPage = () => {
             onClick={() =>
               setError('')
             }
-            className="shrink-0 text-lg leading-none opacity-70 hover:opacity-100"
+            className="cursor-pointer shrink-0 text-lg leading-none opacity-70 hover:opacity-100"
             aria-label={
               t.close ||
               'Close'
@@ -1261,7 +1261,7 @@ const MealsPage = () => {
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-10 text-center  dark:border-slate-800 dark:bg-slate-900">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
 
           <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
             {t.loading ||
@@ -1295,7 +1295,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
             <Plus size={18} />
 
@@ -1352,7 +1352,7 @@ const MealsPage = () => {
                 disabled={
                   saving
                 }
-                className="text-xl text-slate-400 hover:text-slate-700 disabled:opacity-50 dark:hover:text-slate-200"
+                className="cursor-pointer text-xl text-slate-400 hover:text-slate-700 disabled:opacity-50 dark:hover:text-slate-200"
                 aria-label={
                   t.close ||
                   'Close'
@@ -1648,7 +1648,7 @@ const MealsPage = () => {
                 disabled={
                   saving
                 }
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 {t.cancel ||
                   'Cancel'}
@@ -1662,7 +1662,7 @@ const MealsPage = () => {
                 disabled={
                   saving
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
                 {/* {saving && (

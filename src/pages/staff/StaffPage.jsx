@@ -3,12 +3,29 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useSelector } from 'react-redux'
 
-import axiosClient from '../../api/axiosClient'
+import { useDispatch, useSelector } from 'react-redux'
+
+import {
+  getStaff,
+  createStaff,
+  deleteStaff,
+  getStaffPermissions,
+  updateStaffPermissions,
+} from '../../data/dataStaff'
+
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import translations from '../../i18n/translations'
+
+import {
+  setStaff,
+  setStaffLoading,
+  setStaffError,
+  addStaff,
+  removeStaff,
+  updateStaff,
+} from '../../store/staffSlice'
 
 // =====================================================
 // PERMISSIONS
@@ -47,6 +64,8 @@ const PERMISSIONS = [
   'staff.delete',
 
   'qrcode.view',
+
+  'restaurant.update',
 
   'profile.view',
   'profile.update',
@@ -119,6 +138,12 @@ const PERMISSION_GROUPS = [
     permissions: ['qrcode.view'],
   },
   {
+    key: 'restaurant',
+    permissions: [
+      'restaurant.update',
+    ],
+  },
+  {
     key: 'profile',
     permissions: [
       'profile.view',
@@ -126,114 +151,6 @@ const PERMISSION_GROUPS = [
     ],
   },
 ]
-
-// =====================================================
-// CACHE
-// =====================================================
-
-const STAFF_CACHE_PREFIX =
-  'restaurant_staff_cache_'
-
-const STAFF_CACHE_TTL =
-  5 * 60 * 1000 // 5 minutes
-
-const getStaffCacheKey = (
-  restaurantId,
-) =>
-  `${STAFF_CACHE_PREFIX}${restaurantId}`
-
-const getStaffFromCache = (
-  restaurantId,
-) => {
-  if (!restaurantId) {
-    return null
-  }
-
-  try {
-    const raw =
-      localStorage.getItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-    if (!raw) {
-      return null
-    }
-
-    const cached =
-      JSON.parse(raw)
-
-    if (
-      !cached ||
-      !Array.isArray(
-        cached.staff,
-      ) ||
-      !cached.timestamp
-    ) {
-      localStorage.removeItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-      return null
-    }
-
-    const expired =
-      Date.now() -
-        cached.timestamp >
-      STAFF_CACHE_TTL
-
-    if (expired) {
-      localStorage.removeItem(
-        getStaffCacheKey(
-          restaurantId,
-        ),
-      )
-
-      return null
-    }
-
-    return cached.staff
-  } catch (error) {
-    console.error(
-      'Read staff cache error:',
-      error,
-    )
-
-    return null
-  }
-}
-
-const saveStaffToCache = (
-  restaurantId,
-  staff,
-) => {
-  if (
-    !restaurantId ||
-    !Array.isArray(staff)
-  ) {
-    return
-  }
-
-  try {
-    localStorage.setItem(
-      getStaffCacheKey(
-        restaurantId,
-      ),
-      JSON.stringify({
-        staff,
-        timestamp: Date.now(),
-      }),
-    )
-  } catch (error) {
-    console.error(
-      'Save staff cache error:',
-      error,
-    )
-  }
-}
 
 // =====================================================
 // PERMISSION LABEL
@@ -302,6 +219,9 @@ const getPermissionLabel = (
     'qrcode.view':
       t.permissionQrCodeView,
 
+    'restaurant.update':
+      t.permissionRestaurantUpdate,
+
     'profile.view':
       t.permissionProfileView,
     'profile.update':
@@ -331,6 +251,7 @@ const getGroupLabel = (
     appearance: t.appearance,
     staff: t.staff,
     qrcode: t.qrCode,
+    restaurant: t.restaurant,
     profile: t.profile,
   }
 
@@ -346,6 +267,8 @@ const StaffPage = () => {
   // REDUX
   // ===================================================
 
+  const dispatch = useDispatch()
+
   const language = useSelector(
     (state) =>
       state.ui?.language || 'en',
@@ -354,6 +277,21 @@ const StaffPage = () => {
   const user = useSelector(
     (state) =>
       state.auth?.user,
+  )
+
+  const staff = useSelector(
+    (state) =>
+      state.staff?.staff || [],
+  )
+
+  const loading = useSelector(
+    (state) =>
+      state.staff?.loading || false,
+  )
+
+  const reduxError = useSelector(
+    (state) =>
+      state.staff?.error || '',
   )
 
   const restaurantId =
@@ -375,39 +313,8 @@ const StaffPage = () => {
     language === 'ar'
 
   // ===================================================
-  // INITIAL CACHE
-  // ===================================================
-
-  /*
-   * The cache is read during state initialization.
-   *
-   * This avoids calling setState synchronously
-   * from useEffect and fixes:
-   *
-   * react-hooks/set-state-in-effect
-   */
-
-  const initialCachedStaff =
-    getStaffFromCache(
-      restaurantId,
-    )
-
-  // ===================================================
   // STATE
   // ===================================================
-
-  const [staff, setStaff] =
-    useState(
-      () =>
-        initialCachedStaff ||
-        [],
-    )
-
-  const [loading, setLoading] =
-    useState(
-      () =>
-        !initialCachedStaff,
-    )
 
   const [creating, setCreating] =
     useState(false)
@@ -446,86 +353,130 @@ const StaffPage = () => {
   // LOAD STAFF FROM API
   // ===================================================
 
+  // useEffect(() => {
+  //   if (!restaurantId) {
+  //     dispatch(setStaff([]))
+  //     dispatch(setStaffLoading(false))
+  //     dispatch(setStaffError(''))
+  //     return
+  //   }
+
+  //   let cancelled = false
+
+  //   const fetchStaff = async () => {
+  //     dispatch(setStaffLoading(true))
+  //     dispatch(setStaffError(''))
+  //     setError(null)
+
+  //     try {
+  //       const response =
+  //         await getStaff()
+  //          console.log('STAFF: API response', response)
+
+  //       if (cancelled) {
+  //     console.log('STAFF: request cancelled')
+
+  //         return
+  //       }
+
+  //       const staffData =
+  //         Array.isArray(
+  //           response.data?.staff,
+  //         )
+  //           ? response.data.staff
+  //           : []
+
+  //       dispatch(
+  //         setStaff(staffData),
+  //       )
+  //     } catch (err) {
+  //       if (cancelled) {
+  //         return
+  //       }
+
+  //       console.error(
+  //         'Load staff error:',
+  //         err,
+  //       )
+
+  //       const message =
+  //         err?.message ||
+  //         err?.response?.data
+  //           ?.message ||
+  //         t.loadStaffError ||
+  //         'Unable to load staff.'
+
+  //       dispatch(
+  //         setStaffError(message),
+  //       )
+
+  //       setError(message)
+  //     } finally {
+  //       if (!cancelled) {
+  //         dispatch(
+  //           setStaffLoading(false),
+  //         )
+  //       }
+  //     }
+  //   }
+
+  //   fetchStaff()
+
+  //   return () => {
+  //     cancelled = true
+  //   }
+  // }, [
+  //   restaurantId,
+  //   t.loadStaffError,
+  //   dispatch,
+  // ])
   useEffect(() => {
     if (!restaurantId) {
+      dispatch(setStaff([]))
+      dispatch(setStaffLoading(false))
+      dispatch(setStaffError(''))
       return
     }
 
-    /*
-     * If valid cache exists, the data has already
-     * been rendered immediately through useState().
-     *
-     * No API request is necessary during the TTL.
-     */
-    const cachedStaff =
-      getStaffFromCache(
-        restaurantId,
-      )
+    const fetchStaff = async () => {
+      dispatch(setStaffLoading(true))
+      dispatch(setStaffError(''))
+      setError(null)
 
-    if (cachedStaff) {
-      return
-    }
+      try {
+        const response = await getStaff()
 
-    let cancelled = false
+        const staffData =
+          Array.isArray(response.data?.staff)
+            ? response.data.staff
+            : []
 
-    const fetchStaff =
-      async () => {
-        try {
-          const response =
-            await axiosClient.get(
-              '/staff',
-            )
+        dispatch(setStaff(staffData))
+      } catch (err) {
+        console.error(
+          'Load staff error:',
+          err,
+        )
 
-          if (cancelled) {
-            return
-          }
+        const message =
+          err?.message ||
+          err?.response?.data?.message ||
+          t.loadStaffError ||
+          'Unable to load staff.'
 
-          const staffData =
-            response.data
-              ?.staff || []
-
-          setStaff(
-            staffData,
-          )
-
-          saveStaffToCache(
-            restaurantId,
-            staffData,
-          )
-        } catch (err) {
-          if (cancelled) {
-            return
-          }
-
-          console.error(
-            'Load staff error:',
-            err,
-          )
-
-          setError(
-            err?.message ||
-              err?.response?.data
-                ?.message ||
-              t.loadStaffError ||
-              'Unable to load staff.',
-          )
-        } finally {
-          if (!cancelled) {
-            setLoading(false)
-          }
-        }
+        dispatch(setStaffError(message))
+        setError(message)
+      } finally {
+        dispatch(setStaffLoading(false))
       }
+    }
 
     fetchStaff()
-
-    return () => {
-      cancelled = true
-    }
   }, [
     restaurantId,
     t.loadStaffError,
+    dispatch,
   ])
-
   // ===================================================
   // FORM CHANGE
   // ===================================================
@@ -555,6 +506,7 @@ const StaffPage = () => {
       e.preventDefault()
 
       setError(null)
+      dispatch(setStaffError(''))
 
       const name =
         form.name.trim()
@@ -603,34 +555,18 @@ const StaffPage = () => {
 
       try {
         const response =
-          await axiosClient.post(
-            '/staff',
-            {
-              name,
-              email,
-              password,
-            },
-          )
+          await createStaff({
+            name,
+            email,
+            password,
+          })
 
         const createdStaff =
           response.data?.staff
 
         if (createdStaff) {
-          setStaff(
-            (current) => {
-              const updatedStaff =
-                [
-                  createdStaff,
-                  ...current,
-                ]
-
-              saveStaffToCache(
-                restaurantId,
-                updatedStaff,
-              )
-
-              return updatedStaff
-            },
+          dispatch(
+            addStaff(createdStaff),
           )
         }
 
@@ -698,25 +634,10 @@ const StaffPage = () => {
       setError(null)
 
       try {
-        await axiosClient.delete(
-          `/staff/${id}`,
-        )
+        await deleteStaff(id)
 
-        setStaff(
-          (current) => {
-            const updatedStaff =
-              current.filter(
-                (member) =>
-                  member.id !== id,
-              )
-
-            saveStaffToCache(
-              restaurantId,
-              updatedStaff,
-            )
-
-            return updatedStaff
-          },
+        dispatch(
+          removeStaff(id),
         )
       } catch (err) {
         console.error(
@@ -752,14 +673,16 @@ const StaffPage = () => {
 
       try {
         const response =
-          await axiosClient.get(
-            `/staff/${staffMember.id}/permissions`,
+          await getStaffPermissions(
+            staffMember.id,
           )
 
         const permissions =
-          response.data
-            ?.permissions ||
-          []
+          Array.isArray(
+            response.data?.permissions,
+          )
+            ? response.data.permissions
+            : []
 
         const chosen = {}
 
@@ -909,34 +832,16 @@ const StaffPage = () => {
         )
 
       try {
-        await axiosClient.put(
-          `/staff/${modal.staff.id}/permissions`,
-          {
-            permissions,
-          },
+        await updateStaffPermissions(
+          modal.staff.id,
+          permissions,
         )
 
-        setStaff(
-          (current) => {
-            const updatedStaff =
-              current.map(
-                (member) =>
-                  member.id ===
-                  modal.staff.id
-                    ? {
-                        ...member,
-                        permissions,
-                      }
-                    : member,
-              )
-
-            saveStaffToCache(
-              restaurantId,
-              updatedStaff,
-            )
-
-            return updatedStaff
-          },
+        dispatch(
+          updateStaff({
+            ...modal.staff,
+            permissions,
+          }),
         )
 
         closeModal()
@@ -969,8 +874,7 @@ const StaffPage = () => {
       () =>
         Object.values(
           modal.chosen,
-        ).filter(Boolean)
-          .length,
+        ).filter(Boolean).length,
       [modal.chosen],
     )
 
@@ -1008,9 +912,9 @@ const StaffPage = () => {
             ERROR
         ================================================= */}
 
-        {error && (
+        {(error || reduxError) && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-            {error}
+            {error || reduxError}
           </div>
         )}
 
@@ -1018,7 +922,7 @@ const StaffPage = () => {
             ADD STAFF
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {t.addStaff ||
@@ -1105,7 +1009,7 @@ const StaffPage = () => {
             STAFF LIST
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
 
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -1122,15 +1026,14 @@ const StaffPage = () => {
 
           {loading ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
-               <p className='mt-4 text-sm text-slate-500 dark:text-slate-400'>
-                 {t.loading ||
-                'Loading...'}
-               </p>
-             
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
+
+              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+                {t.loading ||
+                  'Loading...'}
+              </p>
             </div>
-          ) : staff.length ===
-            0 ? (
+          ) : staff.length === 0 ? (
             <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
               {t.noStaff ||
                 'No staff members yet.'}
@@ -1192,8 +1095,6 @@ const StaffPage = () => {
                           }
                           className="border-b border-slate-200 last:border-b-0 dark:border-slate-800"
                         >
-                          {/* Name */}
-
                           <td className="p-4 align-middle">
                             <div
                               className="max-w-[220px] truncate font-medium text-slate-900 dark:text-slate-100"
@@ -1206,8 +1107,6 @@ const StaffPage = () => {
                               }
                             </div>
                           </td>
-
-                          {/* Email */}
 
                           <td className="p-4 px-20 align-middle">
                             <div
@@ -1223,8 +1122,6 @@ const StaffPage = () => {
                             </div>
                           </td>
 
-                          {/* Role */}
-
                           <td className="whitespace-nowrap p-4 px-20 align-middle">
                             <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                               {
@@ -1232,8 +1129,6 @@ const StaffPage = () => {
                               }
                             </span>
                           </td>
-
-                          {/* Permissions */}
 
                           <td className="whitespace-nowrap p-4 px-20 align-middle">
                             <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
@@ -1250,8 +1145,6 @@ const StaffPage = () => {
                               }
                             </span>
                           </td>
-
-                          {/* Actions */}
 
                           <td className="min-w-[320px] p-4 px-20 align-middle">
                             <div className="flex items-center gap-3">
@@ -1323,9 +1216,6 @@ const StaffPage = () => {
               role="dialog"
               aria-modal="true"
             >
-
-              {/* Modal Header */}
-
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -1335,9 +1225,7 @@ const StaffPage = () => {
 
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     {
-                      modal
-                        .staff
-                        .name
+                      modal.staff.name
                     }
                   </p>
 
@@ -1360,14 +1248,12 @@ const StaffPage = () => {
                   disabled={
                     savingPermissions
                   }
-                  className="rounded-xl px-3 py-2 text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+                  className="cursor-pointer rounded-xl px-3 py-2 text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
                   aria-label="Close"
                 >
                   ✕
                 </button>
               </div>
-
-              {/* Select / Unselect */}
 
               <div className="mb-6 flex flex-wrap gap-2">
                 <Button
@@ -1398,8 +1284,6 @@ const StaffPage = () => {
                     'Unselect all'}
                 </Button>
               </div>
-
-              {/* Permission Groups */}
 
               <div className="space-y-5">
                 {PERMISSION_GROUPS.map(
@@ -1480,8 +1364,6 @@ const StaffPage = () => {
                   ),
                 )}
               </div>
-
-              {/* Modal Footer */}
 
               <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-800">
                 <Button

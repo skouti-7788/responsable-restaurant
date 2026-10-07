@@ -1,12 +1,29 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand: #FF9800;
+  --color-brand-dark: #ea580c;
+  --color-sand: #fff9ed;
+  --color-ink: #12343c;
+  --color-muted: #69777b;
+  --color-line: #eee6d9;
+  --color-gray : #18353d;
+}
 
 :root {
-  color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #020617;
-  color: #e2e8f0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #12343c;
+  background: #fff;
+  color-scheme: light;
+  --surface-white: #ffffff;
+  --surface-sand: #fff9ed;
+  --surface-sand-strong: #f8f0e3;
+  --surface-dark: #0f1d22;
+  --surface-dark-card: #18353d;
+  --surface-dark-soft: #132a30;
+  --border-soft: #eee6d9;
 }
 
 html {
@@ -16,8 +33,17 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #020617;
-  color: #e2e8f0;
+  background: #fff;
+  color: #12343c;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background: #0f1d22;
+  color: #f8fafc;
 }
 
 #root {
@@ -32,17 +58,37 @@ select {
 }
 
 ::selection {
-  background: #0ea5e9;
-  color: #ffffff;
+  background: #fed7aa;
+  color: #12343c;
 }
 
 .bg-panel {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #38bdf8, #818cf8, #a855f7);
+  background: linear-gradient(
+    90deg,
+    #ff9800,
+    #fbbf24,
+    #ea580c
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.dark .bg-panel {
+  background: rgba(19, 39, 45, 0.9);
+}
+
+html.dark .text-gradient {
+  background: linear-gradient(
+    90deg,
+    #ffb347,
+    #ff9800,
+    #ea580c
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
