@@ -13,7 +13,6 @@ import { updateProfile } from '../../store/restaurantSlice'
 import translations from '../../i18n/translations'
 
 import Input from '../../components/ui/Input'
-import Button from '../../components/ui/Button'
 
 // =====================================================
 // EMPTY FORM
@@ -468,7 +467,7 @@ const ProfilePage = () => {
           PROFILE CARD
       ================================================= */}
 
-      <div className="rounded-[2rem] border border-line bg-white p-6 shadow-card transition-colors dark:border-[#234b58] dark:bg-[#18353d]">
+      <div className="rounded-[2rem] border border-line bg-white p-6 shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
 
         {/* =================================================
             HEADER
@@ -510,9 +509,12 @@ const ProfilePage = () => {
 
           <div className="col-span-full flex justify-end border-t border-line pt-5 dark:border-[#234b58]">
 
-            <Button type="submit">
+            <button
+            className="inline-flex h-11 min-w-[180px] cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark"
+
+             type="submit">
               {t.saveChanges}
-            </Button>
+            </button>
 
           </div>
 

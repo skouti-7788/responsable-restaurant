@@ -212,11 +212,15 @@ const orderSlice = createSlice({
     // NOTIFICATION
     // =================================================
 
+    // setNotafication(state, action) {
+    //   state.notafication =
+    //     action.payload
+    // },
     setNotafication(state, action) {
-      state.notafication =
-        action.payload
+        state.notafication =
+        Boolean(action.payload) &&
+        state.newOrderIds.length > 0
     },
-
     clearNotafication(state) {
       state.notafication = false
     },

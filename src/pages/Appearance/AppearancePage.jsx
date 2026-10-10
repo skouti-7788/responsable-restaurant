@@ -162,7 +162,7 @@ const ImageUploader = ({
           {previewUrl && (
             <Button
               type="button"
-              variant="ghost"
+              variant="danger"
               className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
               onClick={onRemove}
               disabled={loading}
@@ -1152,7 +1152,7 @@ const AppearancePage = () => {
                     event.target.value
                   )
                 }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none   focus:border-sky-500 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
               >
 
                 {FONT_OPTIONS.map(
@@ -1176,9 +1176,10 @@ const AppearancePage = () => {
 
             <div className="flex justify-end">
 
-              <Button
+              <button
                 type="submit"
-                className="min-w-[180px]"
+                className="inline-flex h-11 min-w-[180px] cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark"
+
                 disabled={saving}
               >
 
@@ -1188,7 +1189,7 @@ const AppearancePage = () => {
                   : t.saveChanges ||
                     'Save Changes'}
 
-              </Button>
+              </button>
 
             </div>
 

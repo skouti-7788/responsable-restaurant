@@ -166,6 +166,7 @@ const DashboardPage = () => {
   // =====================================================
   // STATS
   // =====================================================
+  const colors = 'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand'
 
   const stats = [
     {
@@ -179,8 +180,7 @@ const DashboardPage = () => {
 
       icon: Layers,
 
-      color:
-        'bg-sand text-brand dark:bg-[var(--surface-dark-card)] dark:text-brand',
+      color:colors,
     },
 
     {
@@ -194,9 +194,8 @@ const DashboardPage = () => {
 
       icon: BarChart2,
 
-      color:
-        'bg-sand text-ink dark:bg-[var(--surface-dark-card)] dark:text-[var(--color-sand)]',
-    },
+      color: colors,   
+   },
 
     {
       labelKey:
@@ -209,8 +208,7 @@ const DashboardPage = () => {
 
       icon: ShoppingBag,
 
-      color:
-        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
+      color:colors,
     },
 
     {
@@ -224,8 +222,7 @@ const DashboardPage = () => {
 
       icon: Activity,
 
-      color:
-        'bg-sand text-brand-dark dark:bg-[var(--surface-dark-card)] dark:text-brand',
+      color:colors,
     },
   ]
 
@@ -262,7 +259,7 @@ const DashboardPage = () => {
             handleRefresh
           }
           disabled={loading}
-          className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
+          className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink   hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
         >
           <RefreshCw
             size={17}
@@ -330,7 +327,7 @@ const DashboardPage = () => {
                     key={
                       item.labelKey
                     }
-                    className="rounded-[2rem] border border-line bg-white p-6 shadow-card transition-colors dark:border-[#234b58] dark:bg-[#18353d]"
+                    className="rounded-[2rem] border border-line bg-white p-6 shadow-card  dark:border-[#234b58] dark:bg-[#18353d]"
                   >
 
                     <div
@@ -371,7 +368,7 @@ const DashboardPage = () => {
                 POPULAR MEALS
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray ">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card  dark:border-slate-800 dark:bg-gray ">
 
               <div className="flex items-center justify-between">
 
@@ -430,7 +427,7 @@ const DashboardPage = () => {
                         <div className="h-3 overflow-hidden rounded-full bg-[#f4e9d8] dark:bg-[#234b58]">
 
                           <div
-                            className="h-full rounded-full bg-brand transition-all duration-500"
+                            className="h-full rounded-full bg-brand  "
                             style={{
                               width: `${Math.max(
                                 0,
@@ -467,7 +464,7 @@ const DashboardPage = () => {
                 RECENT ACTIVITY
             ================================================= */}
 
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card  dark:border-slate-800 dark:bg-gray">
 
               <div className="flex items-center justify-between">
 
@@ -501,7 +498,7 @@ const DashboardPage = () => {
                           activity.id ||
                           `${activity.event}-${index}`
                         }
-                        className="rounded-3xl border border-line bg-sand p-4 transition-colors dark:border-[#234b58] dark:bg-[#0f1d22]"
+                        className="rounded-3xl border border-line bg-sand p-4  dark:border-[#234b58] dark:bg-[#0f1d22]"
                       >
 
                         <p className="text-sm text-ink dark:text-white">

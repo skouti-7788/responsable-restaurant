@@ -8,7 +8,7 @@ const Input = ({ label, className = '', ...props }) => {
       )}
 
       <input
-        className={`w-full rounded-3xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted focus:border-brand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)] dark:text-white dark:placeholder:text-[var(--color-muted)] ${className}`}
+        className={`w-full rounded-3xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none   placeholder:text-muted focus:border-brand dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)] dark:text-white dark:placeholder:text-[var(--color-muted)] ${className}`}
         {...props}
       />
     </label>

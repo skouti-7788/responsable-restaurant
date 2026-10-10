@@ -127,6 +127,7 @@ const QRCodePage = () => {
           <div className="mt-6 flex flex-col gap-3">
 
             <Button
+              variant="primary"
               onClick={downloadQRCode}
               disabled={!menuUrl}
             >

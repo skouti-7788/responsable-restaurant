@@ -922,7 +922,7 @@ const StaffPage = () => {
             ADD STAFF
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card  dark:border-slate-800 dark:bg-gray">
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               {t.addStaff ||
@@ -989,18 +989,21 @@ const StaffPage = () => {
             />
 
             <div className="md:col-span-3">
-              <Button
+              <button
                 type="submit"
                 disabled={
                   creating
                 }
+              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark"
+
               >
                 {creating
                   ? t.creatingStaff ||
                     'Creating...'
                   : t.addStaff ||
                     'Add staff'}
-              </Button>
+                  
+              </button>
             </div>
           </form>
         </div>
@@ -1009,7 +1012,7 @@ const StaffPage = () => {
             STAFF LIST
         ================================================= */}
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card   dark:border-slate-800 dark:bg-gray">
 
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -1150,7 +1153,7 @@ const StaffPage = () => {
                             <div className="flex items-center gap-3">
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="secondary"
                                 disabled={
                                   loadingPermissionsId ===
                                   member.id
@@ -1172,7 +1175,7 @@ const StaffPage = () => {
 
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="danger"
                                 disabled={
                                   deletingId ===
                                   member.id
@@ -1248,7 +1251,7 @@ const StaffPage = () => {
                   disabled={
                     savingPermissions
                   }
-                  className="cursor-pointer rounded-xl px-3 py-2 text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+                  className="cursor-pointer rounded-xl px-3 py-2 text-slate-500   hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
                   aria-label="Close"
                 >
                   ✕
@@ -1292,7 +1295,7 @@ const StaffPage = () => {
                       key={
                         group.key
                       }
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-colors dark:border-slate-800 dark:bg-slate-800/60"
+                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4   dark:border-slate-800 dark:bg-slate-800/60"
                     >
                       <div className="mb-4">
                         <h4 className="font-semibold text-slate-900 dark:text-slate-100">
@@ -1321,7 +1324,7 @@ const StaffPage = () => {
                                 key={
                                   permission
                                 }
-                                className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/80 dark:hover:bg-slate-800"
+                                className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3  hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/80 dark:hover:bg-slate-800"
                               >
                                 <input
                                   type="checkbox"

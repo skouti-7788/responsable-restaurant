@@ -34,6 +34,7 @@ import {
   getRestaurantCache,
   setRestaurantCache,
 } from '../../utils/restaurantCache'
+import Button from '../../components/ui/Button'
 
 
 const TablesPage = () => {
@@ -1293,7 +1294,7 @@ const TablesPage = () => {
               loading ||
               refreshing
             }
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink  hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
           >
 
             <RefreshCw
@@ -1320,7 +1321,7 @@ const TablesPage = () => {
                     e.target.value
                   )
                 }
-                className="h-11 rounded-2xl border border-line bg-white px-2 pr-4 text-sm font-medium text-ink outline-none transition focus:border-brand dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:focus:border-brand"
+                className="h-11 rounded-2xl border border-line bg-white px-2 pr-4 text-sm font-medium text-ink outline-none  focus:border-brand dark:border-[#234b58] dark:bg-[var(--surface-dark)] dark:text-white dark:focus:border-brand"
               > 
                 <option value="all">
                   {t.statusAll}
@@ -1342,7 +1343,7 @@ const TablesPage = () => {
               type="button"
               onClick={handleDeleteAll}
               disabled={deletingAll}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600  hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
             >
 
               <Trash2
@@ -1370,7 +1371,7 @@ const TablesPage = () => {
           <button
             type="button"
             onClick={handleOpenBulkAdd}
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white  hover:bg-brand-dark"
           >
 
             <Plus size={18} />
@@ -1452,27 +1453,27 @@ const TablesPage = () => {
 
               <div
                 key={table.id}
-                className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
+                className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card  dark:border-slate-800 dark:bg-gray"
               >
 
                 <div className="flex items-start justify-between gap-3">
 
                   <div className="flex items-center gap-3">
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
+                    {/* <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500">
 
                       <span className="text-lg font-bold">
                         {table.number}
                       </span>
 
-                    </div>
+                    </div> */}
 
                     <div className="min-w-0">
 
                       
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className=" text-2xs text-slate-500 dark:text-slate-400">
 
-                        {t.tableNumber}: {table.number}
+                        {t.tableNumber}:  {table.number}
 
                       </p>
 
@@ -1498,7 +1499,7 @@ const TablesPage = () => {
                   onClick={() =>
                     handleOpenQr(table)
                   }
-                  className="mt-6 w-full cursor-pointer rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800 dark:hover:bg-slate-900"
+                  className="mt-6 w-full cursor-pointer rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left  hover:border-orange-300 hover:bg-orange-50 dark:border-slate-900 dark:bg-slate-950/50 dark:hover:border-orange-900 dark:hover:bg-orange-950/50"
                 >
 
                   <div className="flex items-center gap-3">
@@ -1527,26 +1528,14 @@ const TablesPage = () => {
 
                 <div className="mt-5 flex gap-2">
 
-                  {/* <button
-                    type="button"
-                    onClick={() =>
-                      handleEdit(table)
-                    }
-                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                  >
-
-                    <Pencil size={16} />
-
-                    {t.editTable}
-
-                  </button> */}
+                  
 
                   <button
                     type="button"
                     onClick={() =>
                       handleDelete(table)
                     }
-                    className='disabled:cursor-not-allowed disabled:opacity-50 flex h-11 w-80 cursor-pointer mx-auto items-center justify-center gap-2 rounded-2xl border border-rose-200  text-rose-600 transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50'
+                    className='disabled:cursor-not-allowed disabled:opacity-50 flex h-11 w-80 cursor-pointer mx-auto items-center justify-center gap-2 rounded-2xl border border-rose-200  text-rose-600  hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50'
                     aria-label={t.deleteTable}
                     disabled={deleting === table.id}
                    >
@@ -1630,7 +1619,7 @@ const TablesPage = () => {
                     e.target.value
                   )
                 }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none  focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 placeholder={
                   t.tableCountPlaceholder
                 }
@@ -1641,7 +1630,8 @@ const TablesPage = () => {
 
             <div className="mt-7 flex justify-end gap-3">
 
-              <button
+              <Button
+                variant='scondary'
                 type="button"
                 onClick={() =>
                   setBulkOpen(false)
@@ -1652,20 +1642,20 @@ const TablesPage = () => {
 
                 {t.cancel}
 
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 disabled={bulkSaving}
                 onClick={handleBulkSave}
-                className="cursor-pointer rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white  hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
                 {bulkSaving
                   ? t.saving
                   : t.addTable}
 
-              </button>
+              </Button>
 
             </div>
 
@@ -1673,168 +1663,7 @@ const TablesPage = () => {
 
         </div>
 
-      )}
-
-
-      {/* EDIT MODAL */}
-{/* 
-      {open && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-
-          <div className="w-full max-w-lg rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-
-                <h2 className="text-xl font-semibold">
-                  {t.editTable}
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {t.tableFormDescription}
-                </p>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setOpen(false)
-                }
-                className="text-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                aria-label={t.close}
-              >
-                ✕
-              </button>
-
-            </div>
-
-
-            <div className="mt-6 space-y-5">
-
-              <div>
-
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {t.tableNumber}
-                </label>
-
-                <input
-                  type="number"
-                  min="1"
-                  value={form.number}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      number:
-                        e.target.value,
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  placeholder="1"
-                />
-
-              </div> */}
-
-
-              {/* <div>
-
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {t.tableName}
-                </label>
-
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      name:
-                        e.target.value,
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                  placeholder={`${t.table} ${form.number || '1'}`}
-                />
-
-              </div> */}
-
-
-              {/* <div> */}
-
-                {/* <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {t.status}
-                </label>
-
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      status:
-                        e.target.value,
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                >
-
-                  <option value="available">
-                    {t.available}
-                  </option>
-
-                  <option value="occupied">
-                    {t.occupied}
-                  </option>
-
-                  <option value="reserved">
-                    {t.reserved}
-                  </option>
-
-                </select>
-
-              </div>
-
-            </div> */}
-
-
-            {/* <div className="mt-7 flex justify-end gap-3">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setOpen(false)
-                }
-                disabled={saving}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-
-                {t.cancel}
-
-              </button>
-
-              <button
-                type="button"
-                disabled={saving}
-                onClick={handleSave}
-                className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-
-                {saving
-                  ? t.saving
-                  : t.saveChanges}
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )} */}
-
-
+      )} 
       {/* QR MODAL */}
 
       {qrTable && (
@@ -1960,7 +1789,7 @@ const TablesPage = () => {
                     qrTable
                   )
                 }
-                className="flex-1 cursor-pointer rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-2xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white  hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
 
                 {t.downloadQRCode}

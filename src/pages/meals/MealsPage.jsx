@@ -35,6 +35,7 @@ import {
 } from '../../utils/restaurantCache'
 
 import translations from '../../i18n/translations'
+import Button from '../../components/ui/Button'
 
 const MEALS_CACHE_KEY = 'restaurant_meals_cache'
 const CATEGORIES_CACHE_KEY = 'restaurant_categories_cache'
@@ -839,7 +840,7 @@ const MealsPage = () => {
           return (
             <div
               key={meal.id}
-              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card transition-colors dark:border-slate-800 dark:bg-gray"
+              className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-card  dark:border-slate-800 dark:bg-gray"
             >
               {/* IMAGE */}
 
@@ -934,7 +935,7 @@ const MealsPage = () => {
                           meal
                         )
                       }
-                      className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700   hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     >
                       <Pencil
                         size={16}
@@ -959,7 +960,7 @@ const MealsPage = () => {
                         deletingId ===
                         meal.id
                       }
-                      className="disabled:cursor-not-allowed disabled:opacity-50 flex h-10 cursor-pointer px-3 gap-2 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+                      className="disabled:cursor-not-allowed disabled:opacity-50 flex h-10 cursor-pointer px-3 gap-2 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600   hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
                       aria-label={
                         t.deleteMeal ||
                         'Delete'
@@ -1098,7 +1099,7 @@ const MealsPage = () => {
             disabled={
               refreshing
             }
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink transition hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-line bg-white px-4 text-sm font-medium text-ink   hover:bg-sand disabled:cursor-not-allowed disabled:opacity-50 dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark-card)] dark:text-white dark:hover:bg-[#1f4a54]"
           >
             <RefreshCw
               size={17}
@@ -1125,7 +1126,7 @@ const MealsPage = () => {
                   e.target.value
                 )
               }
-              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:focus:border-slate-500"
+              className="h-11   rounded-2xl border border-slate-200 bg-white px-2 pr-4 text-sm font-medium text-slate-700 outline-none   focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:focus:border-slate-500"
             > 
               <option value="all">
                 {t.statusAll}
@@ -1150,12 +1151,9 @@ const MealsPage = () => {
             disabled={
               deletingAll
             }
-              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
+              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600   hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
           >
-            <Trash2
-              size={17}
-            />
-
+           
             <span className="hidden sm:inline">
               {deletingAll ? t.deletingAll : t.deleteAll || 'Delete All'}
             </span>
@@ -1170,7 +1168,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark"
           >
             <Plus size={18} />
 
@@ -1205,7 +1203,7 @@ const MealsPage = () => {
                t.sherchMealsPlaceholder ||
                 'Search meals...'
               }
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-11 text-sm text-slate-700 outline-none   placeholder:text-slate-400 focus:border-slate-400 dark:border-slate-700 dark:bg-[var(--surface-dark)] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-slate-500"
             />
   
   
@@ -1216,7 +1214,7 @@ const MealsPage = () => {
                 onClick={() =>
                   setSearchTerm('')
                 }
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400   hover:text-slate-600 dark:hover:text-slate-200"
                 aria-label="Clear search"
               >
   
@@ -1295,7 +1293,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white   hover:bg-sky-600"
           >
             <Plus size={18} />
 
@@ -1398,7 +1396,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder={
                     t.mealName ||
                     'Meal name'
@@ -1429,7 +1427,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder={
                     t.description ||
                     'Description'
@@ -1462,7 +1460,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder="0.00"
                 />
               </div>
@@ -1489,7 +1487,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 >
                   <option value="">
                     {t.selectCategory ||
@@ -1536,7 +1534,7 @@ const MealsPage = () => {
 
                 <label
                   htmlFor="meal-image"
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700   hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   {t.chooseImage ||
                     'Choose image'}
@@ -1592,7 +1590,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 >
                   <option value="active">
                     {t.active ||
@@ -1640,7 +1638,8 @@ const MealsPage = () => {
 
             <div className="mt-7 flex justify-end gap-3">
 
-              <button
+              <Button
+                variant='secondary'
                 type="button"
                 onClick={
                   handleClose
@@ -1648,13 +1647,12 @@ const MealsPage = () => {
                 disabled={
                   saving
                 }
-                className="cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
+               >
                 {t.cancel ||
                   'Cancel'}
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={
                   handleSave
@@ -1662,15 +1660,7 @@ const MealsPage = () => {
                 disabled={
                   saving
                 }
-                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-
-                {/* {saving && (
-                  <RefreshCw
-                    size={16}
-                    className="animate-spin"
-                  />
-                )} */}
+               > 
 
                 {saving
                   ? t.saving ||
@@ -1681,7 +1671,7 @@ const MealsPage = () => {
                     : t.addMeal ||
                       'Add meal'}
 
-              </button>
+              </Button>
 
             </div>
 
