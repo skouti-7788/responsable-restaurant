@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice'
 import Input from '../../components/ui/Input'
-import Button from '../../components/ui/Button'
 import axiosClient from '../../api/axiosClient'
 
 const LoginPage = () => {
@@ -64,9 +63,12 @@ const LoginPage = () => {
 
         <div className="col-span-full flex flex-col gap-3 pt-2">
           {error && <p className="text-sm text-rose-500">{error}</p>}
-          <Button type="submit" disabled={loading}>
+          <butron 
+          className='inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark'
+
+          type="submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Login'}
-          </Button>
+          </butron>
           <p className="mt-6 text-center text-sm text-muted">
             <Link to="/register" className="font-medium text-brand hover:text-brand-dark">
               Already have an account? Login

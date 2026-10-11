@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice'
 import Input from '../../components/ui/Input'
-import Button from '../../components/ui/Button'
 import axiosClient from '../../api/axiosClient'
 
 const RegisterPage = () => {
@@ -60,9 +59,11 @@ const RegisterPage = () => {
           <Input label= 'Password' value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="••••••••" type="password" />
           {error && <p className="col-span-full text-sm text-rose-500">{error}</p>}
           <div className="col-span-full flex flex-col gap-3 pt-2">
-            <Button type="submit" disabled={loading}>
+            <button 
+            className='inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark' 
+            type="submit" disabled={loading}>
               {loading ? 'Creating account...' : 'Create account'}
-            </Button>
+            </button>
             <p className="text-center text-sm text-muted">
               <Link to="/login" className="font-medium text-brand hover:text-brand-dark">
                 Already have an account? Login
