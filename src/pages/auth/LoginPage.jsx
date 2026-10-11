@@ -63,12 +63,12 @@ const LoginPage = () => {
 
         <div className="col-span-full flex flex-col gap-3 pt-2">
           {error && <p className="text-sm text-rose-500">{error}</p>}
-          <butron 
+          <button 
           className='inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark'
 
           type="submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Login'}
-          </butron>
+          </button>
           <p className="mt-6 text-center text-sm text-muted">
             <Link to="/register" className="font-medium text-brand hover:text-brand-dark">
               Already have an account? Login
