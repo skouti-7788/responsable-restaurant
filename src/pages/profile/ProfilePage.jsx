@@ -291,191 +291,191 @@ const [passwordMessage, setPasswordMessage] = useState({
   // ===================================================
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+      e.preventDefault()
 
-    const restaurantId =
-      form?.id ||
-      profile?.id ||
-      getCachedProfile()?.id
+      const restaurantId =
+        form?.id ||
+        profile?.id ||
+        getCachedProfile()?.id
 
-    if (!restaurantId) {
-      console.error(
-        'Restaurant ID not found'
-      )
-
-      return
-    }
-
-    try {
-      // -------------------------------------------------
-      // FORM DATA
-      // -------------------------------------------------
-
-      const formData =
-        new FormData()
-
-      // -------------------------------------------------
-      // METHOD SPOOFING
-      // -------------------------------------------------
-
-      formData.append(
-        '_method',
-        'PUT'
-      )
-
-      // -------------------------------------------------
-      // BASIC DATA
-      // -------------------------------------------------
-
-      formData.append(
-        'name',
-        form.name || ''
-      )
-
-      formData.append(
-        'email',
-        form.email || ''
-      )
-
-      formData.append(
-        'phone',
-        form.phone || ''
-      )
-
-      formData.append(
-        'address',
-        form.address || ''
-      )
-
-      // -------------------------------------------------
-      // OPENING HOURS
-      // -------------------------------------------------
-
-      const openingHours =
-        form.openingHours
-          ? form.openingHours
-              .split(',')
-              .map((entry) => {
-                const [
-                  day,
-                  hours,
-                ] = entry.split(':')
-
-                const [
-                  from,
-                  to,
-                ] = (
-                  hours || ''
-                ).split('-')
-
-                return {
-                  day:
-                    day?.trim() || '',
-
-                  from:
-                    from?.trim() || '',
-
-                  to:
-                    to?.trim() || '',
-                }
-              })
-              .filter(
-                (entry) =>
-                  entry.day ||
-                  entry.from ||
-                  entry.to
-              )
-          : []
-
-      openingHours.forEach(
-        (entry, index) => {
-          formData.append(
-            `opening_hours[${index}][day]`,
-            entry.day
-          )
-
-          formData.append(
-            `opening_hours[${index}][from]`,
-            entry.from
-          )
-
-          formData.append(
-            `opening_hours[${index}][to]`,
-            entry.to
-          )
-        }
-      )
-
-      // -------------------------------------------------
-      // FACEBOOK
-      // -------------------------------------------------
-
-      formData.append(
-        'social_links[facebook]',
-        form.socials?.facebook || ''
-      )
-
-      // -------------------------------------------------
-      // UPDATE API
-      // -------------------------------------------------
-
-      const response =
-        await updateRestaurantProfile(
-          restaurantId,
-          formData
+      if (!restaurantId) {
+        console.error(
+          'Restaurant ID not found'
         )
 
-      // -------------------------------------------------
-      // NORMALIZE RESPONSE
-      // -------------------------------------------------
+        return
+      }
 
-      const normalized =
-        normalizeProfile(
-          response
-        ) || {
-          ...form,
-          id: restaurantId,
-        }
+      try {
+        // -------------------------------------------------
+        // FORM DATA
+        // -------------------------------------------------
 
-      // -------------------------------------------------
-      // UPDATE REDUX
-      // -------------------------------------------------
+        const formData =
+          new FormData()
 
-      dispatch(
-        updateProfile(
+        // -------------------------------------------------
+        // METHOD SPOOFING
+        // -------------------------------------------------
+
+        formData.append(
+          '_method',
+          'PUT'
+        )
+
+        // -------------------------------------------------
+        // BASIC DATA
+        // -------------------------------------------------
+
+        formData.append(
+          'name',
+          form.name || ''
+        )
+
+        formData.append(
+          'email',
+          form.email || ''
+        )
+
+        formData.append(
+          'phone',
+          form.phone || ''
+        )
+
+        formData.append(
+          'address',
+          form.address || ''
+        )
+
+        // -------------------------------------------------
+        // OPENING HOURS
+        // -------------------------------------------------
+
+        const openingHours =
+          form.openingHours
+            ? form.openingHours
+                .split(',')
+                .map((entry) => {
+                  const [
+                    day,
+                    hours,
+                  ] = entry.split(':')
+
+                  const [
+                    from,
+                    to,
+                  ] = (
+                    hours || ''
+                  ).split('-')
+
+                  return {
+                    day:
+                      day?.trim() || '',
+
+                    from:
+                      from?.trim() || '',
+
+                    to:
+                      to?.trim() || '',
+                  }
+                })
+                .filter(
+                  (entry) =>
+                    entry.day ||
+                    entry.from ||
+                    entry.to
+                )
+            : []
+
+        openingHours.forEach(
+          (entry, index) => {
+            formData.append(
+              `opening_hours[${index}][day]`,
+              entry.day
+            )
+
+            formData.append(
+              `opening_hours[${index}][from]`,
+              entry.from
+            )
+
+            formData.append(
+              `opening_hours[${index}][to]`,
+              entry.to
+            )
+          }
+        )
+
+        // -------------------------------------------------
+        // FACEBOOK
+        // -------------------------------------------------
+
+        formData.append(
+          'social_links[facebook]',
+          form.socials?.facebook || ''
+        )
+
+        // -------------------------------------------------
+        // UPDATE API
+        // -------------------------------------------------
+
+        const response =
+          await updateRestaurantProfile(
+            restaurantId,
+            formData
+          )
+
+        // -------------------------------------------------
+        // NORMALIZE RESPONSE
+        // -------------------------------------------------
+
+        const normalized =
+          normalizeProfile(
+            response
+          ) || {
+            ...form,
+            id: restaurantId,
+          }
+
+        // -------------------------------------------------
+        // UPDATE REDUX
+        // -------------------------------------------------
+
+        dispatch(
+          updateProfile(
+            normalized
+          )
+        )
+
+        // -------------------------------------------------
+        // UPDATE CACHE
+        // -------------------------------------------------
+
+        saveCachedProfile(
           normalized
         )
-      )
 
-      // -------------------------------------------------
-      // UPDATE CACHE
-      // -------------------------------------------------
+        // -------------------------------------------------
+        // UPDATE FORM
+        // -------------------------------------------------
 
-      saveCachedProfile(
-        normalized
-      )
-
-      // -------------------------------------------------
-      // UPDATE FORM
-      // -------------------------------------------------
-
-      setForm(
-        normalized
-      )
-    } catch (error) {
-      console.error(
-        'Update profile error:',
-        error?.response?.data ||
-          error
-      )
+        setForm(
+          normalized
+        )
+      } catch (error) {
+        console.error(
+          'Update profile error:',
+          error?.response?.data ||
+            error
+        )
+      }
     }
-  }
-  //============================================
-  //FUNCTION CHANGER LE MOT DE PASSE  
-  //============================================
+    //============================================
+    //FUNCTION CHANGER LE MOT DE PASSE  
+    //============================================
+    
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
-
     setPasswordMessage({ type: '', text: '' })
 
     if (
@@ -485,7 +485,7 @@ const [passwordMessage, setPasswordMessage] = useState({
     ) {
       setPasswordMessage({
         type: 'error',
-        text: 'Veuillez remplir tous les champs.',
+        text: t.passwordFieldsRequired,
       })
       return
     }
@@ -493,7 +493,7 @@ const [passwordMessage, setPasswordMessage] = useState({
     if (passwordForm.password.length < 8) {
       setPasswordMessage({
         type: 'error',
-        text: 'Le mot de passe doit contenir au moins 8 caractères.',
+        text: t.passwordMinLength,
       })
       return
     }
@@ -504,7 +504,7 @@ const [passwordMessage, setPasswordMessage] = useState({
     ) {
       setPasswordMessage({
         type: 'error',
-        text: 'Les mots de passe ne correspondent pas.',
+        text: t.passwordMismatch,
       })
       return
     }
@@ -512,7 +512,7 @@ const [passwordMessage, setPasswordMessage] = useState({
     setPasswordLoading(true)
 
     try {
-      const response = await changePassword(passwordForm)
+      await changePassword(passwordForm)
 
       setPasswordForm({
         current_password: '',
@@ -522,23 +522,36 @@ const [passwordMessage, setPasswordMessage] = useState({
 
       setPasswordMessage({
         type: 'success',
-        text: response?.message || 'Mot de passe modifié avec succès.',
+        text: t.passwordChangedSuccess,
       })
     } catch (error) {
+      console.error(
+        'Change password error:',
+        error?.response?.data || error
+      )
+
       const data = error?.response?.data
+
+      let message = t.passwordChangeError
+
+      if (data?.errors?.current_password) {
+        message = t.currentPasswordIncorrect
+      } else if (data?.errors?.password) {
+        message = data.errors.password[0]
+      } else if (data?.errors?.password_confirmation) {
+        message = t.passwordMismatch
+      }
 
       setPasswordMessage({
         type: 'error',
-        text:
-          data?.errors?.current_password?.[0] ||
-          data?.errors?.password?.[0] ||
-          data?.message ||
-          'Impossible de modifier le mot de passe.',
+        text: message,
       })
     } finally {
       setPasswordLoading(false)
     }
   }
+
+ 
 
   // ===================================================
   // UI
@@ -604,15 +617,18 @@ const [passwordMessage, setPasswordMessage] = useState({
 
         </form>
          
-      </div>
-      
+      </div> 
+
+      {/* =================================================
+          CHANGE PASSWORD
+      ================================================= */}
       <div className="mt-8 rounded-[2rem] border border-line bg-white p-6 shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
         <h2 className="mb-2 text-xl font-semibold text-ink dark:text-white">
-          Changer le mot de passe
+          {t.changePasswordTitle}
         </h2>
 
         <p className="mb-6 text-sm text-muted dark:text-slate-400">
-          Sécurisez votre compte en modifiant votre mot de passe.
+          {t.changePasswordDescription}
         </p>
 
         <form
@@ -620,9 +636,10 @@ const [passwordMessage, setPasswordMessage] = useState({
           className="grid gap-5 md:grid-cols-2"
         >
           <div className="md:col-span-2">
-            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
-              Mot de passe actuel
+            <label className="mb-2 block text-sm font-medium text-ink dark:text-slate-200">
+              {t.currentPassword}
             </label>
+
             <input
               type="password"
               autoComplete="current-password"
@@ -634,15 +651,16 @@ const [passwordMessage, setPasswordMessage] = useState({
                   current_password: e.target.value,
                 }))
               }
-              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
-              placeholder="Mot de passe actuel"
+              className="w-full rounded-xl border border-line bg-white p-3 text-ink outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder={t.currentPasswordPlaceholder}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
-              Nouveau mot de passe
+            <label className="mb-2 block text-sm font-medium text-ink dark:text-slate-200">
+              {t.newPassword}
             </label>
+
             <input
               type="password"
               autoComplete="new-password"
@@ -655,15 +673,16 @@ const [passwordMessage, setPasswordMessage] = useState({
                   password: e.target.value,
                 }))
               }
-              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
-              placeholder="Minimum 8 caractères"
+              className="w-full rounded-xl border border-line bg-white p-3 text-ink outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder={t.newPasswordPlaceholder}
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
-              Confirmer le nouveau mot de passe
+            <label className="mb-2 block text-sm font-medium text-ink dark:text-slate-200">
+              {t.confirmNewPassword}
             </label>
+
             <input
               type="password"
               autoComplete="new-password"
@@ -676,15 +695,20 @@ const [passwordMessage, setPasswordMessage] = useState({
                   password_confirmation: e.target.value,
                 }))
               }
-              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
-              placeholder="Confirmer le mot de passe"
+              className="w-full rounded-xl border border-line bg-white p-3 text-ink outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder={t.confirmPasswordPlaceholder}
             />
           </div>
 
           {passwordMessage.text && (
             <p
-              role="alert"
-              className="text-sm text-red-500 md:col-span-2"
+              role="status"
+              aria-live="polite"
+              className={`${
+                passwordMessage.type === 'success'
+                  ? 'text-green-400'
+                  : 'text-red-400'
+              }`}
             >
               {passwordMessage.text}
             </p>
@@ -694,11 +718,11 @@ const [passwordMessage, setPasswordMessage] = useState({
             <button
               type="submit"
               disabled={passwordLoading}
-              className="h-11 rounded-2xl bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+              className="h-11 rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
               {passwordLoading
-                ? 'Modification...'
-                : 'Changer le mot de passe'}
+                ? t.changingPassword
+                : t.changePasswordButton}
             </button>
           </div>
         </form>

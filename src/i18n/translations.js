@@ -364,15 +364,46 @@ const translations = {
     deleteMeal: 'Delete meal',
     currencySymbol: 'DH',
     statusAll: 'All statuses',
-    sherchMealsPlaceholder:'Search by meal...'
-                 
-        
+    sherchMealsPlaceholder:'Search by meal...',       
+    changePasswordTitle: 'Change password',
+    changePasswordDescription: 'Keep your account secure by changing your password.',
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    confirmNewPassword: 'Confirm new password',
+    currentPasswordPlaceholder: 'Enter your current password',
+    newPasswordPlaceholder: 'At least 8 characters',
+    confirmPasswordPlaceholder: 'Confirm your new password',
+    changePasswordButton: 'Change password',
+    changingPassword: 'Changing password...',
+    passwordChangedSuccess: 'Password changed successfully.',
+    passwordChangeError: 'Unable to change the password.',
+    passwordFieldsRequired: 'Please fill in all fields.',
+    passwordMinLength: 'The password must contain at least 8 characters.',
+    passwordMismatch: 'The passwords do not match.',
+    currentPasswordIncorrect: 'The current password is incorrect.',
     },
 
   // =========================================================
   // FRANÇAIS
   // =========================================================
   fr: {
+    changePasswordTitle: 'Changer le mot de passe',
+    changePasswordDescription: 'Sécurisez votre compte en modifiant votre mot de passe.',
+    currentPassword: 'Mot de passe actuel',
+    newPassword: 'Nouveau mot de passe',
+    confirmNewPassword: 'Confirmer le nouveau mot de passe',
+    currentPasswordPlaceholder: 'Saisissez votre mot de passe actuel',
+    newPasswordPlaceholder: 'Minimum 8 caractères',
+    confirmPasswordPlaceholder: 'Confirmez le nouveau mot de passe',
+    changePasswordButton: 'Changer le mot de passe',
+    changingPassword: 'Modification en cours...',
+    passwordChangedSuccess: 'Mot de passe modifié avec succès.',
+    passwordChangeError: 'Impossible de modifier le mot de passe.',
+    passwordFieldsRequired: 'Veuillez remplir tous les champs.',
+    passwordMinLength: 'Le mot de passe doit contenir au moins 8 caractères.',
+    passwordMismatch: 'Les mots de passe ne correspondent pas.',
+    currentPasswordIncorrect: 'Le mot de passe actuel est incorrect.',
+  
     login: 'Se connecter',
     register: 'Enregistrer un restaurant',
 
@@ -745,6 +776,23 @@ const translations = {
   // العربية
   // =========================================================
   ar: {
+
+    changePasswordTitle: 'تغيير كلمة المرور',
+    changePasswordDescription: 'حافظ على أمان حسابك من خلال تغيير كلمة المرور.',
+    currentPassword: 'كلمة المرور الحالية',
+    newPassword: 'كلمة المرور الجديدة',
+    confirmNewPassword: 'تأكيد كلمة المرور الجديدة',
+    currentPasswordPlaceholder: 'أدخل كلمة المرور الحالية',
+    newPasswordPlaceholder: '8 أحرف على الأقل',
+    confirmPasswordPlaceholder: 'أعد إدخال كلمة المرور الجديدة',
+    changePasswordButton: 'تغيير كلمة المرور',
+    changingPassword: 'جارٍ تغيير كلمة المرور...',
+    passwordChangedSuccess: 'تم تغيير كلمة المرور بنجاح.',
+    passwordChangeError: 'تعذر تغيير كلمة المرور.',
+    passwordFieldsRequired: 'يرجى ملء جميع الحقول.',
+    passwordMinLength: 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.',
+    passwordMismatch: 'كلمتا المرور غير متطابقتين.',
+    currentPasswordIncorrect: 'كلمة المرور الحالية غير صحيحة.', 
     colors: 'الألوان',
     login: 'تسجيل الدخول',
     register: 'تسجيل المطعم',
