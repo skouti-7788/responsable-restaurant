@@ -261,3 +261,23 @@ export const clearAllProfileCaches = () => {
     )
   }
 }
+//=============================================
+// Change password for the authenticated user.
+// The password is never cached in localStorage.
+//=============================================
+export const changePassword = async ({
+  current_password,
+  password,
+  password_confirmation,
+}) => {
+  const response = await axiosClient.put(
+    '/auth/password',
+    {
+      current_password,
+      password,
+      password_confirmation,
+    }
+  )
+
+  return response.data
+}

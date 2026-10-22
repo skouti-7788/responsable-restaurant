@@ -13,6 +13,7 @@ const RegisterPage = () => {
     loading: state.auth.loading,
     error: state.auth.error,
   }))
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -61,7 +62,9 @@ const RegisterPage = () => {
           <div className="col-span-full flex flex-col gap-3 pt-2">
             <button 
             className='inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-brand px-5 text-sm font-semibold text-white   hover:bg-brand-dark' 
-            type="submit" disabled={loading}>
+            type="submit"
+
+             disabled={loading}>
               {loading ? 'Creating account...' : 'Create account'}
             </button>
             <p className="text-center text-sm text-muted">

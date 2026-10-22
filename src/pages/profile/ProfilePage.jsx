@@ -6,6 +6,7 @@ import {
   updateRestaurantProfile,
   getCachedProfile,
   saveCachedProfile,
+  changePassword,
 } from '../../data/dataProfile'
 
 import { updateProfile } from '../../store/restaurantSlice'
@@ -76,7 +77,21 @@ const normalizeProfile = (restaurant) => {
 
 const ProfilePage = () => {
   const dispatch = useDispatch()
+// =====================================================
+// STATE CHANGER LE MOT DE PASSE  
+// =====================================================
+  const [passwordForm, setPasswordForm] = useState({
+  current_password: '',
+  password: '',
+  password_confirmation: '',
+})
 
+const [passwordLoading, setPasswordLoading] = useState(false)
+
+const [passwordMessage, setPasswordMessage] = useState({
+  type: '',
+  text: '',
+})
   // ===================================================
   // LANGUAGE
   // ===================================================
@@ -455,11 +470,80 @@ const ProfilePage = () => {
       )
     }
   }
+  //============================================
+  //FUNCTION CHANGER LE MOT DE PASSE  
+  //============================================
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+
+    setPasswordMessage({ type: '', text: '' })
+
+    if (
+      !passwordForm.current_password ||
+      !passwordForm.password ||
+      !passwordForm.password_confirmation
+    ) {
+      setPasswordMessage({
+        type: 'error',
+        text: 'Veuillez remplir tous les champs.',
+      })
+      return
+    }
+
+    if (passwordForm.password.length < 8) {
+      setPasswordMessage({
+        type: 'error',
+        text: 'Le mot de passe doit contenir au moins 8 caractères.',
+      })
+      return
+    }
+
+    if (
+      passwordForm.password !==
+      passwordForm.password_confirmation
+    ) {
+      setPasswordMessage({
+        type: 'error',
+        text: 'Les mots de passe ne correspondent pas.',
+      })
+      return
+    }
+
+    setPasswordLoading(true)
+
+    try {
+      const response = await changePassword(passwordForm)
+
+      setPasswordForm({
+        current_password: '',
+        password: '',
+        password_confirmation: '',
+      })
+
+      setPasswordMessage({
+        type: 'success',
+        text: response?.message || 'Mot de passe modifié avec succès.',
+      })
+    } catch (error) {
+      const data = error?.response?.data
+
+      setPasswordMessage({
+        type: 'error',
+        text:
+          data?.errors?.current_password?.[0] ||
+          data?.errors?.password?.[0] ||
+          data?.message ||
+          'Impossible de modifier le mot de passe.',
+      })
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
 
   // ===================================================
   // UI
   // ===================================================
-
+  
   return (
     <div className="text-ink dark:text-slate-100">
 
@@ -519,7 +603,105 @@ const ProfilePage = () => {
           </div>
 
         </form>
+         
+      </div>
+      
+      <div className="mt-8 rounded-[2rem] border border-line bg-white p-6 shadow-card dark:border-[#234b58] dark:bg-[#18353d]">
+        <h2 className="mb-2 text-xl font-semibold text-ink dark:text-white">
+          Changer le mot de passe
+        </h2>
 
+        <p className="mb-6 text-sm text-muted dark:text-slate-400">
+          Sécurisez votre compte en modifiant votre mot de passe.
+        </p>
+
+        <form
+          onSubmit={handlePasswordSubmit}
+          className="grid gap-5 md:grid-cols-2"
+        >
+          <div className="md:col-span-2">
+            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
+              Mot de passe actuel
+            </label>
+            <input
+              type="password"
+              autoComplete="current-password"
+              required
+              value={passwordForm.current_password}
+              onChange={(e) =>
+                setPasswordForm((prev) => ({
+                  ...prev,
+                  current_password: e.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder="Mot de passe actuel"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+              value={passwordForm.password}
+              onChange={(e) =>
+                setPasswordForm((prev) => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder="Minimum 8 caractères"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium dark:text-slate-200">
+              Confirmer le nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+              value={passwordForm.password_confirmation}
+              onChange={(e) =>
+                setPasswordForm((prev) => ({
+                  ...prev,
+                  password_confirmation: e.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-line bg-white p-3 outline-none focus:border-brand dark:border-[#315660] dark:bg-[#102a32] dark:text-white"
+              placeholder="Confirmer le mot de passe"
+            />
+          </div>
+
+          {passwordMessage.text && (
+            <p
+              role="alert"
+              className="text-sm text-red-500 md:col-span-2"
+            >
+              {passwordMessage.text}
+            </p>
+          )}
+
+          <div className="flex justify-end border-t border-line pt-5 md:col-span-2 dark:border-[#234b58]">
+            <button
+              type="submit"
+              disabled={passwordLoading}
+              className="h-11 rounded-2xl bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+            >
+              {passwordLoading
+                ? 'Modification...'
+                : 'Changer le mot de passe'}
+            </button>
+          </div>
+        </form>
       </div>
 
     </div>
