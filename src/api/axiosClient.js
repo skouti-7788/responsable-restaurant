@@ -3,8 +3,7 @@ import axios from 'axios'
 import { clearRestaurantCaches } from '../utils/restaurantCache'
 
 const baseURL = 
-import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL  
-// || 'https://backend-menu-5.onrender.com/api' 
+import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL  || 'https://backend-menu-5.onrender.com/api' 
  
 const axiosClient = axios.create({
   baseURL,
