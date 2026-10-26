@@ -18,7 +18,8 @@ import TablesPage from './pages/Tables/TablesPage'
 import AppearancePage from './pages/Appearance/AppearancePage'
 import StaffPage from './pages/staff/StaffPage'
 import PageHome from './pages/home/pageHome'
-
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 function App() {
   const { language, theme } = useSelector((state) => state.ui)
 
@@ -41,7 +42,14 @@ function App() {
         <Route path="/home" element={<PageHome />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
+        <Route
+          path="/forgot-password"
+          element={<ForgotPasswordPage />}
+        />
+        <Route
+          path="/reset-password"
+          element={<ResetPasswordPage />}
+        />
         <Route
           path="/"
           element={
