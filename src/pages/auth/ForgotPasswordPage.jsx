@@ -23,11 +23,15 @@ const ForgotPasswordPage = () => {
 
       setMessage(
         response.data.message 
-      )
+       )
+      setError('')
     } catch (err) {
       setError(
-        err?.response?.data?.message  
+        err?.message ||
+        'Something went wrong. Please try again.'
       )
+
+      setMessage('')
     } finally {
       setLoading(false)
     }

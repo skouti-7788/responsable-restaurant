@@ -3,7 +3,7 @@ import axios from 'axios'
 import { clearRestaurantCaches } from '../utils/restaurantCache'
 
 const baseURL =
- import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL  || 
+//  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL  || 
 'https://backend-menu-5.onrender.com/api';
  
 const axiosClient = axios.create({
@@ -13,22 +13,12 @@ const axiosClient = axios.create({
     'Content-Type': 'application/json',
   },
 })
-
-// axiosClient.interceptors.request.use((config) => {
-//   const token = localStorage.getItem('restaurant_token')
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`
-//   }
-
-//   return config
-// })
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('restaurant_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  // إلا كان الـ data FormData، حيد الـ Content-Type باش axios يحدد الـ boundary وحدو
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type']
   }
