@@ -22,13 +22,11 @@ const ForgotPasswordPage = () => {
       )
 
       setMessage(
-        response.data.message ||
-          'If the account exists, a reset link will be sent to your email.'
+        response.data.message 
       )
     } catch (err) {
       setError(
-        err?.response?.data?.message ||
-          'Unable to send the reset link. Please try again.'
+        err?.response?.data?.message  
       )
     } finally {
       setLoading(false)
