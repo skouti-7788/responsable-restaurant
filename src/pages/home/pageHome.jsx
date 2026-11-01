@@ -245,7 +245,7 @@ function PageHome() {
             </Link>
 
             <Link
-              to="/register"
+              to="/pricing"
               className="hidden cursor-pointer rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
             >
               Get Started
@@ -290,7 +290,7 @@ function PageHome() {
               </Link>
 
               <Link
-                to="/register"
+                to="/pricing"
                 className="flex-1 rounded-xl bg-brand py-2.5 text-center text-sm font-semibold text-white"
                 onClick={() => setOpen(false)}
               >
@@ -341,7 +341,7 @@ function PageHome() {
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
 
                   <Link
-                    to="/register"
+                    to="/pricing"
                     className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:w-auto"
                   >
                     Get Started
@@ -595,7 +595,7 @@ function PageHome() {
 
 
             <Link
-              to="/register"
+              to="/pricing"
               className="relative z-10 inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5"
             >
               Create Your Menu
