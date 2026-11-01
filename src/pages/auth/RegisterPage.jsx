@@ -36,7 +36,12 @@ const RegisterPage = () => {
       dispatch(loginSuccess({ token: response.data.token, user: response.data.user }))
       navigate('/')
     } catch (err) {
-      const message = err?.message || 'Unable to register'
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.email?.[0] ||
+        err?.response?.data?.errors?.name?.[0] ||
+        err?.response?.data?.errors?.password?.[0] ||
+        'Unable to register. Please try again.'
       dispatch(loginFailure(message))
     }
   }
