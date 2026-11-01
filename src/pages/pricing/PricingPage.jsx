@@ -83,6 +83,7 @@ const translations = {
     choose: 'Choisir cette formule',
     popular: 'Le plus populaire',
     currency: 'MAD',
+    free: 'Gratuit',
     login: 'Se connecter',
   },
   en: {
@@ -120,6 +121,7 @@ const translations = {
     choose: 'Choose this plan',
     popular: 'Most popular',
     currency: 'MAD',
+    free: 'Free',
     login: 'Log in',
   },
   ar: {
@@ -157,6 +159,7 @@ const translations = {
     choose: 'اختر هذه الباقة',
     popular: 'الأكثر طلباً',
     currency: 'درهم',
+    free: 'مجاناً',
     login: 'تسجيل الدخول',
   },
 }
@@ -312,7 +315,7 @@ export default function PricingPage() {
               <h2 className="text-2xl font-bold">{t[plan.id]}</h2>
 
               <p className="mt-4 text-3xl font-extrabold">
-                {plan.price === 0 ? 'Gratuit' : (
+                {plan.price === 0 ? t.free : (
                   <>
                     {formatPrice(plan.price)}
                     <span className="ms-1 text-sm font-medium">{t.currency}</span>
