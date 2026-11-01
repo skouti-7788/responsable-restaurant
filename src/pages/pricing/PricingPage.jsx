@@ -1,85 +1,91 @@
-
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const plans = [
-  {
-    id: 'free',
-    price: 0,
-    popular: false,
-    features: {
-      fr: ['Menu QR', 'Gestion du menu', 'Personnalisation de base'],
-      en: ['QR menu', 'Menu management', 'Basic customization'],
-      ar: ['قائمة QR', 'إدارة الوجبات', 'تخصيص أساسي'],
-    },
-  },
-  {
-    id: 'pro',
-    price: 99,
-    popular: true,
-    features: {
-      fr: ['Tout le plan Free', 'Commandes en ligne', 'Statistiques'],
-      en: ['Everything in Free', 'Online orders', 'Analytics'],
-      ar: ['جميع مميزات المجانية', 'الطلبات عبر الإنترنت', 'الإحصائيات'],
-    },
-  },
-  {
-    id: 'premium',
-    price: 199,
-    popular: false,
-    features: {
-      fr: ['Tout le plan Pro', 'Gestion avancée', 'Support prioritaire'],
-      en: ['Everything in Pro', 'Advanced management', 'Priority support'],
-      ar: ['جميع مميزات Pro', 'إدارة متقدمة', 'دعم ذو أولوية'],
-    },
-  },
+  { id: 'starter', popular: false },
+  { id: 'pro', popular: true },
+  { id: 'business', popular: false },
+]
+
+const features = [
+  { id: 'menuQr', values: ['included', 'included', 'included'] },
+  { id: 'meals', values: ['30', 'unlimited', 'unlimited'] },
+  { id: 'categories', values: ['5', 'unlimited', 'unlimited'] },
+  { id: 'orders', values: ['locked', 'included', 'included'] },
+  { id: 'tables', values: ['locked', 'included', 'included'] },
+  { id: 'staff', values: ['locked', 'locked', 'included'] },
+  { id: 'appearance', values: ['basic', 'advanced', 'advanced'] },
 ]
 
 const translations = {
   fr: {
-    title: 'Choisissez votre formule',
-    subtitle: 'Développez votre restaurant avec Menu Online.',
-    monthly: 'Mensuel',
-    yearly: 'Annuel',
-    month: '/ mois',
-    year: '/ an',
-    free: 'Gratuit',
+    title: 'Choisissez la formule adaptée à votre restaurant',
+    subtitle: 'Comparez les fonctionnalités et choisissez la formule qui correspond à vos besoins.',
+    feature: 'Fonctionnalité',
+    starter: 'Starter',
     pro: 'Pro',
-    premium: 'Premium',
+    business: 'Business',
+    menuQr: 'Menu + QR Code',
+    meals: 'Plats',
+    categories: 'Catégories',
+    orders: 'Commandes',
+    tables: 'Tables',
+    staff: 'Personnel',
+    appearance: 'Personnalisation',
+    included: '✓',
+    locked: 'Verrouillé',
+    basic: 'Basique',
+    advanced: 'Avancée',
     choose: 'Choisir cette formule',
-    popular: 'Le plus populaire',
-    currency: 'MAD',
+    popular: 'La plus populaire',
     login: 'Se connecter',
+    home: 'Accueil',
   },
   en: {
-    title: 'Choose your plan',
-    subtitle: 'Grow your restaurant with Menu Online.',
-    monthly: 'Monthly',
-    yearly: 'Yearly',
-    month: '/ month',
-    year: '/ year',
-    free: 'Free',
+    title: 'Choose the right plan for your restaurant',
+    subtitle: 'Compare features and choose the plan that fits your needs.',
+    feature: 'Feature',
+    starter: 'Starter',
     pro: 'Pro',
-    premium: 'Premium',
+    business: 'Business',
+    menuQr: 'Menu + QR Code',
+    meals: 'Meals',
+    categories: 'Categories',
+    orders: 'Orders',
+    tables: 'Tables',
+    staff: 'Staff',
+    appearance: 'Appearance',
+    included: '✓',
+    locked: 'Locked',
+    basic: 'Basic',
+    advanced: 'Advanced',
     choose: 'Choose this plan',
     popular: 'Most popular',
-    currency: 'MAD',
     login: 'Log in',
+    home: 'Home',
   },
   ar: {
-    title: 'اختر الباقة المناسبة لك',
-    subtitle: 'طوّر مطعمك مع Menu Online.',
-    monthly: 'شهري',
-    yearly: 'سنوي',
-    month: '/ الشهر',
-    year: '/ السنة',
-    free: 'مجانية',
-    pro: 'احترافية',
-    premium: 'متميزة',
+    title: 'اختر الباقة المناسبة لمطعمك',
+    subtitle: 'قارن بين المميزات واختر الباقة التي تناسب احتياجاتك.',
+    feature: 'الميزة',
+    starter: 'Starter',
+    pro: 'Pro',
+    business: 'Business',
+    menuQr: 'القائمة + رمز QR',
+    meals: 'الوجبات',
+    categories: 'الأصناف',
+    orders: 'الطلبات',
+    tables: 'الطاولات',
+    staff: 'الموظفون',
+    appearance: 'التخصيص والمظهر',
+    included: '✓',
+    locked: 'مقفل',
+    basic: 'أساسي',
+    advanced: 'متقدم',
     choose: 'اختر هذه الباقة',
-    popular: 'الأكثر طلباً',
-    currency: 'درهم',
+    popular: 'الأكثر شعبية',
     login: 'تسجيل الدخول',
+    home: 'الرئيسية',
   },
 }
 
@@ -89,7 +95,6 @@ export default function PricingPage() {
     return ['fr', 'en', 'ar'].includes(saved) ? saved : 'fr'
   })
 
-  const [yearly, setYearly] = useState(false)
   const t = translations[language]
   const isArabic = language === 'ar'
 
@@ -99,133 +104,90 @@ export default function PricingPage() {
     localStorage.setItem('menu_language', language)
   }, [language, isArabic])
 
-  const formatPrice = (price) => {
-    const total = yearly ? price * 10 : price
+  const renderValue = (value) => {
+    if (value === 'included') {
+      return <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#ECFDF3] font-bold text-[#15803D]">✓</span>
+    }
 
-    return new Intl.NumberFormat(
-      language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en',
-      { maximumFractionDigits: 0 }
-    ).format(total)
+    if (value === 'locked') {
+      return <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]"><span aria-hidden="true">🔒</span>{t.locked}</span>
+    }
+
+    return <span className="font-semibold text-[#12343C]">{t[value] ?? value}</span>
   }
 
   return (
-    <main
-      dir={isArabic ? 'rtl' : 'ltr'}
-      className="min-h-screen bg-[#FFF9ED] px-4 py-10 text-[#12343C] sm:px-8"
-    >
+    <main dir={isArabic ? 'rtl' : 'ltr'} className="min-h-screen bg-[#FFF9ED] px-4 py-8 text-[#12343C] sm:px-8 sm:py-12">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-        <Link to="/home" className="text-xl font-bold">
-          Menu Online
-        </Link>
+        <Link to="/home" className="text-xl font-bold">Menu Online</Link>
 
         <div className="flex items-center gap-3">
           <select
             aria-label="Language"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="rounded-lg border border-[#EEE6D9] bg-white p-2"
+            onChange={(event) => setLanguage(event.target.value)}
+            className="rounded-lg border border-[#EEE6D9] bg-white p-2 text-sm"
           >
             <option value="fr">Français</option>
             <option value="en">English</option>
             <option value="ar">العربية</option>
           </select>
-
-          <Link to="/login" className="text-sm font-semibold">
-            {t.login}
-          </Link>
+          <Link to="/login" className="text-sm font-semibold hover:text-[#D97706]">{t.login}</Link>
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl py-16 text-center">
-        <h1 className="text-3xl font-extrabold sm:text-5xl">
-          {t.title}
-        </h1>
-
-        <p className="mx-auto mt-4 max-w-xl text-[#69777B]">
-          {t.subtitle}
-        </p>
-
-        <div className="mt-8 inline-flex rounded-xl border border-[#EEE6D9] bg-white p-1">
-          <button
-            type="button"
-            onClick={() => setYearly(false)}
-            className={`rounded-lg px-5 py-2 ${
-              !yearly ? 'bg-[#D97706] text-white' : ''
-            }`}
-          >
-            {t.monthly}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setYearly(true)}
-            className={`rounded-lg px-5 py-2 ${
-              yearly ? 'bg-[#D97706] text-white' : ''
-            }`}
-          >
-            {t.yearly}
-          </button>
+      <section className="mx-auto max-w-6xl py-12 sm:py-16">
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-extrabold sm:text-5xl">{t.title}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-[#69777B]">{t.subtitle}</p>
         </div>
 
-        <div className="mt-12 grid gap-6 text-start md:grid-cols-3">
-          {plans.map((plan) => (
-            <article
-              key={plan.id}
-              className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm ${
-                plan.popular
-                  ? 'border-[#D97706] ring-2 ring-[#D97706]/20'
-                  : 'border-[#EEE6D9]'
-              }`}
-            >
-              {plan.popular && (
-                <span className="mb-4 self-start rounded-full bg-[#FFF0D9] px-3 py-1 text-xs font-bold text-[#92400E]">
-                  {t.popular}
-                </span>
-              )}
-
-              <h2 className="text-2xl font-bold">
-                {t[plan.id]}
-              </h2>
-
-              <p className="mt-4 text-3xl font-extrabold">
-                {plan.price === 0 ? t.free : (
-                  <>
-                    {formatPrice(plan.price)}
-                    <span className="ms-1 text-sm font-medium">
-                      {t.currency}
-                    </span>
-                  </>
-                )}
-              </p>
-
-              {plan.price > 0 && (
-                <p className="mt-1 text-sm text-[#69777B]">
-                  {yearly ? t.year : t.month}
-                </p>
-              )}
-
-              <ul className="my-8 flex-1 space-y-3">
-                {plan.features[language].map((feature) => (
-                  <li key={feature} className="flex gap-2">
-                    <span className="text-[#D97706]">✓</span>
-                    <span>{feature}</span>
-                  </li>
+        <div className="overflow-x-auto rounded-2xl border border-[#EEE6D9] bg-white shadow-sm">
+          <table className="w-full min-w-[680px] border-collapse text-center">
+            <thead>
+              <tr className="border-b border-[#EEE6D9]">
+                <th scope="col" className="w-[28%] px-5 py-6 text-start text-sm font-bold text-[#69777B]">{t.feature}</th>
+                {plans.map((plan) => (
+                  <th key={plan.id} scope="col" className={`px-5 py-6 ${plan.popular ? 'bg-[#FFF7E8]' : ''}`}>
+                    {plan.popular && <span className="mb-2 inline-block rounded-full bg-[#FFF0D9] px-3 py-1 text-xs font-bold text-[#92400E]">{t.popular}</span>}
+                    <div className="text-xl font-extrabold">{t[plan.id]}</div>
+                  </th>
                 ))}
-              </ul>
+              </tr>
+            </thead>
 
-              <Link
-                to={`/register?plan=${plan.id}`}
-                className={`rounded-xl px-4 py-3 text-center font-semibold ${
-                  plan.popular
-                    ? 'bg-[#D97706] text-white hover:bg-[#B45309]'
-                    : 'border border-[#EEE6D9] hover:bg-[#FFF9ED]'
-                }`}
-              >
-                {t.choose}
-              </Link>
-            </article>
-          ))}
+            <tbody>
+              {features.map((feature, index) => (
+                <tr key={feature.id} className={index % 2 === 0 ? 'bg-[#FFFCF7]' : 'bg-white'}>
+                  <th scope="row" className="border-t border-[#F1ECE3] px-5 py-5 text-start text-sm font-semibold">{t[feature.id]}</th>
+                  {feature.values.map((value, planIndex) => (
+                    <td key={plans[planIndex].id} className={`border-t border-[#F1ECE3] px-5 py-5 ${plans[planIndex].popular ? 'bg-[#FFF7E8]/70' : ''}`}>
+                      {renderValue(value)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+
+            <tfoot>
+              <tr className="border-t border-[#EEE6D9]">
+                <td className="px-5 py-6" />
+                {plans.map((plan) => (
+                  <td key={plan.id} className={`px-5 py-6 ${plan.popular ? 'bg-[#FFF7E8]/70' : ''}`}>
+                    <Link
+                      to={`/register?plan=${plan.id}`}
+                      className={`inline-flex w-full max-w-[190px] items-center justify-center rounded-xl px-4 py-3 text-sm font-bold transition ${plan.popular ? 'bg-[#D97706] text-white hover:bg-[#B45309]' : 'border border-[#E7DCCB] text-[#12343C] hover:bg-[#FFF9ED]'}`}
+                    >
+                      {t.choose}
+                    </Link>
+                  </td>
+                ))}
+              </tr>
+            </tfoot>
+          </table>
         </div>
+
+        <p className="mt-4 text-center text-xs text-[#8A9698]">{t.home}: <Link to="/home" className="font-semibold underline underline-offset-2">Menu Online</Link></p>
       </section>
     </main>
   )
