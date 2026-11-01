@@ -85,8 +85,25 @@ const Sidebar = () => {
 
   }
 
+  const currentPlan = user?.subscription?.key || 'starter'
+  const planFeatures = {
+    starter: ['orders', 'tables', 'staff'],
+    pro: ['staff'],
+    business: [],
+  }
+  const planLocked = planFeatures[currentPlan] || planFeatures.starter
+
   const links = (user?.role === 'owner')
-    ? allLinks : allLinks.filter((l) => {
+    ? allLinks.filter((link) => {
+        if (link.to === '/orders') return !planLocked.includes('orders')
+        if (link.to === '/tables') return !planLocked.includes('tables')
+        if (link.to === '/staff') return !planLocked.includes('staff')
+        return true
+      })
+    : allLinks.filter((l) => {
+        if (l.to === '/orders' && planLocked.includes('orders')) return false
+        if (l.to === '/tables' && planLocked.includes('tables')) return false
+        if (l.to === '/staff' && planLocked.includes('staff')) return false
         const perm = mapToPermission[l.to]
         if (!perm) return true
         return hasPermission(user, perm)
