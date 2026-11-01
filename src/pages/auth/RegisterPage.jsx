@@ -50,22 +50,14 @@ const RegisterPage = () => {
           })
 
           if (subscriptionResponse.data?.payment_required) {
-            navigate('/login', {
-              state: {
-                subscriptionPending: true,
-                message: 'Your account was created. Complete payment to activate your selected plan.',
-              },
-            })
+            window.alert('Your account was created. Your selected paid plan is waiting for payment activation. Payment is not available yet.')
+            navigate('/')
             return
           }
         } catch (subscriptionError) {
           console.error('Account created, but plan activation failed:', subscriptionError)
-          navigate('/login', {
-            state: {
-              subscriptionPending: true,
-              message: 'Your account was created, but we could not save your selected plan. Please contact support.',
-            },
-          })
+          window.alert('Your account was created, but we could not save your selected plan. You can choose a plan later from the pricing page.')
+          navigate('/')
           return
         }
       }
