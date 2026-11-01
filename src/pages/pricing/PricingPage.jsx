@@ -217,9 +217,8 @@ export default function PricingPage() {
     localStorage.setItem('menu_language', language)
   }, [language, isArabic])
 
-  const formatPrice = (price) => {
-    const selectedPlan = displayedPlans.find((plan) => plan.price === price)
-    const total = yearly ? (selectedPlan?.yearlyPrice ?? price * 10) : price
+  const formatPrice = (plan) => {
+    const total = yearly ? (plan.yearlyPrice ?? plan.price * 10) : plan.price
     return new Intl.NumberFormat(
       language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en',
       { maximumFractionDigits: 0 }
@@ -317,7 +316,7 @@ export default function PricingPage() {
               <p className="mt-4 text-3xl font-extrabold">
                 {plan.price === 0 ? t.free : (
                   <>
-                    {formatPrice(plan.price)}
+                    {formatPrice(plan)}
                     <span className="ms-1 text-sm font-medium">{t.currency}</span>
                   </>
                 )}
