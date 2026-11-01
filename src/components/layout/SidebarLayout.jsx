@@ -16,6 +16,7 @@ const SidebarLayout = () => {
   const language = useSelector(
     (state) => state.ui.language
   )
+  const user = useSelector((state) => state.auth.user)
 
   // Language direction
   useEffect(() => {
@@ -27,6 +28,8 @@ const SidebarLayout = () => {
 
   // Automatic order updates
   useEffect(() => {
+    if (user?.subscription?.key === 'starter') return
+
     let checking = false
     let cancelled = false
 
@@ -72,7 +75,7 @@ const SidebarLayout = () => {
       cancelled = true
       clearInterval(intervalId)
     }
-  }, [dispatch])
+  }, [dispatch, user?.subscription?.key])
 
   return (
     <div className="min-h-screen bg-sand dark:bg-[#0f1d22]">
