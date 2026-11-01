@@ -52,6 +52,16 @@ const translations = {
     subtitle: 'Développez votre restaurant avec Menu Online.',
     monthly: 'Mensuel',
     yearly: 'Annuel',
+    save: '2 mois offerts',
+    faqTitle: 'Questions fréquentes',
+    faq1q: 'Le menu avec QR Code est-il inclus dans toutes les formules?',
+    faq1a: 'Oui. Le menu et le QR Code sont inclus dans Starter, Pro et Business.',
+    faq2q: 'Quelle est la différence entre Starter et Pro?',
+    faq2a: 'Starter est limité à 30 plats et 5 catégories. Pro propose des plats et catégories illimités, ainsi que les commandes et les tables.',
+    faq3q: 'Quelle est la différence entre Pro et Business?',
+    faq3a: 'Business inclut toutes les fonctionnalités de Pro, avec en plus la gestion du personnel.',
+    faq4q: 'Que comprend la personnalisation avancée?',
+    faq4a: 'La personnalisation avancée est disponible avec les formules Pro et Business. Starter inclut la personnalisation basique.',
     month: '/ mois',
     year: '/ an',
     starter: 'Starter',
@@ -79,6 +89,16 @@ const translations = {
     subtitle: 'Grow your restaurant with Menu Online.',
     monthly: 'Monthly',
     yearly: 'Yearly',
+    save: '2 months free',
+    faqTitle: 'Frequently asked questions',
+    faq1q: 'Is the menu with QR Code included in every plan?',
+    faq1a: 'Yes. The menu and QR Code are included in Starter, Pro and Business.',
+    faq2q: 'What is the difference between Starter and Pro?',
+    faq2a: 'Starter is limited to 30 meals and 5 categories. Pro offers unlimited meals and categories, plus orders and tables.',
+    faq3q: 'What is the difference between Pro and Business?',
+    faq3a: 'Business includes all Pro features, plus staff management.',
+    faq4q: 'What does advanced appearance include?',
+    faq4a: 'Advanced appearance is available with Pro and Business. Starter includes basic appearance.',
     month: '/ month',
     year: '/ year',
     starter: 'Starter',
@@ -106,6 +126,16 @@ const translations = {
     subtitle: 'طوّر مطعمك مع Menu Online.',
     monthly: 'شهري',
     yearly: 'سنوي',
+    save: 'شهران مجاناً',
+    faqTitle: 'الأسئلة الشائعة',
+    faq1q: 'واش القائمة مع رمز QR متوفرة فكل الباقات؟',
+    faq1a: 'نعم، القائمة ورمز QR متوفران في Starter وPro وBusiness.',
+    faq2q: 'شنو الفرق بين Starter وPro؟',
+    faq2a: 'Starter محدودة في 30 وجبة و5 أصناف. أما Pro فتقدم وجبات وأصنافاً غير محدودة، مع الطلبات والطاولات.',
+    faq3q: 'شنو الفرق بين Pro وBusiness؟',
+    faq3a: 'Business فيها جميع مميزات Pro، وزيادة عليها إدارة الموظفين.',
+    faq4q: 'شنو كتعني التخصيصات المتقدمة؟',
+    faq4a: 'التخصيص المتقدم متوفر في Pro وBusiness، أما Starter فتتضمن التخصيص الأساسي.',
     month: '/ الشهر',
     year: '/ السنة',
     starter: 'Starter',
@@ -220,6 +250,9 @@ export default function PricingPage() {
             {t.yearly}
           </button>
         </div>
+        {yearly && (
+          <p className="mt-3 text-sm font-semibold text-[#15803D]">{t.save}</p>
+        )}
 
         <div className="mt-12 grid gap-6 text-start md:grid-cols-3">
           {plans.map((plan) => (
@@ -276,6 +309,23 @@ export default function PricingPage() {
             </article>
           ))}
         </div>
+
+        <section className="mx-auto mt-20 max-w-3xl text-start">
+          <h2 className="mb-6 text-center text-2xl font-extrabold">{t.faqTitle}</h2>
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((number) => (
+              <details key={number} className="group rounded-xl border border-[#EEE6D9] bg-white p-5">
+                <summary className="cursor-pointer list-none font-semibold marker:hidden">
+                  <span className="flex items-center justify-between gap-4">
+                    {t[`faq${number}q`]}
+                    <span className="text-[#D97706] transition group-open:rotate-45">＋</span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-7 text-[#69777B]">{t[`faq${number}a`]}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </section>
     </main>
   )
