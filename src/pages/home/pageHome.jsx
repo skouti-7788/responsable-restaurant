@@ -119,7 +119,7 @@ const FOOTER_COLS = [
     links: [
       ["Features", "#platform"],
       ["How it works", "#how-it-works"],
-      ["Pricing", "#"],
+      ["Pricing", "/pricing"],
       ["Blog", "#"],
     ],
   },
