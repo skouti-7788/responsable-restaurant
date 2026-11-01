@@ -44,13 +44,14 @@ export default function PricingPage() {
           </span>
           <h1 className="mt-4 text-3xl font-bold sm:text-4xl">Choose the plan that fits your restaurant</h1>
           <p className="mt-3 text-sm text-muted">Start with a digital menu, then unlock operational tools as your restaurant grows.</p>
-          <p className="mt-2 text-xs text-muted">Plan prices and online payments will be announced soon.</p>
+          <p className="mt-2 text-xs text-muted">Starter is free forever. Pro and Business pricing will be announced soon.</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           {plans.map((plan) => (
             <section key={plan.key} className={`rounded-3xl border bg-white p-6 shadow-sm dark:border-[var(--surface-dark-card)] dark:bg-[var(--surface-dark)] ${plan.featured ? 'border-brand ring-2 ring-brand/20' : 'border-line'}`}>
               {plan.featured && <span className="mb-3 inline-block rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Most popular</span>}
               <h2 className="text-2xl font-bold">{plan.name}</h2>
+              <p className="mt-3 text-2xl font-extrabold">{plan.key === 'starter' ? 'Free' : 'Coming soon'}</p>
               <p className="mt-2 min-h-10 text-sm text-muted">{plan.description}</p>
               <ul className="mt-6 space-y-3 text-sm">
                 {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2"><Check size={17} className="mt-0.5 shrink-0 text-brand" />{feature}</li>)}
