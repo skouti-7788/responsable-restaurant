@@ -85,6 +85,7 @@ const translations = {
     currency: 'MAD',
     free: 'Gratuit',
     login: 'Se connecter',
+    comingSoon: 'Bientôt disponible',
   },
   en: {
     title: 'Choose your plan',
@@ -123,6 +124,7 @@ const translations = {
     currency: 'MAD',
     free: 'Free',
     login: 'Log in',
+    comingSoon: 'Coming soon',
   },
   ar: {
     title: 'اختر الباقة المناسبة لك',
@@ -161,6 +163,7 @@ const translations = {
     currency: 'درهم',
     free: 'مجاناً',
     login: 'تسجيل الدخول',
+    comingSoon: 'قريباً',
   },
 }
 
@@ -337,16 +340,23 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                to={`/register?plan=${plan.id}&billing_interval=${yearly ? 'yearly' : 'monthly'}`}
-                className={`rounded-xl px-4 py-3 text-center font-semibold ${
-                  plan.popular
-                    ? 'bg-[#D97706] text-white hover:bg-[#B45309]'
-                    : 'border border-[#EEE6D9] hover:bg-[#FFF9ED]'
-                }`}
-              >
-                {t.choose}
-              </Link>
+              {plan.id === 'starter' ? (
+                <Link
+                  to={`/register?plan=${plan.id}&billing_interval=${yearly ? 'yearly' : 'monthly'}`}
+                  className="rounded-xl border border-[#EEE6D9] px-4 py-3 text-center font-semibold hover:bg-[#FFF9ED]"
+                >
+                  {t.choose}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  title={t.comingSoon}
+                  className="cursor-not-allowed rounded-xl bg-[#F3EEE6] px-4 py-3 text-center font-semibold text-[#69777B]"
+                >
+                  {t.comingSoon}
+                </button>
+              )}
             </article>
           ))}
         </div>
