@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { loginStart, loginSuccess, loginFailure } from '../../store/authSlice'
@@ -8,6 +9,7 @@ import axiosClient from '../../api/axiosClient'
 const RegisterPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { loading, error } = useSelector((state) => ({
     language: state.ui.language,
     loading: state.auth.loading,
@@ -34,6 +36,40 @@ const RegisterPage = () => {
       }
       const response = await axiosClient.post('/auth/register', payload)
       dispatch(loginSuccess({ token: response.data.token, user: response.data.user }))
+
+      const selectedPlan = searchParams.get('plan')
+      const billingInterval = searchParams.get('billing_interval') === 'yearly'
+        ? 'yearly'
+        : 'monthly'
+
+      if (selectedPlan && ['starter', 'pro', 'business'].includes(selectedPlan)) {
+        try {
+          const subscriptionResponse = await axiosClient.post('/subscription', {
+            plan: selectedPlan,
+            billing_interval: billingInterval,
+          })
+
+          if (subscriptionResponse.data?.payment_required) {
+            navigate('/login', {
+              state: {
+                subscriptionPending: true,
+                message: 'Your account was created. Complete payment to activate your selected plan.',
+              },
+            })
+            return
+          }
+        } catch (subscriptionError) {
+          console.error('Account created, but plan activation failed:', subscriptionError)
+          navigate('/login', {
+            state: {
+              subscriptionPending: true,
+              message: 'Your account was created, but we could not save your selected plan. Please contact support.',
+            },
+          })
+          return
+        }
+      }
+
       navigate('/')
     } catch (err) {
       const message = err?.message || 'Unable to register'
