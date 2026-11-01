@@ -194,6 +194,7 @@ export default function PricingPage() {
     ? apiPlans.map((plan) => ({
         id: plan.id,
         price: Number(plan.price_monthly ?? 0),
+        yearlyPrice: Number(plan.price_yearly ?? (Number(plan.price_monthly ?? 0) * 10)),
         popular: plan.id === 'pro',
         features: [
           { id: 'menuQr', value: plan.features?.menu_qr ? 'included' : 'locked' },
@@ -214,7 +215,8 @@ export default function PricingPage() {
   }, [language, isArabic])
 
   const formatPrice = (price) => {
-    const total = yearly ? price * 10 : price
+    const selectedPlan = displayedPlans.find((plan) => plan.price === price)
+    const total = yearly ? (selectedPlan?.yearlyPrice ?? price * 10) : price
     return new Intl.NumberFormat(
       language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en',
       { maximumFractionDigits: 0 }
