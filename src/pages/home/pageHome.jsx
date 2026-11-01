@@ -245,7 +245,7 @@ function PageHome() {
             </Link>
 
             <Link
-              to="/register"
+              to="/pricing"
               className="hidden cursor-pointer rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
             >
               Get Started
