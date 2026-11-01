@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import axiosClient from '../../api/axiosClient'
 
 const plans = [
   {
@@ -166,9 +167,45 @@ export default function PricingPage() {
     return ['fr', 'en', 'ar'].includes(saved) ? saved : 'fr'
   })
   const [yearly, setYearly] = useState(false)
+  const [apiPlans, setApiPlans] = useState([])
+
+  useEffect(() => {
+    let active = true
+
+    axiosClient.get('/plans')
+      .then(({ data }) => {
+        if (active && Array.isArray(data?.plans)) {
+          setApiPlans(data.plans)
+        }
+      })
+      .catch((error) => {
+        console.error('Unable to load pricing plans:', error)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const t = translations[language]
   const isArabic = language === 'ar'
+
+  const displayedPlans = apiPlans.length
+    ? apiPlans.map((plan) => ({
+        id: plan.id,
+        price: Number(plan.price_monthly ?? 0),
+        popular: plan.id === 'pro',
+        features: [
+          { id: 'menuQr', value: plan.features?.menu_qr ? 'included' : 'locked' },
+          { id: 'meals', value: plan.limits?.meals == null ? 'unlimited' : String(plan.limits.meals) },
+          { id: 'categories', value: plan.limits?.categories == null ? 'unlimited' : String(plan.limits.categories) },
+          { id: 'orders', value: plan.features?.orders ? 'included' : 'locked' },
+          { id: 'tables', value: plan.features?.tables ? 'included' : 'locked' },
+          { id: 'staff', value: plan.features?.staff ? 'included' : 'locked' },
+          { id: 'appearance', value: plan.features?.appearance ?? 'basic' },
+        ],
+      }))
+    : plans
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -255,7 +292,7 @@ export default function PricingPage() {
         )}
 
         <div className="mt-12 grid gap-6 text-start md:grid-cols-3">
-          {plans.map((plan) => (
+          {displayedPlans.map((plan) => (
             <article
               key={plan.id}
               className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm ${
@@ -297,7 +334,7 @@ export default function PricingPage() {
               </ul>
 
               <Link
-                to={`/register?plan=${plan.id}`}
+                to={`/register?plan=${plan.id}&billing_interval=${yearly ? 'yearly' : 'monthly'}`}
                 className={`rounded-xl px-4 py-3 text-center font-semibold ${
                   plan.popular
                     ? 'bg-[#D97706] text-white hover:bg-[#B45309]'
