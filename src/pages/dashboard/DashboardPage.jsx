@@ -123,8 +123,8 @@ const DashboardPage = () => {
           const planError = err?.response?.data || err?.data || err
 
           if (
-            planError?.code === 'PLAN_LIMIT_REACHED' &&
-            planError?.upgrade_required === true
+            (planError?.code === 'PLAN_LIMIT_REACHED' && planError?.upgrade_required === true) ||
+            planError?.code === 'PLAN_FEATURE_LOCKED'
           ) {
             setUpgradeRequired(true)
             setError('')
