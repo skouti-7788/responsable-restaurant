@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import axiosClient from '../../api/axiosClient'
 import translations from '../../i18n/translations'
 
 const plans = [
@@ -46,9 +48,62 @@ export default function PricingPage() {
     return ['fr', 'en', 'ar'].includes(saved) ? saved : 'fr'
   })
   const [yearly, setYearly] = useState(false)
+  const user = useSelector((state) => state.auth.user)
+  const restaurantId = useSelector((state) => state.restaurant.profile?.id) ?? user?.restaurant_id
+  const [subscription, setSubscription] = useState(null)
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [subscriptionError, setSubscriptionError] = useState('')
+  const [subscriptionMessage, setSubscriptionMessage] = useState('')
 
   const t = translations[language] || translations.fr
   const isArabic = language === 'ar'
+
+  useEffect(() => {
+    if (user?.role !== 'owner') {
+      setSubscription(null)
+      setSubscriptionPlan(null)
+      return undefined
+    }
+
+    let active = true
+    setSubscriptionLoading(true)
+    setSubscriptionError('')
+    axiosClient.get('/subscription/', {
+      params: restaurantId ? { restaurant_id: restaurantId } : {},
+    })
+      .then(({ data }) => {
+        if (!active) return
+        setSubscription(data?.subscription ?? null)
+        setSubscriptionPlan(data?.plan ?? null)
+      })
+      .catch(() => {
+        if (!active) return
+        setSubscriptionError(t.planStatusUnavailable)
+      })
+      .finally(() => {
+        if (active) setSubscriptionLoading(false)
+      })
+
+    return () => { active = false }
+  }, [user?.role, restaurantId, t.planStatusUnavailable])
+
+  const cancelSubscription = async () => {
+    if (!window.confirm(t.subscriptionCancelConfirm)) return
+    setCancelLoading(true)
+    setSubscriptionError('')
+    setSubscriptionMessage('')
+    try {
+      const { data } = await axiosClient.post('/subscription/cancel', restaurantId ? { restaurant_id: restaurantId } : {})
+      setSubscription(data?.subscription ?? subscription)
+      setSubscriptionMessage(data?.message || t.subscriptionCancelSuccess)
+    } catch {
+      setSubscriptionError(t.subscriptionCancelError)
+    } finally {
+      setCancelLoading(false)
+    }
+  }
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -100,6 +155,46 @@ export default function PricingPage() {
         <p className="mx-auto mt-4 max-w-xl text-[#69777B]">
           {t.pricingSubtitle}
         </p>
+
+        {user?.role === 'owner' && (
+          <section className="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#EEE6D9] bg-white p-6 text-start shadow-sm">
+            <h2 className="text-xl font-bold">{t.subscriptionCurrent}</h2>
+            {subscriptionLoading ? (
+              <p className="mt-3 text-sm text-[#69777B]">{t.loading}</p>
+            ) : (
+              <>
+                <p className="mt-3 text-lg font-semibold">
+                  {subscriptionPlan?.name || subscription?.plan || 'Starter'}
+                </p>
+                {subscription?.ends_at && (
+                  <p className="mt-2 text-sm text-[#69777B]">
+                    {t.subscriptionEndsAt}: {new Date(subscription.ends_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en')}
+                  </p>
+                )}
+                {subscription?.cancel_at_period_end && (
+                  <p className="mt-3 rounded-lg bg-[#FFF0D9] p-3 text-sm font-semibold text-[#92400E]">
+                    {t.subscriptionCancelScheduled}
+                  </p>
+                )}
+                {subscriptionError && <p role="alert" className="mt-3 text-sm text-red-700">{subscriptionError}</p>}
+                {subscriptionMessage && <p role="status" className="mt-3 text-sm text-[#166534]">{subscriptionMessage}</p>}
+                {subscription && subscription.plan !== 'starter' && subscription.status === 'active' && !subscription.cancel_at_period_end && (
+                  <button
+                    type="button"
+                    onClick={cancelSubscription}
+                    disabled={cancelLoading}
+                    className="mt-4 rounded-xl border border-[#D97706] px-4 py-2 font-semibold text-[#92400E] disabled:opacity-60"
+                  >
+                    {cancelLoading ? t.subscriptionCanceling : t.subscriptionCancel}
+                  </button>
+                )}
+              </>
+            )}
+            {subscriptionError && !subscriptionLoading && !subscription && (
+              <p role="alert" className="mt-3 text-sm text-red-700">{subscriptionError}</p>
+            )}
+          </section>
+        )}
 
         <div className="mt-8 inline-flex rounded-xl border border-[#EEE6D9] bg-white p-1">
           <button
