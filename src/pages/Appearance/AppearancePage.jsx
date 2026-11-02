@@ -24,7 +24,7 @@ import axiosClient from '../../api/axiosClient'
 import Button from '../../components/ui/Button'
 
 import translations from '../../i18n/translations'
-import { usePlanAccess } from '../../components/layout/PlanAccessContext'
+import { usePlanAccess } from '../../components/layout/planAccess'
 import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
 
 import {
