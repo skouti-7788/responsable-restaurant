@@ -11,16 +11,16 @@ import {
   Palette,
   LockKeyhole,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import translations from '../../i18n/translations'
 import hasPermission from '../../utils/permissions'
-import axiosClient from '../../api/axiosClient'
+import { usePlanAccess } from './PlanAccessContext'
 
 const Sidebar = () => {
   const language = useSelector((state) => state.ui.language)
   const user = useSelector((state) => state.auth.user)
-  const [planFeatures, setPlanFeatures] = useState(null)
+  const { features: planFeatures } = usePlanAccess()
 
   const t = translations[language] || translations.en
 
@@ -97,33 +97,6 @@ const Sidebar = () => {
         if (!perm) return true
         return hasPermission(user, perm)
       })
-  useEffect(() => {
-    if (user?.role !== 'owner') {
-      setPlanFeatures(null)
-      return
-    }
-
-    let active = true
-
-    axiosClient.get('/subscription/')
-      .then(({ data }) => {
-        if (active) {
-          setPlanFeatures(data?.plan?.features || {})
-        }
-      })
-      .catch((error) => {
-        console.error('Load subscription features error:', error)
-        if (active) {
-          // Do not show misleading lock icons when subscription status is unknown.
-          setPlanFeatures(null)
-        }
-      })
-
-    return () => {
-      active = false
-    }
-  }, [user?.role])
-
   useEffect(() => {
       document.documentElement.dir =
         language === 'ar'
