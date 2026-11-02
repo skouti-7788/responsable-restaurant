@@ -43,10 +43,7 @@ const plans = [
 ]
 
 export default function PricingPage() {
-  const [language, setLanguage] = useState(() => {
-    const saved = localStorage.getItem('restaurant_language') || localStorage.getItem('menu_language')
-    return ['fr', 'en', 'ar'].includes(saved) ? saved : 'fr'
-  })
+  const language = useSelector((state) => state.ui.language)
   const [yearly, setYearly] = useState(false)
   const user = useSelector((state) => state.auth.user)
   const restaurantId = useSelector((state) => state.restaurant.profile?.id) ?? user?.restaurant_id
@@ -107,7 +104,6 @@ export default function PricingPage() {
   useEffect(() => {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? 'rtl' : 'ltr'
-    localStorage.setItem('restaurant_language', language)
   }, [language, isArabic])
 
   const formatPrice = (price) => {
@@ -128,22 +124,9 @@ export default function PricingPage() {
           Menu Online
         </Link>
 
-        <div className="flex items-center gap-3">
-          <select
-            aria-label="Language"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-            className="rounded-lg border border-[#EEE6D9] bg-white p-2"
-          >
-            <option value="fr">Français</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-          </select>
-
-          <Link to="/login" className="text-sm font-semibold">
-            {t.login}
-          </Link>
-        </div>
+        <Link to="/login" className="text-sm font-semibold">
+          {t.login}
+        </Link>
       </header>
 
       <section className="mx-auto max-w-6xl py-16 text-center">
