@@ -108,6 +108,7 @@ const ImageUploader = ({
   uploadText,
   replaceText,
   removeText,
+  disabled = false,
 }) => {
   const inputRef =
     useRef(null)
@@ -152,7 +153,7 @@ const ImageUploader = ({
             onClick={() =>
               inputRef.current?.click()
             }
-            disabled={loading}
+            disabled={loading || disabled}
           >
             <Upload className="mr-2 h-4 w-4" />
 
@@ -1003,7 +1004,6 @@ const AppearancePage = () => {
                   }
                 />
 
-                {canUseAdvancedAppearance && (
                 <ImageUploader
                   label={
                     t.headerImage ||
@@ -1044,8 +1044,8 @@ const AppearancePage = () => {
                     t.remove ||
                     'Remove'
                   }
+                  disabled={!canUseAdvancedAppearance}
                 />
-                )}
               </div>
 
             </div>
@@ -1061,15 +1061,14 @@ const AppearancePage = () => {
                   {t.retry || 'Retry'}
                 </button>
               </div>
-            ) : (
-              <>
-                {isBasicAppearance && (
-                  <PlanUpgradeNotice
-                    t={t}
-                    titleKey="upgradeFeatureTitle"
-                    descriptionKey="upgradeFeatureDescription"
-                  />
-                )}
+            ) : null}
+            {!planLoading && planFeatures && isBasicAppearance && (
+              <PlanUpgradeNotice
+                t={t}
+                titleKey="upgradeFeatureTitle"
+                descriptionKey="appearanceUpgradeDescription"
+              />
+            )}
             {/* =================================================
                 COLORS
             ================================================= */}
@@ -1140,7 +1139,7 @@ const AppearancePage = () => {
                                 .value
                             )
                           }
-                          className="h-11 w-12 cursor-pointer rounded-xl border border-slate-200 bg-transparent p-1 dark:border-slate-700"
+                          className="h-11 w-12 cursor-pointer rounded-xl border border-slate-200 bg-transparent p-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
                         />
 
                         <span className="font-mono text-sm text-slate-700 dark:text-slate-300">
@@ -1174,6 +1173,7 @@ const AppearancePage = () => {
               </h2>
 
               <select
+                disabled={!canUseAdvancedAppearance}
                 value={
                   form.font_family ||
                   'Inter'
@@ -1186,7 +1186,8 @@ const AppearancePage = () => {
                     event.target.value
                   )
                 }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none   focus:border-sky-500 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
+                disabled={!canUseAdvancedAppearance}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
               >
 
                 {FONT_OPTIONS.map(
