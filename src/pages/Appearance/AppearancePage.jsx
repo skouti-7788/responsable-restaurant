@@ -248,7 +248,8 @@ const AppearancePage = () => {
     {}
 
   const { features: planFeatures, loading: planLoading } = usePlanAccess()
-  const isBasicAppearance = planLoading || planFeatures?.appearance !== 'advanced'
+  const isBasicAppearance = planFeatures?.appearance !== 'advanced'
+  const canUseAdvancedAppearance = !planLoading && planFeatures?.appearance === 'advanced'
 
   // =======================================================
   // CACHE
@@ -991,7 +992,7 @@ const AppearancePage = () => {
                   }
                 />
 
-                {!isBasicAppearance && (
+                {canUseAdvancedAppearance && (
                 <ImageUploader
                   label={
                     t.headerImage ||
@@ -1038,7 +1039,18 @@ const AppearancePage = () => {
 
             </div>
 
-            {isBasicAppearance ? (
+            {planLoading ? (
+              <div role="status" className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-300">
+                {t.loading || 'Checking your subscription...'}
+              </div>
+            ) : !planFeatures ? (
+              <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-100">
+                <p>{t.planStatusUnavailable || 'We could not verify your subscription. Please try again.'}</p>
+                <button type="button" onClick={() => window.location.reload()} className="mt-3 rounded-xl bg-brand px-4 py-2 text-white">
+                  {t.retry || 'Retry'}
+                </button>
+              </div>
+            ) : isBasicAppearance ? (
               <PlanUpgradeNotice t={t} titleKey="upgradeFeatureTitle" descriptionKey="upgradeFeatureDescription" />
             ) : (
               <>
