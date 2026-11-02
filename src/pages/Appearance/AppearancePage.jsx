@@ -737,8 +737,7 @@ const AppearancePage = () => {
 
         setForm((current) => ({
           ...current,
-          ...updatedAppearance,
-          [field]: null,
+          [field]: updatedAppearance[field] ?? null,
         }))
 
         setImageFiles((current) => ({
