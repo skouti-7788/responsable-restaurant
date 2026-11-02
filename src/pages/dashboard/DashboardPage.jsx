@@ -25,6 +25,7 @@ import {
 } from '../../utils/restaurantCache'
 
 import translations from '../../i18n/translations'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
 
 const DashboardPage = () => {
   const dispatch = useDispatch()
@@ -82,6 +83,8 @@ const DashboardPage = () => {
     setError,
   ] = useState('')
 
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
+
   // =====================================================
   // LOAD DASHBOARD
   // =====================================================
@@ -90,6 +93,7 @@ const DashboardPage = () => {
     useCallback(
       async () => {
         setError('')
+        setUpgradeRequired(false)
 
         try {
           setLoading(true)
@@ -116,13 +120,22 @@ const DashboardPage = () => {
            * البيانات القديمة تبقى ظاهرة.
            */
 
-          setError(
-            err?.response?.data
-              ?.message ||
-              err?.message ||
-              t.loadDashboardError ||
-              'Failed to load dashboard.'
-          )
+          const planError = err?.response?.data || err?.data || err
+
+          if (
+            planError?.code === 'PLAN_LIMIT_REACHED' &&
+            planError?.upgrade_required === true
+          ) {
+            setUpgradeRequired(true)
+            setError('')
+          } else {
+            setError(
+              planError?.message ||
+                err?.message ||
+                t.loadDashboardError ||
+                'Failed to load dashboard.'
+            )
+          }
         } finally {
           setLoading(false)
         }
@@ -282,6 +295,7 @@ const DashboardPage = () => {
           ERROR
       ================================================= */}
 
+      {upgradeRequired && <PlanUpgradeNotice t={t} />}
       {error && (
         <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
           {error}
