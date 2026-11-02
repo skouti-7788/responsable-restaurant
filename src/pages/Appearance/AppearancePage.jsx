@@ -1125,6 +1125,7 @@ const AppearancePage = () => {
 
                         <input
                           type="color"
+                          disabled={!canUseAdvancedAppearance}
                           value={
                             form[field] ||
                             '#D97706'
@@ -1204,8 +1205,6 @@ const AppearancePage = () => {
               </select>
 
             </div>
-              </>
-            )}
 
             {/* =================================================
                 SAVE
