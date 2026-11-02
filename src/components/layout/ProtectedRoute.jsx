@@ -56,7 +56,12 @@ const ProtectedRoute = ({ children, allowedRoles = null, requiredPermission = nu
       )
     }
 
-    if (features?.[requiredFeature] === false) {
+    const featureValue = features?.[requiredFeature]
+    const featureLocked = requiredFeature === 'appearance'
+      ? featureValue !== 'advanced'
+      : featureValue === false
+
+    if (featureLocked) {
       return (
         <div className="mx-auto max-w-2xl py-8">
           <PlanUpgradeNotice t={t} titleKey="upgradeFeatureTitle" descriptionKey="upgradeFeatureDescription" />
