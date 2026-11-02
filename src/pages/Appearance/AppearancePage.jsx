@@ -847,11 +847,11 @@ const AppearancePage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-gray">
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-[var(--surface-dark)]">
 
         <div className="flex flex-col items-center gap-3">
 
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-sky-500" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand" />
 
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t.loading ||
@@ -1061,10 +1061,15 @@ const AppearancePage = () => {
                   {t.retry || 'Retry'}
                 </button>
               </div>
-            ) : isBasicAppearance ? (
-              <PlanUpgradeNotice t={t} titleKey="upgradeFeatureTitle" descriptionKey="upgradeFeatureDescription" />
             ) : (
               <>
+                {isBasicAppearance && (
+                  <PlanUpgradeNotice
+                    t={t}
+                    titleKey="upgradeFeatureTitle"
+                    descriptionKey="upgradeFeatureDescription"
+                  />
+                )}
             {/* =================================================
                 COLORS
             ================================================= */}
