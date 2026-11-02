@@ -815,17 +815,24 @@ const AppearancePage = () => {
       } catch (error) {
         console.error(
           'Failed to save appearance:',
-          error
+          error?.response?.data || error
         )
 
-        setStatus({
-          type: 'error',
-
-          message:
-            error?.message ||
-            t.errorSavingChanges ||
-            'Error saving changes',
-        })
+        const planError = error?.response?.data || error?.data || error
+        if (
+          planError?.code === 'PLAN_LIMIT_REACHED' &&
+          planError?.upgrade_required === true
+        ) {
+          setStatus({ type: 'upgrade', message: '' })
+        } else {
+          setStatus({
+            type: 'error',
+            message:
+              planError?.message ||
+              t.errorSavingChanges ||
+              'Error saving changes',
+          })
+        }
 
       } finally {
         setSaving(false)
@@ -894,6 +901,10 @@ const AppearancePage = () => {
         {/* =================================================
             STATUS
         ================================================= */}
+
+        {status.type === 'upgrade' && (
+          <PlanUpgradeNotice t={t} />
+        )}
 
         {status.message && (
           <div
