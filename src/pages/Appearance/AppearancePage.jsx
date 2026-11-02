@@ -716,34 +716,69 @@ const AppearancePage = () => {
   // =======================================================
 
   const handleImageRemove =
-    (field) => {
-      setImageFiles(
-        (current) => ({
+    async (field) => {
+      if (saving) {
+        return
+      }
+
+      setSaving(true)
+      setStatus({
+        type: '',
+        message: '',
+      })
+
+      try {
+        // Persist image removal immediately so it cannot reappear
+        // after refreshing the page or reloading the appearance cache.
+        const updatedAppearance =
+          await saveRestaurantAppearance({
+            [`remove_${field}`]: true,
+          })
+
+        setForm((current) => ({
+          ...current,
+          ...updatedAppearance,
+          [field]: null,
+        }))
+
+        setImageFiles((current) => ({
           ...current,
           [field]: null,
-        })
-      )
+        }))
 
-      setRemoveFlags(
-        (current) => ({
+        setRemoveFlags((current) => ({
           ...current,
-          [field]: true,
-        })
-      )
+          [field]: false,
+        }))
 
-      setForm(
-        (current) => ({
-          ...current,
-          [field]: null,
-        })
-      )
-
-      setErrors(
-        (current) => ({
+        setErrors((current) => ({
           ...current,
           [field]: '',
+        }))
+
+        setStatus({
+          type: 'success',
+          message:
+            t.changesSavedSuccessfully ||
+            'Changes saved successfully',
         })
-      )
+      } catch (error) {
+        console.error(
+          'Failed to remove appearance image:',
+          error?.response?.data || error
+        )
+
+        setStatus({
+          type: 'error',
+          message:
+            error?.response?.data?.message ||
+            error?.message ||
+            t.errorSavingChanges ||
+            'Error saving changes',
+        })
+      } finally {
+        setSaving(false)
+      }
     }
 
   // =======================================================
