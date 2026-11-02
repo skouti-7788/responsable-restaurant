@@ -39,6 +39,23 @@ const ProtectedRoute = ({ children, allowedRoles = null, requiredPermission = nu
       )
     }
 
+    if (!features) {
+      return (
+        <div role="alert" className="mx-auto max-w-2xl rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-100">
+          <p className="text-sm">
+            {t.planStatusUnavailable || 'We could not verify your subscription. Please try again.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
+            {t.retry || 'Retry'}
+          </button>
+        </div>
+      )
+    }
+
     if (features?.[requiredFeature] === false) {
       return (
         <div className="mx-auto max-w-2xl py-8">
