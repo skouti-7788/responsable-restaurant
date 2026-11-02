@@ -113,7 +113,7 @@ function App() {
           <Route
             path="appearance"
             element={
-              <ProtectedRoute requiredPermission="appearance.view">
+              <ProtectedRoute requiredPermission="appearance.view" requiredFeature="appearance">
                 <AppearancePage />
               </ProtectedRoute>
             }
