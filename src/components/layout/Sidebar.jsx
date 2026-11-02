@@ -10,6 +10,7 @@ import {
   Users,
   Palette,
   LockKeyhole,
+  CreditCard,
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -69,6 +70,11 @@ const Sidebar = () => {
       to: '/profile',
       label: t.profile,
       icon: UserCircle,
+    },
+    {
+      to: '/upgrade',
+      label: t.upgradePlan || 'Upgrade plan',
+      icon: CreditCard,
     },
     {
       to: '/qr-code',
