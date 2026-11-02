@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setLanguage } from "../../store/uiSlice";
+import translations from "../../i18n/translations";
 import { Link } from "react-router-dom";
 import {
   UserPlus,
@@ -23,115 +26,41 @@ import {
 // const MENU_URL =
 //   "https://menuonline.com/menu/the-good-food?table=5";
 
-const NAV = [
-  { label: "Home", href: "#home" },
-  { label: "Features", href: "#platform" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "About", href: "#about" },
+const NAV_KEYS = [
+  { label: "homeNavHome", href: "#home" },
+  { label: "homeNavFeatures", href: "#platform" },
+  { label: "homeNavHowItWorks", href: "#how-it-works" },
+  { label: "homeNavAbout", href: "#about" },
 ];
 
-const MINI = [
-  {
-    icon: QrCode,
-    title: "QR Menu",
-    text: "Fast & easy access",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Online Orders",
-    text: "More sales",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Dashboard",
-    text: "Full control",
-  },
+const MINI_KEYS = [
+  { icon: QrCode, title: "homeQrMenu", text: "homeQrMenuText" },
+  { icon: ShoppingBag, title: "homeOnlineOrders", text: "homeOnlineOrdersText" },
+  { icon: LayoutDashboard, title: "homeDashboard", text: "homeDashboardText" },
 ];
 
-const SOLUTIONS = [
-  {
-    icon: Smartphone,
-    title: "Menu Online",
-    img: "menu3.png",
-    text: "A beautiful digital menu where customers can discover your meals, explore your dishes, check prices, view photos, customize their orders, and place orders directly from their phones. Make your restaurant more modern, accessible, and convenient with a simple digital experience designed for both customers and restaurant staff.",
-  },
-  {
-    icon: Monitor,
-    title: "Restaurant Dashboard",
-    img: "dach.png",
-    text: "Manage your restaurant from one powerful and easy-to-use dashboard. Create and organize meals and categories, manage tables and QR codes, track customer orders in real time, monitor restaurant activity, customize your restaurant's appearance, and control staff access and permissions all in one place. Simplify daily operations, improve order management, and deliver a seamless digital dining experience.",
-  },
+const SOLUTION_KEYS = [
+  { icon: Smartphone, title: "homeMenuOnline", img: "menu3.png", text: "homeMenuOnlineDescription" },
+  { icon: Monitor, title: "homeRestaurantDashboard", img: "dach.png", text: "homeRestaurantDashboardDescription" },
 ];
 
-const STEPS = [
-  {
-    n: "01",
-    icon: UserPlus,
-    title: "Create Account",
-    text: "Sign up and set up your restaurant profile.",
-  },
-  {
-    n: "02",
-    icon: UtensilsCrossed,
-    title: "Build Your Menu",
-    text: "Add categories, meals, prices and images.",
-  },
-  {
-    n: "03",
-    icon: QrCode,
-    title: "Generate QR Codes",
-    text: "Create QR codes for your tables and restaurant.",
-  },
-  {
-    n: "04",
-    icon: TrendingUp,
-    title: "Receive Orders",
-    text: "Customers scan and place orders instantly.",
-  },
+const STEP_KEYS = [
+  { n: "01", icon: UserPlus, title: "homeStep1Title", text: "homeStep1Text" },
+  { n: "02", icon: UtensilsCrossed, title: "homeStep2Title", text: "homeStep2Text" },
+  { n: "03", icon: QrCode, title: "homeStep3Title", text: "homeStep3Text" },
+  { n: "04", icon: TrendingUp, title: "homeStep4Title", text: "homeStep4Text" },
 ];
 
-const PERKS = [
-  {
-    icon: Sparkles,
-    title: "Easy to Use",
-    text: "No technical skills needed.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Increase Your Sales",
-    text: "Faster orders, happier customers.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Secure & Reliable",
-    text: "Your data is always protected.",
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    text: "We're here whenever you need us.",
-  },
+const PERK_KEYS = [
+  { icon: Sparkles, title: "homeEasyToUse", text: "homeEasyToUseText" },
+  { icon: ShoppingBag, title: "homeIncreaseSales", text: "homeIncreaseSalesText" },
+  { icon: ShieldCheck, title: "homeSecureReliable", text: "homeSecureReliableText" },
+  { icon: Headphones, title: "homeSupport247", text: "homeSupport247Text" },
 ];
 
-const FOOTER_COLS = [
-  {
-    title: "Product",
-    links: [
-      ["Features", "#platform"],
-      ["How it works", "#how-it-works"],
-      ["Pricing", "#"],
-      ["Blog", "#"],
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      ["Help Center", "#"],
-      ["Contact", "#"],
-      ["Terms of Service", "#"],
-      ["Privacy Policy", "#"],
-    ],
-  },
+const FOOTER_KEYS = [
+  { title: "homeProduct", links: [["homeNavFeatures", "#platform"], ["homeNavHowItWorks", "#how-it-works"], ["homePricing", "/pricing"], ["homeBlog", "#"]] },
+  { title: "homeSupport", links: [["homeHelpCenter", "#"], ["homeContact", "#contact"], ["homeTerms", "#"], ["homePrivacy", "#"]] },
 ];
 
 const svgProps = {
@@ -205,9 +134,19 @@ function Logo({ light = false }) {
 
 function PageHome() {
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
+  const language = useSelector((state) => state.ui.language);
+  const t = translations[language] || translations.en;
+  const isArabic = language === "ar";
+  const NAV = NAV_KEYS.map((item) => ({ ...item, label: t[item.label] || item.label }));
+  const MINI = MINI_KEYS.map((item) => ({ ...item, title: t[item.title] || item.title, text: t[item.text] || item.text }));
+  const SOLUTIONS = SOLUTION_KEYS.map((item) => ({ ...item, title: t[item.title] || item.title, text: t[item.text] || item.text }));
+  const STEPS = STEP_KEYS.map((item) => ({ ...item, title: t[item.title] || item.title, text: t[item.text] || item.text }));
+  const PERKS = PERK_KEYS.map((item) => ({ ...item, title: t[item.title] || item.title, text: t[item.text] || item.text }));
+  const FOOTER_COLS = FOOTER_KEYS.map((col) => ({ ...col, title: t[col.title] || col.title, links: col.links.map(([label, href]) => [t[label] || label, href]) }));
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-ink">
+    <div dir={isArabic ? "rtl" : "ltr"} className="min-h-screen overflow-x-hidden bg-white font-sans text-ink">
 
       {/* =========================================================
           NAVBAR
@@ -236,19 +175,31 @@ function PageHome() {
 
           {/* Desktop Buttons + Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <label className="sr-only" htmlFor="home-language">{t.homeLanguage}</label>
+            <select
+              id="home-language"
+              aria-label={t.homeLanguage}
+              value={language}
+              onChange={(event) => dispatch(setLanguage(event.target.value))}
+              className="max-w-[112px] rounded-xl border border-line bg-white px-2 py-2.5 text-xs font-semibold text-ink sm:max-w-none sm:px-3 sm:text-sm"
+            >
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+              <option value="ar">العربية</option>
+            </select>
 
             <Link
               to="/login"
               className="hidden cursor-pointer rounded-xl border border-brand bg-white px-4 py-2.5 text-sm font-semibold transition hover:bg-sand sm:block sm:px-5"
             >
-              Login
+              {t.homeLogin}
             </Link>
 
             <Link
               to="/pricing"
               className="hidden cursor-pointer rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
             >
-              Get Started
+              {t.homeGetStarted}
             </Link>
 
             <button
@@ -286,7 +237,7 @@ function PageHome() {
                 className="flex-1 rounded-xl border border-brand py-2.5 text-center text-sm font-semibold"
                 onClick={() => setOpen(false)}
               >
-                Login
+                {t.homeLogin}
               </Link>
 
               <Link
@@ -294,7 +245,7 @@ function PageHome() {
                 className="flex-1 rounded-xl bg-brand py-2.5 text-center text-sm font-semibold text-white"
                 onClick={() => setOpen(false)}
               >
-                Get Started
+                {t.homeGetStarted}
               </Link>
             </div>
           </div>
@@ -326,15 +277,14 @@ function PageHome() {
 
                 {/* Title */}
                 <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-[60px]">
-                  Digital Menu for{" "}
-                  <span className="text-brand">Modern</span>{" "}
-                  Restaurants
+                  {t.homeHeroTitle}{" "}
+                  <span className="text-brand">{t.homeHeroHighlight}</span>{" "}
+                  {t.homeHeroEnd}
                 </h1>
 
                 {/* Description */}
                 <p className="mx-auto mt-6 max-w-2xl leading-7 text-muted">
-                  Create your digital menu, generate QR codes, manage your
-                  restaurant and receive orders all from one powerful platform.
+                  {t.homeHeroDescription}
                 </p>
 
                 {/* Buttons */}
@@ -344,7 +294,7 @@ function PageHome() {
                     to="/register"
                     className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:w-auto"
                   >
-                    Get Started
+                    {t.homeGetStarted}
                    </Link>
  
 
@@ -394,12 +344,11 @@ function PageHome() {
          <div className="text-center">
  
           <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
-            Everything Your Restaurant Needs
+            {t.homeSolutionsTitle}
           </h2>
 
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-muted sm:text-[15px]">
-            Give your customers a modern digital experience while keeping
-            full control of your restaurant.
+            {t.homeSolutionsDescription}
           </p>
         </div>
 
@@ -462,7 +411,7 @@ function PageHome() {
             <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
 
               <h2 className="mt-2 text-3xl font-bold">
-                Get Started in 4 Simple Steps
+                {t.homeStepsTitle}
               </h2>
 
               <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -534,10 +483,10 @@ function PageHome() {
           {/* Content */}
           <div className="text-center lg:text-left">
 
-            <Eyebrow>Why choose us</Eyebrow>
+            <Eyebrow>{t.homeWhyChoose}</Eyebrow>
 
             <h2 className="mt-2 text-3xl font-bold">
-              Built for Your Success
+              {t.homeBuiltForSuccess}
             </h2>
 
 
@@ -585,11 +534,11 @@ function PageHome() {
 
             <div>
               <span className="text-[10px] font-semibold uppercase tracking-wider text-brand">
-                Ready to go digital?
+                {t.homeReadyDigital}
               </span>
 
               <h2 className="mt-1 max-w-sm text-2xl font-bold leading-snug">
-                Join thousands of restaurants using MenuOnline
+                {t.homeJoinRestaurants}
               </h2>
             </div>
 
@@ -598,7 +547,7 @@ function PageHome() {
               to="/register"
               className="relative z-10 inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5"
             >
-              Create Your Menu
+              {t.homeCreateMenu}
               <ArrowRight className="h-4 w-4" />
             </Link>
 
@@ -637,9 +586,7 @@ function PageHome() {
               <Logo light />
 
               <p className="mt-4 max-w-xs text-xs leading-5">
-                A complete digital solution for modern restaurants.
-                Create your menu, manage your restaurant and receive
-                orders from one platform.
+                {t.homeFooterDescription}
               </p>
 
 
@@ -690,8 +637,8 @@ function PageHome() {
             {/* Contact */}
             <div>
 
-              <h3 className="text-xs font-bold text-white">
-                Get in Touch
+              <h3 id="contact" className="text-xs font-bold text-white">
+                {t.homeGetInTouch}
               </h3>
 
               <ul className="mt-4 space-y-3 text-xs">
