@@ -12,6 +12,7 @@ import {
   BarChart2,
   Layers,
   ShoppingBag,
+  Lock,
   RefreshCw,
 } from 'lucide-react'
 
@@ -318,6 +319,20 @@ const DashboardPage = () => {
       ) : (
         <>
           {/* =================================================
+              PLAN UPGRADE NOTICE
+          ================================================= */}
+
+          {ordersLocked && (
+            <div className="mb-5">
+              <PlanUpgradeNotice
+                t={t}
+                titleKey="upgradeFeatureTitle"
+                descriptionKey="upgradeFeatureDescription"
+              />
+            </div>
+          )}
+
+          {/* =================================================
               STATISTICS
           ================================================= */}
 
@@ -336,12 +351,21 @@ const DashboardPage = () => {
                     className="rounded-[2rem] border border-line bg-white p-6 shadow-card  dark:border-[#234b58] dark:bg-[#18353d]"
                   >
 
-                    <div
-                      className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-3xl ${item.color}`}
-                    >
-                      <Icon
-                        size={22}
-                      />
+                    <div className="mb-5 flex items-center gap-2">
+                      <div
+                        className={`inline-flex h-12 w-12 items-center justify-center rounded-3xl ${item.color}`}
+                      >
+                        <Icon size={22} />
+                      </div>
+                      {item.labelKey === 'totalOrders' && ordersLocked && (
+                        <span
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sand text-brand dark:bg-[var(--surface-dark-card)]"
+                          title={t.upgradeFeatureTitle || 'Upgrade required'}
+                          aria-label={t.upgradeFeatureTitle || 'Upgrade required'}
+                        >
+                          <Lock size={13} />
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-sm text-muted dark:text-[#dfe7eb]">
@@ -354,13 +378,7 @@ const DashboardPage = () => {
                     {item.labelKey === 'totalOrders' && planLoading ? (
                       <p className="mt-2 text-sm text-muted">{t.loading || 'Loading...'}</p>
                     ) : item.labelKey === 'totalOrders' && ordersLocked ? (
-                      <div className="mt-3">
-                        <PlanUpgradeNotice
-                          t={t}
-                          titleKey="upgradeFeatureTitle"
-                          descriptionKey="upgradeFeatureDescription"
-                        />
-                      </div>
+                      <p className="mt-2 text-3xl font-semibold text-ink dark:text-white">—</p>
                     ) : (
                       <p className="mt-2 text-3xl font-semibold text-ink dark:text-white">
                         {item.value}
