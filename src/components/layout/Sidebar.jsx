@@ -15,7 +15,7 @@ import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import translations from '../../i18n/translations'
 import hasPermission from '../../utils/permissions'
-import { usePlanAccess } from './PlanAccessContext'
+import { usePlanAccess } from './planAccess'
 
 const Sidebar = () => {
   const language = useSelector((state) => state.ui.language)
