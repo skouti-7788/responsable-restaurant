@@ -36,6 +36,8 @@ import {
 } from '../../store/orderSlice'
 
 import translations from '../../i18n/translations'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
+import { isPlanUpgradeError } from '../../utils/planErrors'
 
 import Button from '../../components/ui/Button'
 
@@ -450,6 +452,8 @@ const OrdersPage = () => {
     setError,
   ] = useState('')
 
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
+
 
   // ===================================================
   // SEARCH
@@ -750,12 +754,16 @@ const OrdersPage = () => {
             err
           )
 
-          setError(
-            err?.response
-              ?.data?.message ||
-            err?.message ||
-            'Unable to load orders'
-          )
+          if (isPlanUpgradeError(err)) {
+            setUpgradeRequired(true)
+            setError('')
+          } else {
+            setError(
+              err?.response?.data?.message ||
+              err?.message ||
+              'Unable to load orders'
+            )
+          }
 
         }
       },
@@ -2210,6 +2218,8 @@ const OrdersPage = () => {
       {/* =================================================
           ERROR
       ================================================= */}
+
+      {upgradeRequired && <PlanUpgradeNotice t={t} />}
 
       {error && (
 
