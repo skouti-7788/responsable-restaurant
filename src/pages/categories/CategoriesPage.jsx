@@ -1,4 +1,5 @@
 import {
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
   useCallback,
   useEffect,
   useRef,
@@ -893,24 +894,7 @@ const CategoriesPage = () => {
           ERROR
       ================================================= */}
 
-      {upgradeRequired && (
-        <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-semibold">
-              {t.upgradeLimitTitle || 'You have reached your plan limit'}
-            </h2>
-            <p className="mt-1 text-sm opacity-90">
-              {t.upgradeLimitDescription || 'Your current plan does not allow you to add more items. Upgrade your plan to unlock more capacity.'}
-            </p>
-          </div>
-          <a
-            href="/pricing"
-            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
-          >
-            {t.upgradePlan || 'Upgrade plan'}
-          </a>
-        </div>
-      )}
+      {upgradeRequired && <PlanUpgradeNotice t={t} />}
 
       {error && (
 
