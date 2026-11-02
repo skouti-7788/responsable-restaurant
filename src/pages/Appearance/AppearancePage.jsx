@@ -128,7 +128,7 @@ const ImageUploader = ({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 
-        <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-sand dark:border-slate-700 dark:bg-[var(--surface-dark-card)]">
 
           {previewUrl ? (
             <img
@@ -208,7 +208,7 @@ const MenuPreviewFrame = ({
   onLoad,
 }) => {
   return (
-    <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-slate-100 shadow-inner dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-sand shadow-inner dark:border-slate-800 dark:bg-[var(--surface-dark-card)]">
 
       <iframe
         ref={iframeRef}
