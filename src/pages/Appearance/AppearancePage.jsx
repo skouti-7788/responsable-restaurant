@@ -69,7 +69,7 @@ const PUBLIC_MENU_ORIGIN = (
 const IMAGE_LIMITS = {
   logo: 2 * 1024 * 1024,
   header_image: 4 * 1024 * 1024,
-  // background_image: 4 * 1024 * 1024,
+  background_image: 4 * 1024 * 1024,
 }
 
 // =========================================================
@@ -114,7 +114,7 @@ const ImageUploader = ({
     useRef(null)
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-gray">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-[var(--surface-dark-card)]">
 
       <div className="mb-4 flex items-center justify-between gap-3">
 
@@ -280,7 +280,7 @@ const AppearancePage = () => {
     useState({
       logo: null,
       header_image: null,
-      // background_image: null,
+      background_image: null,
     })
 
   // =======================================================
@@ -291,7 +291,7 @@ const AppearancePage = () => {
     useState({
       logo: false,
       header_image: false,
-      // background_image: false,
+      background_image: false,
     })
 
   // =======================================================
@@ -715,70 +715,33 @@ const AppearancePage = () => {
   // IMAGE REMOVE
   // =======================================================
 
-  const handleImageRemove =
-    async (field) => {
-      if (saving) {
-        return
-      }
+  const handleImageRemove = (field) => {
+    if (saving) return
 
-      setSaving(true)
-      setStatus({
-        type: '',
-        message: '',
-      })
+    // Removal is a draft change: the public menu preview updates now,
+    // but the saved image is not deleted until the user presses Save.
+    setForm((current) => ({
+      ...current,
+      [field]: null,
+    }))
 
-      try {
-        // Persist image removal immediately so it cannot reappear
-        // after refreshing the page or reloading the appearance cache.
-        const updatedAppearance =
-          await saveRestaurantAppearance({
-            [`remove_${field}`]: true,
-          })
+    setImageFiles((current) => ({
+      ...current,
+      [field]: null,
+    }))
 
-        setForm((current) => ({
-          ...current,
-          [field]: updatedAppearance[field] ?? null,
-        }))
+    setRemoveFlags((current) => ({
+      ...current,
+      [field]: true,
+    }))
 
-        setImageFiles((current) => ({
-          ...current,
-          [field]: null,
-        }))
+    setErrors((current) => ({
+      ...current,
+      [field]: '',
+    }))
 
-        setRemoveFlags((current) => ({
-          ...current,
-          [field]: false,
-        }))
-
-        setErrors((current) => ({
-          ...current,
-          [field]: '',
-        }))
-
-        setStatus({
-          type: 'success',
-          message:
-            t.changesSavedSuccessfully ||
-            'Changes saved successfully',
-        })
-      } catch (error) {
-        console.error(
-          'Failed to remove appearance image:',
-          error?.response?.data || error
-        )
-
-        setStatus({
-          type: 'error',
-          message:
-            error?.response?.data?.message ||
-            error?.message ||
-            t.errorSavingChanges ||
-            'Error saving changes',
-        })
-      } finally {
-        setSaving(false)
-      }
-    }
+    setStatus({ type: '', message: '' })
+  }
 
   // =======================================================
   // SAVE
@@ -809,8 +772,10 @@ const AppearancePage = () => {
               ...form,
               logoFile: imageFiles.logo,
               header_imageFile: imageFiles.header_image,
+              background_imageFile: imageFiles.background_image,
               remove_logo: removeFlags.logo,
               remove_header_image: removeFlags.header_image,
+              remove_background_image: removeFlags.background_image,
             }
 
         const updatedAppearance =
@@ -830,13 +795,13 @@ const AppearancePage = () => {
         setImageFiles({
           logo: null,
           header_image: null,
-          // background_image: null,
+          background_image: null,
         })
 
         setRemoveFlags({
           logo: false,
           header_image: false,
-          // background_image: false,
+          background_image: false,
         })
 
         setStatus({
@@ -1078,6 +1043,19 @@ const AppearancePage = () => {
                     t.remove ||
                     'Remove'
                   }
+                  disabled={!canUseAdvancedAppearance}
+                />
+
+                <ImageUploader
+                  label={t.backgroundImage || 'Background image'}
+                  previewUrl={form.background_image || ''}
+                  loading={saving}
+                  fileError={errors.background_image}
+                  onSelect={(event) => handleImageSelect('background_image', event)}
+                  onRemove={() => handleImageRemove('background_image')}
+                  uploadText={t.upload || 'Upload'}
+                  replaceText={t.replace || 'Replace'}
+                  removeText={t.remove || 'Remove'}
                   disabled={!canUseAdvancedAppearance}
                 />
               </div>
