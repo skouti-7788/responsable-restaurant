@@ -57,9 +57,9 @@ const ProtectedRoute = ({ children, allowedRoles = null, requiredPermission = nu
     }
 
     const featureValue = features?.[requiredFeature]
-    const featureLocked = requiredFeature === 'appearance'
-      ? featureValue !== 'advanced'
-      : featureValue === false
+    // Appearance has a Starter/basic mode; only the advanced controls are gated
+    // inside AppearancePage. The route itself must remain accessible.
+    const featureLocked = featureValue === false
 
     if (featureLocked) {
       return (
