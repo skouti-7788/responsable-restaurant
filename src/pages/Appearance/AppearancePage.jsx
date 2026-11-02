@@ -25,6 +25,7 @@ import Button from '../../components/ui/Button'
 
 import translations from '../../i18n/translations'
 import { usePlanAccess } from '../../components/layout/PlanAccessContext'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
 
 import {
   DEFAULT_APPEARANCE,
@@ -1038,17 +1039,7 @@ const AppearancePage = () => {
             </div>
 
             {isBasicAppearance ? (
-              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
-                <h2 className="font-semibold">
-                  {t.upgradeLimitTitle || 'You have reached your plan limit'}
-                </h2>
-                <p className="mt-2 text-sm opacity-85">
-                  {t.upgradeLimitDescription || 'Upgrade your plan to unlock advanced appearance settings.'}
-                </p>
-                <a href="/pricing" className="mt-4 inline-flex rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">
-                  {t.upgradePlan || 'Upgrade plan'}
-                </a>
-              </div>
+              <PlanUpgradeNotice t={t} />
             ) : (
               <>
             {/* =================================================
