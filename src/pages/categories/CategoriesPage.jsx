@@ -1,5 +1,4 @@
 import {
-import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
   useCallback,
   useEffect,
   useRef,
@@ -43,6 +42,7 @@ import {
 } from '../../data/dataCategories'
 
 import translations from '../../i18n/translations'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
 
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
