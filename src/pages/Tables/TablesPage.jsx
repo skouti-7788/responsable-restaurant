@@ -35,6 +35,8 @@ import {
   setRestaurantCache,
 } from '../../utils/restaurantCache'
 import Button from '../../components/ui/Button'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
+import { isPlanUpgradeError } from '../../utils/planErrors'
 
 
 const TablesPage = () => {
@@ -163,6 +165,8 @@ const TablesPage = () => {
     error,
     setError,
   ] = useState('')
+
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
 
 
   // =====================================================
@@ -501,17 +505,16 @@ const TablesPage = () => {
           // KEEP CACHE IF API FAILS
           // =================================================
 
-          if (
-            tablesRef.current.length === 0
-          ) {
-
+          if (isPlanUpgradeError(err)) {
+            setUpgradeRequired(true)
+            setError('')
+          } else if (tablesRef.current.length === 0) {
             setError(
               err?.response?.data?.message ||
               err?.message ||
               t.loadTablesError ||
               'Failed to load tables.'
             )
-
           }
 
         } finally {
@@ -1386,6 +1389,8 @@ const TablesPage = () => {
 
 
       {/* ERROR */}
+
+      {upgradeRequired && <PlanUpgradeNotice t={t} />}
 
       {error && (
 
