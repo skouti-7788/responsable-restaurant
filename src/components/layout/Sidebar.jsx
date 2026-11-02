@@ -9,15 +9,18 @@ import {
   UserCircle,
   Users,
   Palette,
+  LockKeyhole,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import translations from '../../i18n/translations'
 import hasPermission from '../../utils/permissions'
+import axiosClient from '../../api/axiosClient'
 
 const Sidebar = () => {
   const language = useSelector((state) => state.ui.language)
   const user = useSelector((state) => state.auth.user)
+  const [planFeatures, setPlanFeatures] = useState(null)
 
   const t = translations[language] || translations.en
 
@@ -41,16 +44,19 @@ const Sidebar = () => {
       to: '/orders',
       label: t.orders,
       icon: ClipboardList,
+      feature: 'orders',
     },
     {
       to: '/tables',
       label: t.tables,
       icon: TableProperties,
+      feature: 'tables',
     },
     {
       to: '/staff',
       label: t.staff || 'Staff',
       icon: Users,
+      feature: 'staff',
     },
     {
       to: '/appearance',
@@ -92,6 +98,33 @@ const Sidebar = () => {
         return hasPermission(user, perm)
       })
   useEffect(() => {
+    if (user?.role !== 'owner') {
+      setPlanFeatures(null)
+      return
+    }
+
+    let active = true
+
+    axiosClient.get('/subscription/')
+      .then(({ data }) => {
+        if (active) {
+          setPlanFeatures(data?.plan?.features || {})
+        }
+      })
+      .catch((error) => {
+        console.error('Load subscription features error:', error)
+        if (active) {
+          // Do not show misleading lock icons when subscription status is unknown.
+          setPlanFeatures(null)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user?.role])
+
+  useEffect(() => {
       document.documentElement.dir =
         language === 'ar'
           ? 'rtl'
@@ -121,7 +154,13 @@ const Sidebar = () => {
       </div>
 
       <nav className="space-y-2">
-        {links.map(({ to, label, icon: Icon }) => (
+        {links.map(({ to, label, icon: Icon, feature }) => {
+          const isPlanLocked =
+            user?.role === 'owner' &&
+            !!feature &&
+            planFeatures?.[feature] === false
+
+          return (
           <NavLink
             key={to}
             to={to}
@@ -136,11 +175,19 @@ const Sidebar = () => {
           >
             <Icon className="h-5 w-5 shrink-0" />
 
-            <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <span className="flex min-w-0 flex-1 items-center justify-between gap-3 whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
               {label}
+              {isPlanLocked && (
+                <LockKeyhole
+                  className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+                  aria-label={t.planFeatureLocked || 'Upgrade required'}
+                  title={t.planFeatureLocked || 'Upgrade required'}
+                />
+              )}
             </span>
           </NavLink>
-        ))}
+          )
+        })}
       </nav>
     </aside>
   )
