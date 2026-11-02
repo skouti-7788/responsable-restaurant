@@ -1,5 +1,4 @@
 import {
-import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
   useCallback,
   useEffect,
   useMemo,
@@ -36,6 +35,7 @@ import {
 } from '../../utils/restaurantCache'
 
 import translations from '../../i18n/translations'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
 import Button from '../../components/ui/Button'
 
 const MEALS_CACHE_KEY = 'restaurant_meals_cache'
