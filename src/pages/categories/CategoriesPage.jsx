@@ -659,7 +659,7 @@ const CategoriesPage = () => {
         )
 
 
-        const planError = error?.response?.data
+        const planError = error?.response?.data || error?.data || error
 
         if (
           planError?.code === 'PLAN_LIMIT_REACHED' &&
