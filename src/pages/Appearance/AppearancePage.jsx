@@ -168,7 +168,7 @@ const ImageUploader = ({
               variant="danger"
               className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
               onClick={onRemove}
-              disabled={loading}
+              disabled={loading || disabled}
             >
               <Trash2 className="mr-2 h-4 w-4" />
 
