@@ -21,7 +21,7 @@ import PageHome from './pages/home/pageHome'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import PricingPage from './pages/pricing/PricingPage'
-import { PlanAccessProvider } from './components/layout/PlanAccessContext'
+import PlanAccessProvider from './components/layout/PlanAccessContext'
 function App() {
   const { language, theme } = useSelector((state) => state.ui)
 
