@@ -126,6 +126,9 @@ const MealsPage = () => {
   const [error, setError] =
     useState('')
 
+  const [upgradeRequired, setUpgradeRequired] =
+    useState(false)
+
   const [saving, setSaving] =
     useState(false)
 
@@ -622,13 +625,24 @@ const MealsPage = () => {
             err
         )
 
-        setError(
-          err?.response?.data
-            ?.message ||
+        const planError = err?.response?.data
+
+        if (
+          planError?.code === 'PLAN_LIMIT_REACHED' &&
+          planError?.resource === 'meals' &&
+          planError?.upgrade_required === true
+        ) {
+          setUpgradeRequired(true)
+          setOpen(false)
+          setError('')
+        } else {
+          setError(
+            planError?.message ||
             err?.message ||
             t.saveMealError ||
             'Failed to save meal.'
-        )
+          )
+        }
       } finally {
         setSaving(false)
       }
@@ -1228,6 +1242,25 @@ const MealsPage = () => {
   
         </div>
       {/* ERROR */}
+
+      {upgradeRequired && (
+        <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold">
+              {t.upgradeLimitTitle || 'You have reached your plan limit'}
+            </h2>
+            <p className="mt-1 text-sm opacity-90">
+              {t.upgradeLimitDescription || 'Your current plan does not allow you to add more items. Upgrade your plan to unlock more capacity.'}
+            </p>
+          </div>
+          <a
+            href="/pricing"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+          >
+            {t.upgradePlan || 'Upgrade plan'}
+          </a>
+        </div>
+      )}
 
       {error && (
         <div className="mb-5 flex items-start justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
