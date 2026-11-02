@@ -1039,7 +1039,7 @@ const AppearancePage = () => {
             </div>
 
             {isBasicAppearance ? (
-              <PlanUpgradeNotice t={t} />
+              <PlanUpgradeNotice t={t} titleKey="upgradeFeatureTitle" descriptionKey="upgradeFeatureDescription" />
             ) : (
               <>
             {/* =================================================
