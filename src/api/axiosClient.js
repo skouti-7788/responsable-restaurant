@@ -14,7 +14,10 @@ const axiosClient = axios.create({
   },
 })
 axiosClient.interceptors.request.use((config) => {
-  const language = (localStorage.getItem('restaurant_language') || 'en').toLowerCase().split(/[-_]/)[0]\n  config.headers['Accept-Language'] = ['en', 'fr', 'ar'].includes(language) ? language : 'en'\n\n  const token = localStorage.getItem('restaurant_token')
+  const language = (localStorage.getItem('restaurant_language') || 'en').toLowerCase().split(/[-_]/)[0]
+  config.headers['Accept-Language'] = ['en', 'fr', 'ar'].includes(language) ? language : 'en'
+
+  const token = localStorage.getItem('restaurant_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
