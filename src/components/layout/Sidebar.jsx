@@ -62,6 +62,8 @@ const Sidebar = () => {
       to: '/appearance',
       label: t.appearance,
       icon: Palette,
+      feature: 'appearance',
+      advancedFeature: true,
     },  
     {
       to: '/profile',
@@ -127,11 +129,13 @@ const Sidebar = () => {
       </div>
 
       <nav className="space-y-2">
-        {links.map(({ to, label, icon: Icon, feature }) => {
+        {links.map(({ to, label, icon: Icon, feature, advancedFeature }) => {
           const isPlanLocked =
             user?.role === 'owner' &&
             !!feature &&
-            planFeatures?.[feature] === false
+            (advancedFeature
+              ? planFeatures?.[feature] !== 'advanced'
+              : planFeatures?.[feature] === false)
 
           return (
           <NavLink
