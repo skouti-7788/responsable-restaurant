@@ -847,7 +847,7 @@ const AppearancePage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-[var(--surface-dark)]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FFF9ED] dark:bg-[var(--surface-dark)]">
 
         <div className="flex flex-col items-center gap-3">
 
@@ -869,7 +869,7 @@ const AppearancePage = () => {
   // =======================================================
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-6 dark:bg-[var(--surface-dark)] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FFF9ED] px-4 py-6 dark:bg-[var(--surface-dark)] sm:px-6 lg:px-8">
 
       <div className="mx-auto max-w-7xl">
 
