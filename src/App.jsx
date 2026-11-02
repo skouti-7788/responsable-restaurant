@@ -42,6 +42,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/upgrade" element={<PricingPage />} />
         <Route path="/home" element={<PageHome />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
