@@ -763,23 +763,18 @@ const AppearancePage = () => {
       })
 
       try {
-        const payload = {
-          ...form,
-
-          logoFile:
-            imageFiles.logo,
-
-          header_imageFile:
-            imageFiles.header_image,
-
- 
-          remove_logo:
-            removeFlags.logo,
-
-          remove_header_image:
-            removeFlags.header_image,
-
-         }
+        const payload = isBasicAppearance
+          ? {
+              logoFile: imageFiles.logo,
+              remove_logo: removeFlags.logo,
+            }
+          : {
+              ...form,
+              logoFile: imageFiles.logo,
+              header_imageFile: imageFiles.header_image,
+              remove_logo: removeFlags.logo,
+              remove_header_image: removeFlags.header_image,
+            }
 
         const updatedAppearance =
           await saveRestaurantAppearance(
