@@ -96,7 +96,7 @@ export default function PricingPage() {
     try {
       const { data } = await axiosClient.post('/subscription/cancel', restaurantId ? { restaurant_id: restaurantId } : {})
       setSubscription(data?.subscription ?? subscription)
-      setSubscriptionMessage(data?.message || t.subscriptionCancelSuccess)
+      setSubscriptionMessage(t.subscriptionCancelSuccess)
     } catch {
       setSubscriptionError(t.subscriptionCancelError)
     } finally {
