@@ -134,7 +134,7 @@ const Sidebar = () => {
           const isPlanLocked =
             user?.role === 'owner' &&
             !!feature &&
-            (planLoading || !planFeatures ||
+            (!planLoading && !!planFeatures &&
               (advancedFeature
                 ? featureValue !== 'advanced'
                 : featureValue !== true))
