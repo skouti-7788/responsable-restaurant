@@ -17,6 +17,8 @@ import {
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import translations from '../../i18n/translations'
+import PlanUpgradeNotice from '../../components/layout/PlanUpgradeNotice'
+import { isPlanUpgradeError } from '../../utils/planErrors'
 
 import {
   setStaff,
@@ -342,6 +344,8 @@ const StaffPage = () => {
   const [error, setError] =
     useState(null)
 
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
+
   const [modal, setModal] =
     useState({
       open: false,
@@ -581,13 +585,15 @@ const StaffPage = () => {
           err,
         )
 
-        const validationErrors =
-          err?.response?.data
-            ?.errors
+        if (isPlanUpgradeError(err)) {
+          setUpgradeRequired(true)
+          setError(null)
+        } else {
+          const validationErrors =
+            err?.response?.data
+              ?.errors
 
-        if (
-          validationErrors
-        ) {
+          if (validationErrors) {
           const firstError =
             Object.values(
               validationErrors,
@@ -601,13 +607,14 @@ const StaffPage = () => {
               'Unable to create staff.',
           )
         } else {
-          setError(
-            err?.message ||
-              err?.response?.data
-                ?.message ||
-              t.createStaffError ||
-              'Unable to create staff.',
-          )
+            setError(
+              err?.message ||
+                err?.response?.data
+                  ?.message ||
+                t.createStaffError ||
+                'Unable to create staff.',
+            )
+          }
         }
       } finally {
         setCreating(false)
@@ -911,6 +918,8 @@ const StaffPage = () => {
         {/* =================================================
             ERROR
         ================================================= */}
+
+        {upgradeRequired && <PlanUpgradeNotice t={t} />}
 
         {(error || reduxError) && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
