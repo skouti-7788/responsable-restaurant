@@ -49,7 +49,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sand px-4 py-10 sm:px-6 lg:px-8">
+    <div className="login-page min-h-screen bg-sand px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-10 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line">
         <div className="mb-8 space-y-3 text-center">
           <p className="text-sm uppercase tracking-[0.35em] text-brand">
