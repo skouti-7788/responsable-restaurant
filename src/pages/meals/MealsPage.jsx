@@ -1292,7 +1292,7 @@ const MealsPage = () => {
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-12 text-center shadow-card dark:border-slate-800 dark:bg-slate-900">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/10 text-sky-500">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-brand/10 text-brand-dark dark:text-brand">
             <Utensils size={30} />
           </div>
 
@@ -1311,7 +1311,7 @@ const MealsPage = () => {
             onClick={() =>
               handleOpen()
             }
-            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white   hover:bg-sky-600"
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             <Plus size={18} />
 
@@ -1414,7 +1414,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-brand dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder={
                     t.mealName ||
                     'Meal name'
@@ -1445,7 +1445,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-brand dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder={
                     t.description ||
                     'Description'
@@ -1478,7 +1478,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-brand dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   placeholder="0.00"
                 />
               </div>
@@ -1505,7 +1505,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-brand dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 >
                   <option value="">
                     {t.selectCategory ||
@@ -1608,7 +1608,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none   focus:border-brand dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                 >
                   <option value="active">
                     {t.active ||
@@ -1642,7 +1642,7 @@ const MealsPage = () => {
                       })
                     )
                   }
-                  className="h-5 w-5 rounded border-slate-300 bg-white text-sky-500 dark:border-slate-700 dark:bg-slate-950"
+                  className="h-5 w-5 rounded border-slate-300 bg-white text-brand dark:border-slate-700 dark:bg-slate-950"
                 />
 
                 {t.featured ||
