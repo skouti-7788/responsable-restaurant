@@ -42,7 +42,7 @@ const ProtectedRoute = ({ children, allowedRoles = null, requiredPermission = nu
     if (features?.[requiredFeature] === false) {
       return (
         <div className="mx-auto max-w-2xl py-8">
-          <PlanUpgradeNotice t={t} />
+          <PlanUpgradeNotice t={t} titleKey="upgradeFeatureTitle" descriptionKey="upgradeFeatureDescription" />
         </div>
       )
     }
