@@ -5,6 +5,8 @@ const translations = {
   en: {
     planFeatureLocked: 'This feature requires a higher plan.',
     upgradeLimitTitle: 'You have reached your plan limit',
+    upgradeFeatureTitle: 'This feature is not included in your plan',
+    upgradeFeatureDescription: 'Upgrade your plan to unlock this feature.',
     upgradeLimitDescription: 'Your current plan does not allow you to add more items. Upgrade your plan to unlock more capacity.',
     upgradePlan: 'Upgrade plan',
     Images: 'images',
@@ -393,6 +395,8 @@ const translations = {
   fr: {
     planFeatureLocked: 'Cette fonctionnalité nécessite un forfait supérieur.',
     upgradeLimitTitle: 'Vous avez atteint la limite de votre forfait',
+    upgradeFeatureTitle: 'Cette fonctionnalité n’est pas incluse dans votre forfait',
+    upgradeFeatureDescription: 'Passez à un forfait supérieur pour débloquer cette fonctionnalité.',
     upgradeLimitDescription: 'Votre forfait actuel ne permet pas d’ajouter davantage d’éléments. Passez à un forfait supérieur pour augmenter votre capacité.',
     upgradePlan: 'Mettre à niveau',
     changePasswordTitle: 'Changer le mot de passe',
@@ -786,6 +790,8 @@ const translations = {
   ar: {
     planFeatureLocked: 'تتطلب هذه الميزة الترقية إلى باقة أعلى.',
     upgradeLimitTitle: 'لقد وصلت إلى الحد الأقصى في باقتك',
+    upgradeFeatureTitle: 'هذه الميزة غير متاحة ضمن باقتك الحالية',
+    upgradeFeatureDescription: 'قم بترقية باقتك لفتح هذه الميزة.',
     upgradeLimitDescription: 'باقتك الحالية لا تسمح بإضافة المزيد من العناصر. قم بترقية باقتك للحصول على سعة أكبر.',
     upgradePlan: 'ترقية الباقة',
 
