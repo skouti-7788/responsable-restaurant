@@ -7,6 +7,7 @@ const requiredPlanKeys = [
   'upgradeLimitDescription',
   'upgradeFeatureTitle',
   'upgradeFeatureDescription',
+  'appearanceUpgradeDescription',
   'upgradePlan',
   'planStatusUnavailable',
   'retry',
