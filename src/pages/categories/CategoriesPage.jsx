@@ -663,9 +663,10 @@ const CategoriesPage = () => {
         const planError = error?.response?.data || error?.data || error
 
         if (
-          planError?.code === 'PLAN_LIMIT_REACHED' &&
-          planError?.resource === 'categories' &&
-          planError?.upgrade_required === true
+          (planError?.code === 'PLAN_LIMIT_REACHED' &&
+            planError?.resource === 'categories' &&
+            planError?.upgrade_required === true) ||
+          planError?.code === 'PLAN_FEATURE_LOCKED'
         ) {
           setUpgradeRequired(true)
           setIsOpen(false)
