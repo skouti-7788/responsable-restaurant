@@ -1,5 +1,6 @@
 import axiosClient from '../api/axiosClient'
 import { setNotafication } from '../store/orderSlice'
+import { isPlanUpgradeError } from '../utils/planErrors'
 import {
   getCurrentRestaurantId,
   getRestaurantCache,
@@ -258,7 +259,7 @@ export const fetchDashboardData = async ({
   const [
     categoriesResponse,
     mealsResponse,
-    ordersResponse,
+    ordersResult,
   ] = await Promise.all([
     axiosClient.get(
       `/restaurants/${id}/categories`
@@ -270,8 +271,31 @@ export const fetchDashboardData = async ({
 
     axiosClient.get(
       `/restaurants/${id}/orders`
-    ),
+    ).then((response) => ({
+      response,
+      locked: false,
+    })).catch((error) => {
+      const planError = error?.response?.data || error?.data || error
+      const isOrdersPlanLock =
+        isPlanUpgradeError(error) &&
+        (
+          planError?.feature === 'orders' ||
+          planError?.resource === 'orders'
+        )
+
+      if (isOrdersPlanLock) {
+        return {
+          response: null,
+          locked: true,
+        }
+      }
+
+      throw error
+    }),
   ])
+
+  const ordersLocked = ordersResult.locked
+  const ordersResponse = ordersResult.response
 
   // ===================================================
   // NORMALIZE API DATA
@@ -287,10 +311,13 @@ export const fetchDashboardData = async ({
     mealsResponse.data ||
     []
 
-  const orders =
-    ordersResponse.data?.data ||
-    ordersResponse.data ||
-    []
+  const orders = ordersLocked
+    ? []
+    : (
+        ordersResponse?.data?.data ||
+        ordersResponse?.data ||
+        []
+      )
 
   const normalizedCategories =
     Array.isArray(categories)
