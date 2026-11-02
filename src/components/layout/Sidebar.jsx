@@ -20,7 +20,7 @@ import { usePlanAccess } from './planAccess'
 const Sidebar = () => {
   const language = useSelector((state) => state.ui.language)
   const user = useSelector((state) => state.auth.user)
-  const { features: planFeatures } = usePlanAccess()
+  const { features: planFeatures, loading: planLoading } = usePlanAccess()
 
   const t = translations[language] || translations.en
 
@@ -130,12 +130,14 @@ const Sidebar = () => {
 
       <nav className="space-y-2">
         {links.map(({ to, label, icon: Icon, feature, advancedFeature }) => {
+          const featureValue = planFeatures?.[feature]
           const isPlanLocked =
             user?.role === 'owner' &&
             !!feature &&
-            (advancedFeature
-              ? planFeatures?.[feature] !== 'advanced'
-              : planFeatures?.[feature] === false)
+            (planLoading || !planFeatures ||
+              (advancedFeature
+                ? featureValue !== 'advanced'
+                : featureValue !== true))
 
           return (
           <NavLink
