@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 import hasPermission from '../../utils/permissions'
-import { usePlanAccess } from './PlanAccessContext'
+import { usePlanAccess } from './planAccess'
 import translations from '../../i18n/translations'
 import PlanUpgradeNotice from './PlanUpgradeNotice'
 
