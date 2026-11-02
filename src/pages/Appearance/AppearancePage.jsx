@@ -820,8 +820,8 @@ const AppearancePage = () => {
 
         const planError = error?.response?.data || error?.data || error
         if (
-          planError?.code === 'PLAN_LIMIT_REACHED' &&
-          planError?.upgrade_required === true
+          (planError?.code === 'PLAN_LIMIT_REACHED' && planError?.upgrade_required === true) ||
+          planError?.code === 'PLAN_FEATURE_LOCKED'
         ) {
           setStatus({ type: 'upgrade', message: '' })
         } else {
