@@ -3,6 +3,9 @@ const translations = {
   // ENGLISH
   // =========================================================
   en: {
+    upgradeLimitTitle: 'You have reached your plan limit',
+    upgradeLimitDescription: 'Your current plan does not allow you to add more items. Upgrade your plan to unlock more capacity.',
+    upgradePlan: 'Upgrade plan',
     Images: 'images',
     login: 'Login',
     register: 'Register new restaurant',
@@ -387,6 +390,9 @@ const translations = {
   // FRANÇAIS
   // =========================================================
   fr: {
+    upgradeLimitTitle: 'Vous avez atteint la limite de votre forfait',
+    upgradeLimitDescription: 'Votre forfait actuel ne permet pas d’ajouter davantage d’éléments. Passez à un forfait supérieur pour augmenter votre capacité.',
+    upgradePlan: 'Mettre à niveau',
     changePasswordTitle: 'Changer le mot de passe',
     changePasswordDescription: 'Sécurisez votre compte en modifiant votre mot de passe.',
     currentPassword: 'Mot de passe actuel',
@@ -776,6 +782,9 @@ const translations = {
   // العربية
   // =========================================================
   ar: {
+    upgradeLimitTitle: 'لقد وصلت إلى الحد الأقصى في باقتك',
+    upgradeLimitDescription: 'باقتك الحالية لا تسمح بإضافة المزيد من العناصر. قم بترقية باقتك للحصول على سعة أكبر.',
+    upgradePlan: 'ترقية الباقة',
 
     changePasswordTitle: 'تغيير كلمة المرور',
     changePasswordDescription: 'حافظ على أمان حسابك من خلال تغيير كلمة المرور.',
