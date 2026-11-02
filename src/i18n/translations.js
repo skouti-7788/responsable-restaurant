@@ -3,6 +3,7 @@ const translations = {
   // ENGLISH
   // =========================================================
   en: {
+    planFeatureLocked: 'This feature requires a higher plan.',
     upgradeLimitTitle: 'You have reached your plan limit',
     upgradeLimitDescription: 'Your current plan does not allow you to add more items. Upgrade your plan to unlock more capacity.',
     upgradePlan: 'Upgrade plan',
@@ -390,6 +391,7 @@ const translations = {
   // FRANÇAIS
   // =========================================================
   fr: {
+    planFeatureLocked: 'Cette fonctionnalité nécessite un forfait supérieur.',
     upgradeLimitTitle: 'Vous avez atteint la limite de votre forfait',
     upgradeLimitDescription: 'Votre forfait actuel ne permet pas d’ajouter davantage d’éléments. Passez à un forfait supérieur pour augmenter votre capacité.',
     upgradePlan: 'Mettre à niveau',
@@ -782,6 +784,7 @@ const translations = {
   // العربية
   // =========================================================
   ar: {
+    planFeatureLocked: 'تتطلب هذه الميزة الترقية إلى باقة أعلى.',
     upgradeLimitTitle: 'لقد وصلت إلى الحد الأقصى في باقتك',
     upgradeLimitDescription: 'باقتك الحالية لا تسمح بإضافة المزيد من العناصر. قم بترقية باقتك للحصول على سعة أكبر.',
     upgradePlan: 'ترقية الباقة',
