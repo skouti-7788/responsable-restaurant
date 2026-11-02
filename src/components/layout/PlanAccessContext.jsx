@@ -5,8 +5,10 @@ import { PlanAccessContext } from './planAccess'
 
 const PlanAccessProvider = ({ children }) => {
   const user = useSelector((state) => state.auth.user)
+  const selectedRestaurantId = useSelector((state) => state.restaurant.profile?.id)
+    ?? user?.restaurant_id
   const identity = user?.role === 'owner'
-    ? `owner:${user?.restaurant_id ?? 'default'}`
+    ? `owner:${selectedRestaurantId ?? 'default'}`
     : 'not-owner'
 
   const [result, setResult] = useState({
@@ -20,7 +22,9 @@ const PlanAccessProvider = ({ children }) => {
 
     let active = true
 
-    axiosClient.get('/subscription/')
+    axiosClient.get('/subscription/', {
+      params: selectedRestaurantId ? { restaurant_id: selectedRestaurantId } : {},
+    })
       .then(({ data }) => {
         if (!active) return
         setResult({
@@ -42,7 +46,7 @@ const PlanAccessProvider = ({ children }) => {
     return () => {
       active = false
     }
-  }, [identity, user?.role])
+  }, [identity, selectedRestaurantId, user?.role])
 
   const isCurrent = result.identity === identity
   const value = {
