@@ -625,7 +625,7 @@ const MealsPage = () => {
             err
         )
 
-        const planError = err?.response?.data
+        const planError = err?.response?.data || err?.data || err
 
         if (
           planError?.code === 'PLAN_LIMIT_REACHED' &&
