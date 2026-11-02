@@ -61,22 +61,21 @@ export default function PricingPage() {
   const isArabic = language === 'ar'
 
   useEffect(() => {
-    if (user?.role !== 'owner') {
-      setSubscription(null)
-      setSubscriptionPlan(null)
-      return undefined
-    }
+    if (user?.role !== 'owner') return undefined
 
     let active = true
-    setSubscriptionLoading(true)
-    setSubscriptionError('')
-    axiosClient.get('/subscription/', {
-      params: restaurantId ? { restaurant_id: restaurantId } : {},
+    Promise.resolve().then(() => {
+      if (!active) return
+      setSubscriptionLoading(true)
+      setSubscriptionError('')
+      return axiosClient.get('/subscription/', {
+        params: restaurantId ? { restaurant_id: restaurantId } : {},
+      })
     })
-      .then(({ data }) => {
-        if (!active) return
-        setSubscription(data?.subscription ?? null)
-        setSubscriptionPlan(data?.plan ?? null)
+      .then((response) => {
+        if (!active || !response) return
+        setSubscription(response.data?.subscription ?? null)
+        setSubscriptionPlan(response.data?.plan ?? null)
       })
       .catch(() => {
         if (!active) return
