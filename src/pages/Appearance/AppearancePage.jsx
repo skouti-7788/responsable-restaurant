@@ -247,8 +247,8 @@ const AppearancePage = () => {
     translations.en ||
     {}
 
-  const { features: planFeatures } = usePlanAccess()
-  const isBasicAppearance = planFeatures?.appearance === 'basic'
+  const { features: planFeatures, loading: planLoading } = usePlanAccess()
+  const isBasicAppearance = planLoading || planFeatures?.appearance !== 'advanced'
 
   // =======================================================
   // CACHE
