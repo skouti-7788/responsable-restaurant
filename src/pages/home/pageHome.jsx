@@ -59,7 +59,7 @@ const PERK_KEYS = [
 ];
 
 const FOOTER_KEYS = [
-  { title: "homeProduct", links: [["homeNavFeatures", "#platform"], ["homeNavHowItWorks", "#how-it-works"], ["homePricing", "/pricing"], ["homeBlog", "#"]] },
+  { title: "homeProduct", links: [["homeNavFeatures", "#platform"], ["homeNavHowItWorks", "#how-it-works"], ["homePricing", "/upgrade"], ["homeBlog", "#"]] },
   { title: "homeSupport", links: [["homeHelpCenter", "#"], ["homeContact", "#contact"], ["homeTerms", "#"], ["homePrivacy", "#"]] },
 ];
 
@@ -196,7 +196,7 @@ function PageHome() {
             </Link>
 
             <Link
-              to="/pricing"
+              to="/upgrade"
               className="hidden cursor-pointer rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 sm:block sm:px-5"
             >
               {t.homeGetStarted}
