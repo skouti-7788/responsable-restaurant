@@ -21,6 +21,7 @@ import PageHome from './pages/home/pageHome'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import PricingPage from './pages/pricing/PricingPage'
+import { PlanAccessProvider } from './components/layout/PlanAccessContext'
 function App() {
   const { language, theme } = useSelector((state) => state.ui)
 
@@ -56,7 +57,9 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <SidebarLayout />
+              <PlanAccessProvider>
+                <SidebarLayout />
+              </PlanAccessProvider>
             </ProtectedRoute>
           }
         >
@@ -92,7 +95,7 @@ function App() {
           <Route
             path="orders"
             element={
-              <ProtectedRoute requiredPermission="orders.view">
+              <ProtectedRoute requiredPermission="orders.view" requiredFeature="orders">
                 <OrdersPage />
               </ProtectedRoute>
             }
@@ -101,7 +104,7 @@ function App() {
           <Route
             path="tables"
             element={
-              <ProtectedRoute requiredPermission="tables.view">
+              <ProtectedRoute requiredPermission="tables.view" requiredFeature="tables">
                 <TablesPage />
               </ProtectedRoute>
             }
@@ -119,7 +122,7 @@ function App() {
           <Route
             path="staff"
             element={
-              <ProtectedRoute requiredPermission="staff.view">
+              <ProtectedRoute requiredPermission="staff.view" requiredFeature="staff">
                 <StaffPage />
               </ProtectedRoute>
             }
