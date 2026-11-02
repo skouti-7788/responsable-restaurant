@@ -1199,7 +1199,6 @@ const AppearancePage = () => {
                     event.target.value
                   )
                 }
-                disabled={!canUseAdvancedAppearance}
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-800 dark:bg-[var(--surface-dark)] dark:text-slate-100"
               >
 
