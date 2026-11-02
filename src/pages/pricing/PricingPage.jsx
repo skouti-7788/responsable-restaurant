@@ -1,36 +1,38 @@
-
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const plans = [
   {
-    id: 'free',
+    id: 'starter',
     price: 0,
     popular: false,
+    available: true,
     features: {
-      fr: ['Menu QR', 'Gestion du menu', 'Personnalisation de base'],
-      en: ['QR menu', 'Menu management', 'Basic customization'],
-      ar: ['قائمة QR', 'إدارة الوجبات', 'تخصيص أساسي'],
+      fr: ['Menu QR', 'Jusqu’à 5 catégories', 'Jusqu’à 30 plats', 'Personnalisation de base'],
+      en: ['QR menu', 'Up to 5 categories', 'Up to 30 meals', 'Basic appearance customization'],
+      ar: ['قائمة QR', 'حتى 5 فئات', 'حتى 30 وجبة', 'تخصيص أساسي للمظهر'],
     },
   },
   {
     id: 'pro',
     price: 99,
     popular: true,
+    available: false,
     features: {
-      fr: ['Tout le plan Free', 'Commandes en ligne', 'Statistiques'],
-      en: ['Everything in Free', 'Online orders', 'Analytics'],
-      ar: ['جميع مميزات المجانية', 'الطلبات عبر الإنترنت', 'الإحصائيات'],
+      fr: ['Tout le plan Starter', 'Catégories et plats illimités', 'Commandes et tables', 'Personnalisation avancée'],
+      en: ['Everything in Starter', 'Unlimited categories and meals', 'Orders and tables', 'Advanced appearance customization'],
+      ar: ['جميع مميزات Starter', 'فئات ووجبات غير محدودة', 'الطلبات والطاولات', 'تخصيص متقدم للمظهر'],
     },
   },
   {
-    id: 'premium',
+    id: 'business',
     price: 199,
     popular: false,
+    available: false,
     features: {
-      fr: ['Tout le plan Pro', 'Gestion avancée', 'Support prioritaire'],
-      en: ['Everything in Pro', 'Advanced management', 'Priority support'],
-      ar: ['جميع مميزات Pro', 'إدارة متقدمة', 'دعم ذو أولوية'],
+      fr: ['Tout le plan Pro', 'Gestion du personnel', 'Toutes les fonctionnalités avancées'],
+      en: ['Everything in Pro', 'Staff management', 'All advanced features'],
+      ar: ['جميع مميزات Pro', 'إدارة الموظفين', 'جميع الميزات المتقدمة'],
     },
   },
 ]
@@ -43,10 +45,12 @@ const translations = {
     yearly: 'Annuel',
     month: '/ mois',
     year: '/ an',
-    free: 'Gratuit',
+    starter: 'Starter',
     pro: 'Pro',
-    premium: 'Premium',
+    business: 'Business',
+    free: 'Gratuit',
     choose: 'Choisir cette formule',
+    unavailable: 'Bientôt disponible',
     popular: 'Le plus populaire',
     currency: 'MAD',
     login: 'Se connecter',
@@ -58,10 +62,12 @@ const translations = {
     yearly: 'Yearly',
     month: '/ month',
     year: '/ year',
-    free: 'Free',
+    starter: 'Starter',
     pro: 'Pro',
-    premium: 'Premium',
+    business: 'Business',
+    free: 'Free',
     choose: 'Choose this plan',
+    unavailable: 'Coming soon',
     popular: 'Most popular',
     currency: 'MAD',
     login: 'Log in',
@@ -73,10 +79,12 @@ const translations = {
     yearly: 'سنوي',
     month: '/ الشهر',
     year: '/ السنة',
+    starter: 'Starter',
+    pro: 'Pro',
+    business: 'Business',
     free: 'مجانية',
-    pro: 'احترافية',
-    premium: 'متميزة',
     choose: 'اختر هذه الباقة',
+    unavailable: 'قريباً',
     popular: 'الأكثر طلباً',
     currency: 'درهم',
     login: 'تسجيل الدخول',
@@ -85,7 +93,7 @@ const translations = {
 
 export default function PricingPage() {
   const [language, setLanguage] = useState(() => {
-    const saved = localStorage.getItem('menu_language')
+    const saved = localStorage.getItem('restaurant_language') || localStorage.getItem('menu_language')
     return ['fr', 'en', 'ar'].includes(saved) ? saved : 'fr'
   })
 
@@ -96,7 +104,7 @@ export default function PricingPage() {
   useEffect(() => {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? 'rtl' : 'ltr'
-    localStorage.setItem('menu_language', language)
+    localStorage.setItem('restaurant_language', language)
   }, [language, isArabic])
 
   const formatPrice = (price) => {
@@ -213,16 +221,22 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                to={`/register?plan=${plan.id}`}
-                className={`rounded-xl px-4 py-3 text-center font-semibold ${
-                  plan.popular
-                    ? 'bg-[#D97706] text-white hover:bg-[#B45309]'
-                    : 'border border-[#EEE6D9] hover:bg-[#FFF9ED]'
-                }`}
-              >
-                {t.choose}
-              </Link>
+              {plan.available ? (
+                <Link
+                  to="/register"
+                  className="rounded-xl border border-[#EEE6D9] px-4 py-3 text-center font-semibold hover:bg-[#FFF9ED]"
+                >
+                  {t.choose}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="cursor-not-allowed rounded-xl border border-[#EEE6D9] bg-slate-100 px-4 py-3 text-center font-semibold text-slate-500"
+                >
+                  {t.unavailable}
+                </button>
+              )}
             </article>
           ))}
         </div>
