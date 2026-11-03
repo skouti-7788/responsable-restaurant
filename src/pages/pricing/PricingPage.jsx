@@ -51,6 +51,17 @@ const plans = [
 
 const translations = {
   fr: {
+    subscriptionCurrent: 'Votre abonnement actuel',
+        subscriptionEndsAt: 'Se termine le',
+        subscriptionCancelScheduled: 'Annulation prévue à la fin de la période.',
+        subscriptionCancel: 'Annuler l’abonnement',
+        subscriptionCanceling: 'Annulation...',
+        subscriptionCancelConfirm: 'Voulez-vous vraiment annuler cet abonnement ?',
+        subscriptionCancelSuccess: 'L’annulation a été programmée.',
+        subscriptionCancelError: 'Impossible d’annuler l’abonnement.',
+        planStatusUnavailable: 'Impossible de charger votre abonnement.',
+        loading: 'Chargement...',
+        dashboard: 'Tableau de bord',
     title: 'Choisissez votre formule',
     subtitle: 'Développez votre restaurant avec Menu Online.',
     monthly: 'Mensuel',
@@ -90,6 +101,17 @@ const translations = {
     comingSoon: 'Bientôt disponible',
   },
   en: {
+    subscriptionCurrent: 'Your current subscription',
+        subscriptionEndsAt: 'Ends on',
+        subscriptionCancelScheduled: 'Cancellation is scheduled at the end of the period.',
+        subscriptionCancel: 'Cancel subscription',
+        subscriptionCanceling: 'Cancelling...',
+        subscriptionCancelConfirm: 'Are you sure you want to cancel this subscription?',
+        subscriptionCancelSuccess: 'Cancellation has been scheduled.',
+        subscriptionCancelError: 'Unable to cancel the subscription.',
+        planStatusUnavailable: 'Unable to load your subscription.',
+        loading: 'Loading...',
+        dashboard: 'Dashboard',
     title: 'Choose your plan',
     subtitle: 'Grow your restaurant with Menu Online.',
     monthly: 'Monthly',
@@ -129,6 +151,17 @@ const translations = {
     comingSoon: 'Coming soon',
   },
   ar: {
+    subscriptionCurrent: 'الاشتراك الحالي',
+        subscriptionEndsAt: 'ينتهي في',
+        subscriptionCancelScheduled: 'تمت جدولة الإلغاء في نهاية الفترة.',
+        subscriptionCancel: 'إلغاء الاشتراك',
+        subscriptionCanceling: 'جارٍ الإلغاء...',
+        subscriptionCancelConfirm: 'هل أنت متأكد أنك تريد إلغاء هذا الاشتراك؟',
+        subscriptionCancelSuccess: 'تمت جدولة إلغاء الاشتراك.',
+        subscriptionCancelError: 'تعذر إلغاء الاشتراك.',
+        planStatusUnavailable: 'تعذر تحميل معلومات الاشتراك.',
+        loading: 'جارٍ التحميل...',
+        dashboard: 'لوحة التحكم',
     title: 'اختر الباقة المناسبة لك',
     subtitle: 'طوّر مطعمك مع Menu Online.',
     monthly: 'شهري',
@@ -294,22 +327,9 @@ export default function PricingPage() {
           Menu Online
         </Link>
 
-        <div className="flex items-center gap-3">
-          <select
-            aria-label="Language"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-            className="rounded-lg border border-[#EEE6D9] bg-white p-2"
-          >
-            <option value="fr">Français</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-          </select>
-
-          <Link to="/login" className="text-sm font-semibold">
-            {t.login}
-          </Link>
-        </div>
+        <Link to={user ? '/home' : '/login'} className="text-sm font-semibold">
+          {user ? (t.dashboard || 'Dashboard') : t.login}
+        </Link>
       </header>
 
       <section className="mx-auto max-w-6xl py-16 text-center">
