@@ -14,6 +14,7 @@ const normalizeTranslations = (data) => {
         name: row.name || '',
         description: row.description || '',
         is_manual: Boolean(row.is_manual),
+        dirty: false,
       }
     }
     return result
@@ -37,7 +38,7 @@ export const getCategoryTranslations = async (restaurantId, categoryId) => {
 export const saveMealTranslations = async (restaurantId, mealId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim()) continue
+    if (!value?.name?.trim() || (!value?.dirty && !value?.is_manual)) continue
     await axiosClient.put(
       `/restaurants/${restaurantId}/meals/${mealId}/translations/${language}`,
       {
