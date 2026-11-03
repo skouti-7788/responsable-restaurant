@@ -46,6 +46,8 @@ import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
+import TranslationFields from '../../components/forms/TranslationFields'
+import { getCategoryTranslations, saveCategoryTranslations } from '../../data/contentTranslations'
 
 
 const CategoriesPage = () => {
@@ -185,6 +187,8 @@ const CategoriesPage = () => {
     setEditing,
   ] = useState(null)
 
+
+  const [contentTranslations, setContentTranslations] = useState({})
 
   const [
     form,
@@ -446,6 +450,7 @@ const CategoriesPage = () => {
     category
   ) => {
 
+    setContentTranslations(category?.id ? await getCategoryTranslations(restaurantIdRef.current, category.id).catch(() => ({})) : {})
     setEditing(
       category || null
     )
@@ -641,6 +646,8 @@ const CategoriesPage = () => {
         }
 
 
+
+        if (savedCategory?.id) await saveCategoryTranslations(restaurantId, savedCategory.id, contentTranslations)
 
         // =================================================
         // CLOSE
@@ -1163,6 +1170,8 @@ const CategoriesPage = () => {
       >
 
         <div className="grid gap-5">
+
+          <TranslationFields value={contentTranslations} onChange={setContentTranslations} title={t.manualTranslations || 'Manual translations'} />
 
           <Input
             label={
