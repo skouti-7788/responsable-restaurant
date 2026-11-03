@@ -14,6 +14,8 @@ import { updateProfile } from '../../store/restaurantSlice'
 import translations from '../../i18n/translations'
 
 import Input from '../../components/ui/Input'
+import TranslationFields from '../../components/forms/TranslationFields'
+import { getRestaurantTranslations, saveRestaurantTranslations } from '../../data/contentTranslations'
 
 // =====================================================
 // EMPTY FORM
@@ -120,6 +122,8 @@ const [passwordMessage, setPasswordMessage] = useState({
   // ===================================================
   // INITIAL PROFILE
   // ===================================================
+
+  const [contentTranslations, setContentTranslations] = useState({})
 
   const [form, setForm] = useState(() => {
     const cached = getCachedProfile()
@@ -427,6 +431,8 @@ const [passwordMessage, setPasswordMessage] = useState({
             formData
           )
 
+        await saveRestaurantTranslations(restaurantId, contentTranslations)
+
 
         // -------------------------------------------------
         // NORMALIZE RESPONSE
@@ -595,6 +601,9 @@ const [passwordMessage, setPasswordMessage] = useState({
           onSubmit={handleSubmit}
           className="grid gap-5 lg:grid-cols-2"
         >
+          <div className="lg:col-span-2">
+            <TranslationFields value={contentTranslations} onChange={setContentTranslations} title={t.manualTranslations || 'Manual translations'} />
+          </div>
 
           {/* Restaurant Name */} <Input label={t.restaurantName} placeholder={t.restaurantNamePlaceholder} value={form?.name ?? ''} onChange={(e) => updateForm( 'name', e.target.value ) } /> 
           {/* Email */} <Input label={t.email} placeholder={t.emailPlaceholder} type="email" value={form?.email ?? ''} onChange={(e) => updateForm( 'email', e.target.value ) } /> 
