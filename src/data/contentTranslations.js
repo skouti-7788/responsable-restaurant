@@ -38,7 +38,15 @@ export const getCategoryTranslations = async (restaurantId, categoryId) => {
 export const saveMealTranslations = async (restaurantId, mealId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim() || !value?.dirty) continue
+    if (!value?.dirty) continue
+    if (!value?.name?.trim()) {
+      if (value?.is_manual) {
+        await axiosClient.delete(
+          `/restaurants/${restaurantId}/meals/${mealId}/translations/${language}`
+        )
+      }
+      continue
+    }
     await axiosClient.put(
       `/restaurants/${restaurantId}/meals/${mealId}/translations/${language}`,
       {
@@ -52,7 +60,15 @@ export const saveMealTranslations = async (restaurantId, mealId, translations) =
 export const saveCategoryTranslations = async (restaurantId, categoryId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim() || !value?.dirty) continue
+    if (!value?.dirty) continue
+    if (!value?.name?.trim()) {
+      if (value?.is_manual) {
+        await axiosClient.delete(
+          `/restaurants/${restaurantId}/categories/${categoryId}/translations/${language}`
+        )
+      }
+      continue
+    }
     await axiosClient.put(
       `/restaurants/${restaurantId}/categories/${categoryId}/translations/${language}`,
       {
@@ -73,7 +89,15 @@ export const getRestaurantTranslations = async (restaurantId) => {
 export const saveRestaurantTranslations = async (restaurantId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim() || !value?.dirty) continue
+    if (!value?.dirty) continue
+    if (!value?.name?.trim()) {
+      if (value?.is_manual) {
+        await axiosClient.delete(
+          `/restaurants/${restaurantId}/translations/${language}`
+        )
+      }
+      continue
+    }
 
     await axiosClient.put(
       `/restaurants/${restaurantId}/translations/${language}`,
