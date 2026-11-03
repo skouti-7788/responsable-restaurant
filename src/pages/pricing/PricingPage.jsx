@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import appTranslations from '../../i18n/translations'
-import axiosClient from '../../api/axiosClient'
 
 const plans = [
   {
@@ -21,7 +20,7 @@ const plans = [
   },
   {
     id: 'pro',
-    price: 99,
+    price: null,
     popular: true,
     features: [
       { id: 'menuQr', value: 'included' },
@@ -35,7 +34,7 @@ const plans = [
   },
   {
     id: 'business',
-    price: 199,
+    price: null,
     popular: false,
     features: [
       { id: 'menuQr', value: 'included' },
@@ -207,103 +206,16 @@ export default function PricingPage() {
   const user = useSelector((state) => state.auth.user)
   const restaurantId = useSelector((state) => state.restaurant.profile?.id) ?? user?.restaurant_id
   const [yearly, setYearly] = useState(false)
-  const [apiPlans, setApiPlans] = useState([])
-  const [subscription, setSubscription] = useState(null)
-  const [subscriptionPlan, setSubscriptionPlan] = useState(null)
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
-  const [cancelLoading, setCancelLoading] = useState(false)
-  const [subscriptionError, setSubscriptionError] = useState('')
-  const [subscriptionMessage, setSubscriptionMessage] = useState('')
-
-  useEffect(() => {
-    let active = true
-
-    axiosClient.get('/plans')
-      .then(({ data }) => {
-        if (active && Array.isArray(data?.plans)) {
-          setApiPlans(data.plans)
-        }
-      })
-      .catch((error) => {
-        console.error('Unable to load pricing plans:', error)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [])
 
   const t = { ...translations[language], ...(appTranslations[language] || appTranslations.fr) }
   const isArabic = language === 'ar'
 
-  const displayedPlans = apiPlans.length
-    ? apiPlans.map((plan) => ({
-        id: plan.id,
-        price: Number(plan.price_monthly ?? 0),
-        yearlyPrice: Number(plan.price_yearly ?? (Number(plan.price_monthly ?? 0) * 10)),
-        popular: plan.id === 'pro',
-        features: [
-          { id: 'menuQr', value: plan.features?.menu_qr ? 'included' : 'locked' },
-          { id: 'meals', value: plan.limits?.meals == null ? 'unlimited' : String(plan.limits.meals) },
-          { id: 'categories', value: plan.limits?.categories == null ? 'unlimited' : String(plan.limits.categories) },
-          { id: 'orders', value: plan.features?.orders ? 'included' : 'locked' },
-          { id: 'tables', value: plan.features?.tables ? 'included' : 'locked' },
-          { id: 'staff', value: plan.features?.staff ? 'included' : 'locked' },
-          { id: 'appearance', value: plan.features?.appearance ?? 'basic' },
-        ],
-      }))
-    : plans
-
-  useEffect(() => {
-    if (user?.role !== 'owner') return undefined
-    let active = true
-    setSubscriptionLoading(true)
-    setSubscriptionError('')
-    axiosClient.get('/subscription/', {
-      params: restaurantId ? { restaurant_id: restaurantId } : {},
-    })
-      .then(({ data }) => {
-        if (!active) return
-        setSubscription(data?.subscription ?? null)
-        setSubscriptionPlan(data?.plan ?? null)
-      })
-      .catch(() => {
-        if (active) setSubscriptionError(t.planStatusUnavailable)
-      })
-      .finally(() => {
-        if (active) setSubscriptionLoading(false)
-      })
-    return () => { active = false }
-  }, [user?.role, restaurantId, t.planStatusUnavailable])
-
-  const cancelSubscription = async () => {
-    if (!window.confirm(t.subscriptionCancelConfirm)) return
-    setCancelLoading(true)
-    setSubscriptionError('')
-    setSubscriptionMessage('')
-    try {
-      const { data } = await axiosClient.post('/subscription/cancel', restaurantId ? { restaurant_id: restaurantId } : {})
-      setSubscription(data?.subscription ?? subscription)
-      setSubscriptionMessage(t.subscriptionCancelSuccess)
-    } catch {
-      setSubscriptionError(t.subscriptionCancelError)
-    } finally {
-      setCancelLoading(false)
-    }
-  }
+  const displayedPlans = plans
 
   useEffect(() => {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? 'rtl' : 'ltr'
   }, [language, isArabic])
-
-  const formatPrice = (plan) => {
-    const total = yearly ? (plan.yearlyPrice ?? plan.price * 10) : plan.price
-    return new Intl.NumberFormat(
-      language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en',
-      { maximumFractionDigits: 0 }
-    ).format(total)
-  }
 
   const renderFeatureValue = (value) => {
     if (value === 'included') {
@@ -340,63 +252,6 @@ export default function PricingPage() {
         <p className="mx-auto mt-4 max-w-xl text-[#69777B]">
           {t.subtitle}
         </p>
-        {user?.role === 'owner' && (
-          <section className="mx-auto mt-8 max-w-2xl rounded-2xl border border-[#EEE6D9] bg-white p-6 text-start shadow-sm">
-            <h2 className="text-xl font-bold">{t.subscriptionCurrent}</h2>
-            {subscriptionLoading ? (
-              <p className="mt-3 text-sm text-[#69777B]">{t.loading}</p>
-            ) : (
-              <>
-                <p className="mt-3 text-lg font-semibold">
-                  {subscriptionPlan?.name || subscription?.plan || 'Starter'}
-                </p>
-                {subscription?.ends_at && (
-                  <p className="mt-2 text-sm text-[#69777B]">
-                    {t.subscriptionEndsAt}: {new Date(subscription.ends_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'fr' ? 'fr-MA' : 'en')}
-                  </p>
-                )}
-                {subscription?.cancel_at_period_end && (
-                  <p className="mt-3 rounded-lg bg-[#FFF0D9] p-3 text-sm font-semibold text-[#92400E]">
-                    {t.subscriptionCancelScheduled}
-                  </p>
-                )}
-                {subscriptionError && <p role="alert" className="mt-3 text-sm text-red-700">{subscriptionError}</p>}
-                {subscriptionMessage && <p role="status" className="mt-3 text-sm text-[#166534]">{subscriptionMessage}</p>}
-                {subscription && subscription.plan !== 'starter' && subscription.status === 'active' && !subscription.cancel_at_period_end && (
-                  <button type="button" onClick={cancelSubscription} disabled={cancelLoading}
-                    className="mt-4 rounded-xl border border-[#D97706] px-4 py-2 font-semibold text-[#92400E] disabled:opacity-60">
-                    {cancelLoading ? t.subscriptionCanceling : t.subscriptionCancel}
-                  </button>
-                )}
-              </>
-            )}
-            {subscriptionError && !subscriptionLoading && !subscription && (
-              <p role="alert" className="mt-3 text-sm text-red-700">{subscriptionError}</p>
-            )}
-          </section>
-        )}
-
-        <div className="mt-8 inline-flex rounded-xl border border-[#EEE6D9] bg-white p-1">
-          <button
-            type="button"
-            onClick={() => setYearly(false)}
-            className={`rounded-lg px-5 py-2 ${!yearly ? 'bg-[#D97706] text-white' : ''}`}
-          >
-            {t.monthly}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setYearly(true)}
-            className={`rounded-lg px-5 py-2 ${yearly ? 'bg-[#D97706] text-white' : ''}`}
-          >
-            {t.yearly}
-          </button>
-        </div>
-        {yearly && (
-          <p className="mt-3 text-sm font-semibold text-[#15803D]">{t.save}</p>
-        )}
-
         <div className="mt-12 grid gap-6 text-start md:grid-cols-3">
           {displayedPlans.map((plan) => (
             <article
@@ -416,19 +271,8 @@ export default function PricingPage() {
               <h2 className="text-2xl font-bold">{t[plan.id]}</h2>
 
               <p className="mt-4 text-3xl font-extrabold">
-                {plan.price === 0 ? t.free : (
-                  <>
-                    {formatPrice(plan)}
-                    <span className="ms-1 text-sm font-medium">{t.currency}</span>
-                  </>
-                )}
+                {plan.price === 0 ? t.free : t.comingSoon}
               </p>
-
-              {plan.price > 0 && (
-                <p className="mt-1 text-sm text-[#69777B]">
-                  {yearly ? t.year : t.month}
-                </p>
-              )}
 
               <ul className="my-8 flex-1 space-y-4">
                 {plan.features.map((feature) => (
