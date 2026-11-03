@@ -1,6 +1,10 @@
+import { useSelector } from 'react-redux'
+import translations from '../../i18n/translations'
 import { CONTENT_LANGUAGES } from '../../data/contentTranslations'
 
-const TranslationFields = ({ value = {}, onChange, title = 'Manual translations' }) => {
+const TranslationFields = ({ value = {}, onChange, title }) => {
+  const language = useSelector((state) => state.ui?.language || 'en')
+  const t = translations?.[language] || translations.en || {}
   const update = (language, field, nextValue) => {
     onChange({
       ...value,
@@ -17,10 +21,10 @@ const TranslationFields = ({ value = {}, onChange, title = 'Manual translations'
     <section className="grid gap-4 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
       <div>
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          {title}
+          {title || t.manualTranslations || 'Manual translations'}
         </h3>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Leave a language empty to let automatic translation fill it when the public menu is requested.
+          {t.leaveEmptyForAuto || 'Leave a language empty to use automatic translation.'}
         </p>
       </div>
 
@@ -32,7 +36,7 @@ const TranslationFields = ({ value = {}, onChange, title = 'Manual translations'
             </span>
             {value?.[code]?.is_manual && (
               <span className="text-xs text-emerald-600 dark:text-emerald-400">
-                Manually saved
+                {t.manuallySaved || 'Manually saved'}
               </span>
             )}
           </div>
@@ -42,7 +46,7 @@ const TranslationFields = ({ value = {}, onChange, title = 'Manual translations'
             dir={code === 'ar' ? 'rtl' : 'ltr'}
             value={value?.[code]?.name || ''}
             onChange={(event) => update(code, 'name', event.target.value)}
-            placeholder={`Name — ${label}`}
+            placeholder={`${t.name || 'Name'} — ${label}`}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
 
@@ -51,7 +55,7 @@ const TranslationFields = ({ value = {}, onChange, title = 'Manual translations'
             rows={2}
             value={value?.[code]?.description || ''}
             onChange={(event) => update(code, 'description', event.target.value)}
-            placeholder={`Description — ${label}`}
+            placeholder={`${t.description || 'Description'} — ${label}`}
             className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
