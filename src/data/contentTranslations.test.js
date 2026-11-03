@@ -4,6 +4,7 @@ import {
   saveMealTranslations,
   saveCategoryTranslations,
   saveRestaurantTranslations,
+  getMealTranslations,
 } from './contentTranslations'
 
 vi.mock('../api/axiosClient', () => ({
@@ -17,6 +18,33 @@ vi.mock('../api/axiosClient', () => ({
 describe('manual content translation persistence', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('loads only supported languages and normalizes translation metadata', async () => {
+    axiosClient.get.mockResolvedValue({
+      data: {
+        translations: [
+          { language: 'fr', name: '  Tajine  ', description: null, is_manual: 1 },
+          { language: 'ar', name: 'طاجين', description: 'وصف', is_manual: 0 },
+          { language: 'de', name: 'Nicht unterstützt', description: '', is_manual: true },
+        ],
+      },
+    })
+
+    await expect(getMealTranslations(7, 12)).resolves.toEqual({
+      fr: { name: '  Tajine  ', description: '', is_manual: true, dirty: false },
+      ar: { name: 'طاجين', description: 'وصف', is_manual: false, dirty: false },
+    })
+
+    expect(axiosClient.get).toHaveBeenCalledWith(
+      '/restaurants/7/meals/12/translations',
+    )
+  })
+
+  it('returns an empty translation map when the API has no translation rows', async () => {
+    axiosClient.get.mockResolvedValue({ data: { translations: null } })
+
+    await expect(getMealTranslations(7, 12)).resolves.toEqual({})
   })
 
   it('deletes a cleared manual meal translation', async () => {
