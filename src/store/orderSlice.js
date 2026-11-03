@@ -37,6 +37,10 @@ const orderSlice = createSlice({
     // =================================================
 
     fetchOrdersSuccess(state, action) {
+      state.viewedOrderIds = Array.isArray(state.viewedOrderIds) ? state.viewedOrderIds : []
+      state.newOrderIds = Array.isArray(state.newOrderIds) ? state.newOrderIds : []
+      state.items = Array.isArray(state.items) ? state.items : []
+      state.ordersInitialized = Boolean(state.ordersInitialized)
       state.loading = false
       state.error = null
 
@@ -161,6 +165,8 @@ const orderSlice = createSlice({
     // =================================================
 
     removeOrder(state, action) {
+      state.items = Array.isArray(state.items) ? state.items : []
+      state.newOrderIds = Array.isArray(state.newOrderIds) ? state.newOrderIds : []
       const orderId =
         Number(action.payload)
 
@@ -217,7 +223,8 @@ const orderSlice = createSlice({
     //     action.payload
     // },
     setNotafication(state, action) {
-        state.notafication =
+      state.newOrderIds = Array.isArray(state.newOrderIds) ? state.newOrderIds : []
+      state.notafication =
         Boolean(action.payload) &&
         state.newOrderIds.length > 0
     },
