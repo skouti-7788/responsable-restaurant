@@ -14,8 +14,6 @@ import { updateProfile } from '../../store/restaurantSlice'
 import translations from '../../i18n/translations'
 
 import Input from '../../components/ui/Input'
-import TranslationFields from '../../components/forms/TranslationFields'
-import { getRestaurantTranslations, saveRestaurantTranslations } from '../../data/contentTranslations'
 
 // =====================================================
 // EMPTY FORM
@@ -89,7 +87,6 @@ const ProfilePage = () => {
 })
 
 const [passwordLoading, setPasswordLoading] = useState(false)
-const [manualTranslations, setManualTranslations] = useState({})
 
 const [passwordMessage, setPasswordMessage] = useState({
   type: '',
@@ -223,9 +220,6 @@ const [passwordMessage, setPasswordMessage] = useState({
           normalized
         )
 
-        setManualTranslations(
-          await getRestaurantTranslations(restaurantId)
-        )
 
         // -------------------------------------------------
         // UPDATE REDUX
@@ -261,30 +255,6 @@ const [passwordMessage, setPasswordMessage] = useState({
     }
   }, [dispatch])
 
-
-  // ===================================================
-  // LOAD RESTAURANT CONTENT TRANSLATIONS
-  // ===================================================
-
-  const translationRestaurantId = form?.id || profile?.id
-
-  useEffect(() => {
-    if (!translationRestaurantId) return
-
-    let cancelled = false
-
-    getRestaurantTranslations(translationRestaurantId)
-      .then((savedTranslations) => {
-        if (!cancelled) setManualTranslations(savedTranslations)
-      })
-      .catch((error) => {
-        console.error('Load restaurant translations error:', error)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [translationRestaurantId])
 
   // ===================================================
   // HANDLE FORM CHANGE
@@ -457,10 +427,6 @@ const [passwordMessage, setPasswordMessage] = useState({
             formData
           )
 
-        await saveRestaurantTranslations(
-          restaurantId,
-          manualTranslations
-        )
 
         // -------------------------------------------------
         // NORMALIZE RESPONSE
@@ -637,13 +603,6 @@ const [passwordMessage, setPasswordMessage] = useState({
           {/* Opening Hours */} <Input label={t.openingHours} placeholder={t.openingHoursPlaceholder} value={form?.openingHours ?? ''} onChange={(e) => updateForm( 'openingHours', e.target.value ) } /> 
           {/* Facebook */} <Input label="Facebook" placeholder={t.facebookPlaceholder} value={form?.socials?.facebook ?? ''} onChange={(e) => updateFacebook( e.target.value ) } />
 
-          <div className="col-span-full">
-            <TranslationFields
-              value={manualTranslations}
-              onChange={setManualTranslations}
-              title={t.manualTranslations || 'Restaurant translations'}
-            />
-          </div>
 
           {/* =================================================
               SAVE
