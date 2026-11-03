@@ -498,8 +498,6 @@ const CategoriesPage = () => {
       name: '',
       description: '',
     })
-    setManualTranslations({})
-
 
     dispatch(
       clearCategoryError()
@@ -656,7 +654,6 @@ const CategoriesPage = () => {
           name: '',
           description: '',
         })
-        setManualTranslations({})
 
       } catch (error) {
 
