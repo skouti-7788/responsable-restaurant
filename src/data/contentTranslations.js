@@ -13,7 +13,7 @@ const normalizeTranslations = (data) => {
       result[row.language] = {
         name: row.name || '',
         description: row.description || '',
-        is_manual: Boolean(row.is_manual),
+        is_manual: row.is_manual === true || row.is_manual === 1 || row.is_manual === '1' || row.is_manual === 'true',
         dirty: false,
       }
     }
