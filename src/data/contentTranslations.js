@@ -52,7 +52,7 @@ export const saveMealTranslations = async (restaurantId, mealId, translations) =
 export const saveCategoryTranslations = async (restaurantId, categoryId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim()) continue
+    if (!value?.name?.trim() || (!value?.dirty && !value?.is_manual)) continue
     await axiosClient.put(
       `/restaurants/${restaurantId}/categories/${categoryId}/translations/${language}`,
       {
