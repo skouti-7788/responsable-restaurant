@@ -41,6 +41,24 @@ describe('manual content translation persistence', () => {
     )
   })
 
+  it('interprets string metadata flags without treating the string zero as true', async () => {
+    axiosClient.get.mockResolvedValue({
+      data: {
+        translations: [
+          { language: 'fr', name: 'Traduction automatique', is_manual: '0' },
+          { language: 'ar', name: 'ترجمة يدوية', is_manual: 'true' },
+          { language: 'en', name: 'Manual translation', is_manual: '1' },
+        ],
+      },
+    })
+
+    await expect(getMealTranslations(7, 12)).resolves.toMatchObject({
+      fr: { is_manual: false },
+      ar: { is_manual: true },
+      en: { is_manual: true },
+    })
+  })
+
   it('returns an empty translation map when the API has no translation rows', async () => {
     axiosClient.get.mockResolvedValue({ data: { translations: null } })
 
