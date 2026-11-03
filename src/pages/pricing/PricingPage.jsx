@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import appTranslations from '../../i18n/translations'
@@ -204,8 +204,6 @@ const translations = {
 export default function PricingPage() {
   const language = useSelector((state) => state.ui.language)
   const user = useSelector((state) => state.auth.user)
-  const restaurantId = useSelector((state) => state.restaurant.profile?.id) ?? user?.restaurant_id
-  const [yearly, setYearly] = useState(false)
 
   const t = { ...translations[language], ...(appTranslations[language] || appTranslations.fr) }
   const isArabic = language === 'ar'
