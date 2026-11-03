@@ -36,8 +36,6 @@ import {
 
 import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
-import TranslationFields from '../../components/forms/TranslationFields'
-import { getMealTranslations, saveMealTranslations } from '../../data/contentTranslations'
 
 const MEALS_CACHE_KEY = 'restaurant_meals_cache'
 const CATEGORIES_CACHE_KEY = 'restaurant_categories_cache'
@@ -153,8 +151,6 @@ const MealsPage = () => {
 
   const [form, setForm] =
     useState(emptyForm)
-  const [contentTranslations, setContentTranslations] = useState({})
-
 
   // =====================================================
   // CACHE - MEALS
@@ -373,11 +369,10 @@ const MealsPage = () => {
 
   const handleOpen =
     useCallback(
-      async (meal = null) => {
+      (meal = null) => {
         setEditing(meal)
 
         if (meal) {
-          setContentTranslations(await getMealTranslations(currentRestaurantId || restaurantIdRef.current, meal.id).catch(() => ({})))
           setForm({
             name:
               meal.name || '',
@@ -415,7 +410,6 @@ const MealsPage = () => {
               ''
           )
         } else {
-          setContentTranslations({})
           setForm({
             ...emptyForm,
           })
@@ -423,7 +417,7 @@ const MealsPage = () => {
           setImagePreview('')
         }
 
-
+        setError('')
         setOpen(true)
       },
       []
@@ -569,14 +563,13 @@ const MealsPage = () => {
         // UPDATE
         // -------------------------------------------------
 
-        let savedMeal
-
         if (editing?.id) {
-          savedMeal = await updateMeal(
-            restaurantId,
-            editing.id,
-            data
-          )
+          const updatedMeal =
+            await updateMeal(
+              restaurantId,
+              editing.id,
+              data
+            )
 
           setMeals((current) => {
             const updated =
@@ -584,7 +577,7 @@ const MealsPage = () => {
                 (meal) =>
                   meal.id ===
                   editing.id
-                    ? savedMeal
+                    ? updatedMeal
                     : meal
               )
 
@@ -601,15 +594,16 @@ const MealsPage = () => {
         // -------------------------------------------------
 
         else {
-          savedMeal = await createMeal(
-            restaurantId,
-            data
-          )
+          const newMeal =
+            await createMeal(
+              restaurantId,
+              data
+            )
 
           setMeals((current) => {
             const updated = [
               ...current,
-              savedMeal,
+              newMeal,
             ]
 
             saveMealsToCache(
@@ -620,8 +614,6 @@ const MealsPage = () => {
           })
         }
 
-
-        if (savedMeal?.id) await saveMealTranslations(restaurantId, savedMeal.id, contentTranslations)
         handleClose()
       } catch (err) {
         console.error(
@@ -644,7 +636,6 @@ const MealsPage = () => {
       restaurantId,
       form,
       editing,
-      contentTranslations,
       saveMealsToCache,
       handleClose,
       t.restaurantNotFound,
@@ -1382,8 +1373,6 @@ const MealsPage = () => {
 
             <div className="mt-6 grid gap-5">
 
-              <TranslationFields value={contentTranslations} onChange={setContentTranslations} title={t.manualTranslations || 'Manual translations'} />
-
               {/* NAME */}
 
               <div>
@@ -1445,7 +1434,6 @@ const MealsPage = () => {
                   }
                 />
               </div>
-
 
               {/* PRICE */}
 
