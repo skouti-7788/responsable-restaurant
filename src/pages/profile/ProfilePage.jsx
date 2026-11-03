@@ -14,8 +14,6 @@ import { updateProfile } from '../../store/restaurantSlice'
 import translations from '../../i18n/translations'
 
 import Input from '../../components/ui/Input'
-import TranslationFields from '../../components/forms/TranslationFields'
-import { getRestaurantTranslations, saveRestaurantTranslations } from '../../data/contentTranslations'
 
 // =====================================================
 // EMPTY FORM
@@ -123,8 +121,6 @@ const [passwordMessage, setPasswordMessage] = useState({
   // INITIAL PROFILE
   // ===================================================
 
-  const [contentTranslations, setContentTranslations] = useState({})
-
   const [form, setForm] = useState(() => {
     const cached = getCachedProfile()
 
@@ -172,8 +168,6 @@ const [passwordMessage, setPasswordMessage] = useState({
           if (cancelled) {
             return
           }
-          const savedTranslations = await getRestaurantTranslations(cached.id).catch(() => ({}))
-          if (!cancelled) setContentTranslations(savedTranslations)
 
           const normalized = {
             ...emptyProfile,
@@ -214,9 +208,6 @@ const [passwordMessage, setPasswordMessage] = useState({
             restaurant
           )
 
-        const savedTranslations = await getRestaurantTranslations(restaurant.id).catch(() => ({}))
-        if (!cancelled) setContentTranslations(savedTranslations)
-
         if (!normalized) {
           return
         }
@@ -228,7 +219,6 @@ const [passwordMessage, setPasswordMessage] = useState({
         saveCachedProfile(
           normalized
         )
-
 
         // -------------------------------------------------
         // UPDATE REDUX
@@ -263,7 +253,6 @@ const [passwordMessage, setPasswordMessage] = useState({
       cancelled = true
     }
   }, [dispatch])
-
 
   // ===================================================
   // HANDLE FORM CHANGE
@@ -436,9 +425,6 @@ const [passwordMessage, setPasswordMessage] = useState({
             formData
           )
 
-        await saveRestaurantTranslations(restaurantId, contentTranslations)
-
-
         // -------------------------------------------------
         // NORMALIZE RESPONSE
         // -------------------------------------------------
@@ -606,9 +592,6 @@ const [passwordMessage, setPasswordMessage] = useState({
           onSubmit={handleSubmit}
           className="grid gap-5 lg:grid-cols-2"
         >
-          <div className="lg:col-span-2">
-            <TranslationFields value={contentTranslations} onChange={setContentTranslations} title={t.manualTranslations || 'Manual translations'} />
-          </div>
 
           {/* Restaurant Name */} <Input label={t.restaurantName} placeholder={t.restaurantNamePlaceholder} value={form?.name ?? ''} onChange={(e) => updateForm( 'name', e.target.value ) } /> 
           {/* Email */} <Input label={t.email} placeholder={t.emailPlaceholder} type="email" value={form?.email ?? ''} onChange={(e) => updateForm( 'email', e.target.value ) } /> 
@@ -616,7 +599,6 @@ const [passwordMessage, setPasswordMessage] = useState({
           {/* Address */} <Input label={t.address} placeholder={t.addressPlaceholder} value={form?.address ?? ''} onChange={(e) => updateForm( 'address', e.target.value ) } /> 
           {/* Opening Hours */} <Input label={t.openingHours} placeholder={t.openingHoursPlaceholder} value={form?.openingHours ?? ''} onChange={(e) => updateForm( 'openingHours', e.target.value ) } /> 
           {/* Facebook */} <Input label="Facebook" placeholder={t.facebookPlaceholder} value={form?.socials?.facebook ?? ''} onChange={(e) => updateFacebook( e.target.value ) } />
-
 
           {/* =================================================
               SAVE
