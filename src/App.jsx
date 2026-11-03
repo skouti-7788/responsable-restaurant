@@ -1,0 +1,148 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+
+import ProtectedRoute from './components/layout/ProtectedRoute'
+import SidebarLayout from './components/layout/SidebarLayout'
+
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
+import DashboardPage from './pages/dashboard/DashboardPage'
+import ProfilePage from './pages/profile/ProfilePage'
+import CategoriesPage from './pages/categories/CategoriesPage'
+import MealsPage from './pages/meals/MealsPage'
+import OrdersPage from './pages/orders/OrdersPage'
+import QRCodePage from './pages/qr/QRCodePage'
+import NotFoundPage from './pages/NotFoundPage'
+import TablesPage from './pages/Tables/TablesPage'
+import AppearancePage from './pages/Appearance/AppearancePage'
+import StaffPage from './pages/staff/StaffPage'
+import PageHome from './pages/home/pageHome'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import PricingPage from './pages/pricing/PricingPage'
+import PlanAccessProvider from './components/layout/PlanAccessContext'
+function App() {
+  const { language, theme } = useSelector((state) => state.ui)
+
+  useEffect(() => {
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.lang = language
+
+    document.documentElement.classList.toggle(
+      'dark',
+      theme === 'dark'
+    )
+
+    localStorage.setItem('restaurant_theme', theme)
+    localStorage.setItem('restaurant_language', language)
+  }, [language, theme])
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/upgrade" element={<PricingPage />} />
+        <Route path="/home" element={<PageHome />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPasswordPage />}
+        />
+        <Route
+          path="/reset-password"
+          element={<ResetPasswordPage />}
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <PlanAccessProvider>
+                <SidebarLayout />
+              </PlanAccessProvider>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DashboardPage />} />
+
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute requiredPermission="profile.view">
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="categories"
+            element={
+              <ProtectedRoute requiredPermission="categories.view">
+                <CategoriesPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="meals"
+            element={
+              <ProtectedRoute requiredPermission="meals.view">
+                <MealsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute requiredPermission="orders.view" requiredFeature="orders">
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="tables"
+            element={
+              <ProtectedRoute requiredPermission="tables.view" requiredFeature="tables">
+                <TablesPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="appearance"
+            element={
+              <ProtectedRoute requiredPermission="appearance.view" requiredFeature="appearance">
+                <AppearancePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="staff"
+            element={
+              <ProtectedRoute requiredPermission="staff.view" requiredFeature="staff">
+                <StaffPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="qr-code"
+            element={
+              <ProtectedRoute requiredPermission="qrcode.view">
+                <QRCodePage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
