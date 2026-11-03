@@ -46,8 +46,6 @@ import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
-import TranslationFields from '../../components/forms/TranslationFields'
-import { getCategoryTranslations, saveCategoryTranslations } from '../../data/contentTranslations'
 
 
 const CategoriesPage = () => {
@@ -188,8 +186,6 @@ const CategoriesPage = () => {
   ] = useState(null)
 
 
-  const [contentTranslations, setContentTranslations] = useState({})
-
   const [
     form,
     setForm,
@@ -197,7 +193,6 @@ const CategoriesPage = () => {
     name: '',
     description: '',
   })
-
 
 
   // =====================================================
@@ -446,11 +441,10 @@ const CategoriesPage = () => {
   // OPEN MODAL
   // =====================================================
 
-  const handleOpen = async (
+  const handleOpen = (
     category
   ) => {
 
-    setContentTranslations(category?.id ? await getCategoryTranslations(restaurantIdRef.current, category.id).catch(() => ({})) : {})
     setEditing(
       category || null
     )
@@ -503,6 +497,7 @@ const CategoriesPage = () => {
       name: '',
       description: '',
     })
+
 
     dispatch(
       clearCategoryError()
@@ -562,8 +557,6 @@ const CategoriesPage = () => {
         // EDIT
         // =================================================
 
-        let savedCategory
-
         if (editing) {
 
           const updatedCategory =
@@ -580,8 +573,6 @@ const CategoriesPage = () => {
                 form.description,
             })
 
-
-          savedCategory = updatedCategory
 
           dispatch(
             updateCategory(
@@ -624,8 +615,6 @@ const CategoriesPage = () => {
             })
 
 
-          savedCategory = newCategory
-
           dispatch(
             addCategory(
               newCategory
@@ -645,9 +634,6 @@ const CategoriesPage = () => {
 
         }
 
-
-
-        if (savedCategory?.id) await saveCategoryTranslations(restaurantId, savedCategory.id, contentTranslations)
 
         // =================================================
         // CLOSE
@@ -1171,8 +1157,6 @@ const CategoriesPage = () => {
 
         <div className="grid gap-5">
 
-          <TranslationFields value={contentTranslations} onChange={setContentTranslations} title={t.manualTranslations || 'Manual translations'} />
-
           <Input
             label={
               t.name
@@ -1190,8 +1174,6 @@ const CategoriesPage = () => {
               })
             }
           />
-
-
 
 
           <Input
