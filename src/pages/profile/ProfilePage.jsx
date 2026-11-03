@@ -172,6 +172,8 @@ const [passwordMessage, setPasswordMessage] = useState({
           if (cancelled) {
             return
           }
+          const savedTranslations = await getRestaurantTranslations(cached.id).catch(() => ({}))
+          if (!cancelled) setContentTranslations(savedTranslations)
 
           const normalized = {
             ...emptyProfile,
@@ -211,6 +213,9 @@ const [passwordMessage, setPasswordMessage] = useState({
           normalizeProfile(
             restaurant
           )
+
+        const savedTranslations = await getRestaurantTranslations(restaurant.id).catch(() => ({}))
+        if (!cancelled) setContentTranslations(savedTranslations)
 
         if (!normalized) {
           return
