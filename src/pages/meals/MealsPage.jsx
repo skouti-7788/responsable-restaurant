@@ -593,7 +593,7 @@ const MealsPage = () => {
                 (meal) =>
                   meal.id ===
                   editing.id
-                    ? updatedMeal
+                    ? savedMeal
                     : meal
               )
 
@@ -618,7 +618,7 @@ const MealsPage = () => {
           setMeals((current) => {
             const updated = [
               ...current,
-              newMeal,
+              savedMeal,
             ]
 
             saveMealsToCache(
