@@ -11,15 +11,7 @@ import reducer, {
 } from './orderSlice'
 
 describe('orderSlice (admin dashboard)', () => {
-  const baseState = {
-    items: [],
-    loading: false,
-    error: null,
-    notafication: false,
-    newOrderIds: [],
-    viewedOrderIds: [],
-    ordersInitialized: false,
-  }
+  const baseState = { items: [], loading: false, error: null, notafication: false }
 
   it('returns the initial state', () => {
     const state = reducer(undefined, { type: '@@INIT' })
@@ -110,10 +102,7 @@ describe('orderSlice (admin dashboard)', () => {
   })
 
   it('sets and clears the notification flag', () => {
-    const withNotif = reducer(
-      { ...baseState, newOrderIds: [42] },
-      setNotafication(true),
-    )
+    const withNotif = reducer(baseState, setNotafication(true))
     expect(withNotif.notafication).toBe(true)
 
     const cleared = reducer(withNotif, clearNotafication())
