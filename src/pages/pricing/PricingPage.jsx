@@ -283,7 +283,7 @@ export default function PricingPage() {
 
               {plan.id === 'starter' ? (
                 <Link
-                  to={`/register?plan=${plan.id}&billing_interval=${yearly ? 'yearly' : 'monthly'}`}
+                  to="/register"
                   className="rounded-xl border border-[#EEE6D9] px-4 py-3 text-center font-semibold hover:bg-[#FFF9ED]"
                 >
                   {t.choose}
