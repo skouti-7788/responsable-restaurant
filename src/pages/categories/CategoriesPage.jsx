@@ -46,6 +46,8 @@ import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Modal from '../../components/ui/Modal'
+import TranslationFields from '../../components/forms/TranslationFields'
+import { getCategoryTranslations, saveCategoryTranslations } from '../../data/contentTranslations'
 
 
 const CategoriesPage = () => {
@@ -193,6 +195,8 @@ const CategoriesPage = () => {
     name: '',
     description: '',
   })
+
+  const [manualTranslations, setManualTranslations] = useState({})
 
 
   // =====================================================
@@ -441,13 +445,14 @@ const CategoriesPage = () => {
   // OPEN MODAL
   // =====================================================
 
-  const handleOpen = (
+  const handleOpen = async (
     category
   ) => {
 
     setEditing(
       category || null
     )
+    setManualTranslations({})
 
 
     setForm(
@@ -473,6 +478,19 @@ const CategoriesPage = () => {
     )
 
 
+    if (category?.id && restaurantIdRef.current) {
+      try {
+        const existingTranslations = await getCategoryTranslations(
+          restaurantIdRef.current,
+          category.id
+        )
+        setManualTranslations(existingTranslations)
+      } catch (translationError) {
+        console.error('Load category translations error:', translationError)
+        dispatch(setCategoryError('Could not load saved translations. You can still edit the original content.'))
+      }
+    }
+
     setIsOpen(true)
 
   }
@@ -497,6 +515,7 @@ const CategoriesPage = () => {
       name: '',
       description: '',
     })
+    setManualTranslations({})
 
 
     dispatch(
@@ -557,6 +576,8 @@ const CategoriesPage = () => {
         // EDIT
         // =================================================
 
+        let savedCategory
+
         if (editing) {
 
           const updatedCategory =
@@ -573,6 +594,8 @@ const CategoriesPage = () => {
                 form.description,
             })
 
+
+          savedCategory = updatedCategory
 
           dispatch(
             updateCategory(
@@ -615,6 +638,8 @@ const CategoriesPage = () => {
             })
 
 
+          savedCategory = newCategory
+
           dispatch(
             addCategory(
               newCategory
@@ -635,6 +660,10 @@ const CategoriesPage = () => {
         }
 
 
+        if (savedCategory?.id) {
+          await saveCategoryTranslations(restaurantId, savedCategory.id, manualTranslations)
+        }
+
         // =================================================
         // CLOSE
         // =================================================
@@ -647,6 +676,7 @@ const CategoriesPage = () => {
           name: '',
           description: '',
         })
+        setManualTranslations({})
 
       } catch (error) {
 
@@ -1173,6 +1203,13 @@ const CategoriesPage = () => {
                   e.target.value,
               })
             }
+          />
+
+
+          <TranslationFields
+            value={manualTranslations}
+            onChange={setManualTranslations}
+            title="Manual translations (optional)"
           />
 
 
