@@ -36,8 +36,6 @@ import {
 
 import translations from '../../i18n/translations'
 import Button from '../../components/ui/Button'
-import TranslationFields from '../../components/forms/TranslationFields'
-import { getMealTranslations, saveMealTranslations } from '../../data/contentTranslations'
 
 const MEALS_CACHE_KEY = 'restaurant_meals_cache'
 const CATEGORIES_CACHE_KEY = 'restaurant_categories_cache'
@@ -154,7 +152,6 @@ const MealsPage = () => {
   const [form, setForm] =
     useState(emptyForm)
 
-  const [manualTranslations, setManualTranslations] = useState({})
 
   // =====================================================
   // CACHE - MEALS
@@ -422,15 +419,6 @@ const MealsPage = () => {
           setImagePreview('')
         }
 
-        if (meal?.id && restaurantIdRef.current) {
-          try {
-            const existingTranslations = await getMealTranslations(restaurantIdRef.current, meal.id)
-            setManualTranslations(existingTranslations)
-          } catch (translationError) {
-            console.error('Load meal translations error:', translationError)
-            setError('Could not load saved translations. You can still edit the original content.')
-          }
-        }
 
         setOpen(true)
       },
@@ -629,9 +617,6 @@ const MealsPage = () => {
           })
         }
 
-        if (savedMeal?.id) {
-          await saveMealTranslations(restaurantId, savedMeal.id, manualTranslations)
-        }
 
         handleClose()
       } catch (err) {
@@ -655,7 +640,6 @@ const MealsPage = () => {
       restaurantId,
       form,
       editing,
-      manualTranslations,
       saveMealsToCache,
       handleClose,
       t.restaurantNotFound,
@@ -1455,11 +1439,6 @@ const MealsPage = () => {
                 />
               </div>
 
-              <TranslationFields
-                value={manualTranslations}
-                onChange={setManualTranslations}
-                title="Manual translations (optional)"
-              />
 
               {/* PRICE */}
 
