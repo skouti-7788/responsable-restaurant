@@ -372,7 +372,6 @@ const MealsPage = () => {
     useCallback(
       async (meal = null) => {
         setEditing(meal)
-        setManualTranslations({})
 
         if (meal) {
           setForm({
@@ -439,7 +438,6 @@ const MealsPage = () => {
       setForm({
         ...emptyForm,
       })
-      setManualTranslations({})
 
       setImagePreview('')
     }, [saving])
