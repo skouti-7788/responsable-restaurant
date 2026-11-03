@@ -38,7 +38,7 @@ export const getCategoryTranslations = async (restaurantId, categoryId) => {
 export const saveMealTranslations = async (restaurantId, mealId, translations) => {
   for (const language of ['ar', 'fr', 'en']) {
     const value = translations?.[language]
-    if (!value?.name?.trim() || (!value?.dirty && !value?.is_manual)) continue
+    if (!value?.name?.trim() || !value?.dirty) continue
     await axiosClient.put(
       `/restaurants/${restaurantId}/meals/${mealId}/translations/${language}`,
       {
@@ -55,6 +55,28 @@ export const saveCategoryTranslations = async (restaurantId, categoryId, transla
     if (!value?.name?.trim() || (!value?.dirty && !value?.is_manual)) continue
     await axiosClient.put(
       `/restaurants/${restaurantId}/categories/${categoryId}/translations/${language}`,
+      {
+        name: value.name.trim(),
+        description: value.description || '',
+      }
+    )
+  }
+}
+
+export const getRestaurantTranslations = async (restaurantId) => {
+  const response = await axiosClient.get(
+    `/restaurants/${restaurantId}/translations`
+  )
+  return normalizeTranslations(response.data)
+}
+
+export const saveRestaurantTranslations = async (restaurantId, translations) => {
+  for (const language of ['ar', 'fr', 'en']) {
+    const value = translations?.[language]
+    if (!value?.name?.trim() || !value?.dirty) continue
+
+    await axiosClient.put(
+      `/restaurants/${restaurantId}/translations/${language}`,
       {
         name: value.name.trim(),
         description: value.description || '',
