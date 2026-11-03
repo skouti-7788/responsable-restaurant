@@ -13,6 +13,7 @@ const TranslationFields = ({ value = {}, onChange, title }) => {
         description: value?.[language]?.description || '',
         ...value?.[language],
         [field]: nextValue,
+        dirty: true,
       },
     })
   }
