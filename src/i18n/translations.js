@@ -801,7 +801,7 @@ const translations = {
     login: 'تسجيل الدخول',
     register: 'تسجيل المطعم',
     registerDescription: 'أنشئ حساب مطعمك وابدأ في إدارة قائمتك الرقمية.',
-    creatingAccount: 'جارٍ إنشاء الحساب...'
+    creatingAccount: 'جارٍ إنشاء الحساب...',
     loadingPreview: 'جاري تحميل المعاينة...',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
