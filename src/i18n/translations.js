@@ -6,6 +6,8 @@ const translations = {
     Images: 'images',
     login: 'Login',
     register: 'Register new restaurant',
+    registerDescription: 'Create your restaurant account and start managing your digital menu.',
+    creatingAccount: 'Creating account...',
     loadingPreview: 'Loading preview...',
     email: 'Email',
     password: 'Password',
@@ -406,6 +408,8 @@ const translations = {
   
     login: 'Se connecter',
     register: 'Enregistrer un restaurant',
+    registerDescription: 'Créez votre compte restaurant et commencez à gérer votre menu numérique.',
+    creatingAccount: 'Création du compte...',
 
     email: 'Email',
     password: 'Mot de passe',
@@ -796,6 +800,8 @@ const translations = {
     colors: 'الألوان',
     login: 'تسجيل الدخول',
     register: 'تسجيل المطعم',
+    registerDescription: 'أنشئ حساب مطعمك وابدأ في إدارة قائمتك الرقمية.',
+    creatingAccount: 'جارٍ إنشاء الحساب...'
     loadingPreview: 'جاري تحميل المعاينة...',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
