@@ -9,15 +9,18 @@ import {
 } from '../../store/authSlice'
 import Input from '../../components/ui/Input'
 import axiosClient from '../../api/axiosClient'
+import translations from '../../i18n/translations'
 
 const LoginPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { loading, error } = useSelector((state) => ({
+  const { language, loading, error } = useSelector((state) => ({
+    language: state.ui.language,
     loading: state.auth.loading,
     error: state.auth.error,
   }))
+  const t = translations[language] || translations.en
 
   const [form, setForm] = useState({
     email: '',
@@ -42,7 +45,7 @@ const LoginPage = () => {
       const message =
         err?.response?.data?.message ||
         err?.response?.data?.errors?.email?.[0] ||
-        'Unable to login'
+        t.loginFailed
 
       dispatch(loginFailure(message))
     }
@@ -53,16 +56,16 @@ const LoginPage = () => {
       <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-10 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line">
         <div className="mb-8 space-y-3 text-center">
           <p className="text-sm uppercase tracking-[0.35em] text-brand">
-            Restaurant manager
+            {t.restaurantManager}
           </p>
           <h1 className="text-3xl font-semibold text-ink">
-            Login
+            {t.login}
           </h1>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <Input
-            label="Email"
+            label={t.email}
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
@@ -72,7 +75,7 @@ const LoginPage = () => {
           />
 
           <Input
-            label="Password"
+            label={t.password}
             value={form.password}
             onChange={(e) =>
               setForm({ ...form, password: e.target.value })
@@ -87,7 +90,7 @@ const LoginPage = () => {
               to="/forgot-password"
               className="text-sm font-medium text-brand transition hover:text-brand-dark hover:underline"
             >
-              Forgot password?
+              {t.forgotPassword}
             </Link>
           </div>
 
@@ -103,16 +106,16 @@ const LoginPage = () => {
               type="submit"
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Login'}
+              {loading ? t.signingIn : t.login}
             </button>
 
             <p className="mt-6 text-center text-sm text-muted">
-              Don't have an account?{' '}
+              {t.dontHaveAccount}{' '}
               <Link
                to="/pricing"     
                className="font-medium text-brand hover:text-brand-dark"
               >
-                Create an account
+                {t.createAnAccount}
               </Link>
             </p>
           </div>
