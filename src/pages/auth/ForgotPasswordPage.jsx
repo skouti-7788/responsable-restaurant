@@ -2,8 +2,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
+import { useSelector } from 'react-redux'
+import translations from '../../i18n/translations'
 
 const ForgotPasswordPage = () => {
+  const language = useSelector((state) => state.ui.language)
+  const t = translations[language] || translations.en
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -22,13 +26,13 @@ const ForgotPasswordPage = () => {
       )
 
       setMessage(
-        response.data.message 
+        t.passwordResetEmailSent
        )
       setError('')
     } catch (err) {
       setError(
         err?.message ||
-        'Something went wrong. Please try again.'
+        t.forgotPasswordError
       )
 
       setMessage('')
@@ -42,16 +46,15 @@ const ForgotPasswordPage = () => {
       <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-8 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line sm:p-10">
         <div className="mb-8 space-y-3 text-center">
           <p className="text-sm uppercase tracking-[0.25em] text-brand">
-            Restaurant manager
+            {t.restaurantManager}
           </p>
 
           <h1 className="text-3xl font-semibold text-ink">
-            Forgot password?
+            {t.forgotPassword}
           </h1>
 
           <p className="text-sm leading-6 text-muted">
-            Enter your email address and we will send you
-            instructions to reset your password.
+            {t.forgotPasswordDescription}
           </p>
         </div>
 
@@ -61,7 +64,7 @@ const ForgotPasswordPage = () => {
               htmlFor="email"
               className="block text-sm font-medium text-ink"
             >
-              Email address
+              {t.emailAddress}
             </label>
 
             <input
@@ -99,16 +102,16 @@ const ForgotPasswordPage = () => {
             disabled={loading}
             className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? 'Sending...' : 'Send reset link'}
+            {loading ? t.sending : t.sendResetLink}
           </button>
 
           <p className="text-center text-sm text-muted">
-            Remember your password?{' '}
+            {t.rememberPassword}{' '}
             <Link
               to="/login"
               className="font-medium text-brand hover:text-brand-dark hover:underline"
             >
-              Back to login
+              {t.backToLogin}
             </Link>
           </p>
         </form>
