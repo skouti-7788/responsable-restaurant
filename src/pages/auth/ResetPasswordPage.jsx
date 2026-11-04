@@ -2,8 +2,12 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axiosClient from '../../api/axiosClient'
+import { useSelector } from 'react-redux'
+import translations from '../../i18n/translations'
 
 const ResetPasswordPage = () => {
+  const language = useSelector((state) => state.ui.language)
+  const t = translations[language] || translations.en
   const [searchParams] = useSearchParams()
 
   const token = searchParams.get('token') || ''
@@ -27,18 +31,18 @@ const ResetPasswordPage = () => {
 
     if (!token || !form.email) {
       setError(
-        'The reset link is invalid. Please request a new link.'
+        t.forgotPasswordInvalidLink
       )
       return
     }
 
     if (form.password.length < 8) {
-      setError('Password must contain at least 8 characters.')
+      setError(t.passwordMinLength)
       return
     }
 
     if (form.password !== form.password_confirmation) {
-      setError('Passwords do not match.')
+      setError(t.passwordMismatch)
       return
     }
 
@@ -56,7 +60,7 @@ const ResetPasswordPage = () => {
       )
 
       setMessage(
-        response.data.message || 'Password reset successfully.'
+        response.data.message || t.passwordResetSuccess
       )
       setSuccess(true)
 
@@ -73,7 +77,7 @@ const ResetPasswordPage = () => {
           errors?.token?.[0] ||
           errors?.password?.[0] ||
           err?.response?.data?.message ||
-          'Unable to reset the password. The link may have expired.'
+          t.passwordResetError
       )
     } finally {
       setLoading(false)
@@ -85,15 +89,15 @@ const ResetPasswordPage = () => {
       <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-8 shadow-[20px_20px_40px_rgba(17,39,44,0.12)] ring-1 ring-line sm:p-10">
         <div className="mb-8 space-y-3 text-center">
           <p className="text-sm uppercase tracking-[0.25em] text-brand">
-            Restaurant manager
+            {t.restaurantManager}
           </p>
 
           <h1 className="text-3xl font-semibold text-ink">
-            Reset password
+            {t.resetPassword}
           </h1>
 
           <p className="text-sm leading-6 text-muted">
-            Choose a new password for your account.
+            {t.resetPasswordDescription}
           </p>
         </div>
 
@@ -103,7 +107,7 @@ const ResetPasswordPage = () => {
               htmlFor="reset-email"
               className="block text-sm font-medium text-ink"
             >
-              Email address
+              {t.emailAddress}
             </label>
 
             <input
@@ -125,7 +129,7 @@ const ResetPasswordPage = () => {
               htmlFor="new-password"
               className="block text-sm font-medium text-ink"
             >
-              New password
+              {t.newPassword}
             </label>
 
             <input
@@ -138,7 +142,7 @@ const ResetPasswordPage = () => {
               onChange={(e) =>
                 setForm({ ...form, password: e.target.value })
               }
-              placeholder="At least 8 characters"
+              placeholder={t.newPasswordPlaceholder}
               className="h-12 w-full rounded-xl border border-line bg-white px-4 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
@@ -148,7 +152,7 @@ const ResetPasswordPage = () => {
               htmlFor="confirm-password"
               className="block text-sm font-medium text-ink"
             >
-              Confirm new password
+              {t.confirmNewPassword}
             </label>
 
             <input
@@ -164,7 +168,7 @@ const ResetPasswordPage = () => {
                   password_confirmation: e.target.value,
                 })
               }
-              placeholder="Repeat your new password"
+              placeholder={t.confirmPasswordPlaceholder}
               className="h-12 w-full rounded-xl border border-line bg-white px-4 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
@@ -197,7 +201,7 @@ const ResetPasswordPage = () => {
               disabled={loading}
               className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Resetting...' : 'Reset password'}
+              {loading ? t.resettingPassword : t.resetPasswordButton}
             </button>
           )}
 
@@ -206,7 +210,7 @@ const ResetPasswordPage = () => {
               to="/login"
               className="font-medium text-brand hover:text-brand-dark hover:underline"
             >
-              Back to login
+              {t.backToLogin}
             </Link>
           </p>
         </form>
