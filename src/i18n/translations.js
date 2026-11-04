@@ -49,7 +49,6 @@ const translations = {
 
     menuViews: 'Menu views',
     popularMeals: 'Popular meals',
-    recentActivit: 'Recent activity',
 
     saveChanges: 'Save changes',
     livePreview: 'Live preview',
